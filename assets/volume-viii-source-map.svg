@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 690" role="img" aria-labelledby="title desc">
+  <title id="title">FRUS Volume VIII source map</title>
+  <desc id="desc">A research map connecting the planned FRUS volume to official anchors, Clinton Library files, State FOIA records, GovInfo public papers, NARA catalog leads, and compiler gap controls.</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8f6ef; }
+      .panel { fill: #fffdf8; stroke: #d7d0c4; stroke-width: 3; rx: 14; }
+      .core { fill: #21344d; }
+      .green { fill: #2f665b; }
+      .red { fill: #93414a; }
+      .gold { fill: #b9852e; }
+      .blue { fill: #496f91; }
+      .violet { fill: #5e557f; }
+      .line { fill: none; stroke: #a9a193; stroke-width: 4; stroke-linecap: round; }
+      .fine { fill: none; stroke: #d7d0c4; stroke-width: 2; }
+      .label { fill: #17212b; font: 700 23px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .small { fill: #5d6974; font: 700 16px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .white { fill: #ffffff; font: 800 18px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+      .tiny { fill: #ffffff; font: 800 14px system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; }
+    </style>
+  </defs>
+  <rect class="bg" width="920" height="690"/>
+  <path class="fine" d="M80 120h760M80 240h760M80 360h760M80 480h760M80 600h760M170 70v560M340 70v560M510 70v560M680 70v560" opacity=".45"/>
+
+  <path class="line" d="M460 335C352 274 288 225 214 154"/>
+  <path class="line" d="M460 335C552 252 618 202 714 148"/>
+  <path class="line" d="M460 335C353 356 267 396 170 486"/>
+  <path class="line" d="M460 335C566 373 646 420 754 520"/>
+  <path class="line" d="M460 335C456 245 454 175 454 98"/>
+  <path class="line" d="M460 335C454 443 452 520 452 602"/>
+
+  <rect x="318" y="257" width="284" height="154" class="panel"/>
+  <rect x="348" y="287" width="224" height="68" class="core" rx="8"/>
+  <text x="460" y="314" text-anchor="middle" class="white">FRUS 1993-2000</text>
+  <text x="460" y="339" text-anchor="middle" class="white">Volume VIII</text>
+  <text x="460" y="379" text-anchor="middle" class="small">Arms Control and</text>
+  <text x="460" y="401" text-anchor="middle" class="small">Nonproliferation, 1997-2000</text>
+
+  <rect x="92" y="74" width="244" height="142" class="panel"/>
+  <circle cx="132" cy="116" r="26" class="red"/>
+  <text x="132" y="122" text-anchor="middle" class="tiny">OH</text>
+  <text x="176" y="113" class="label">Official</text>
+  <text x="176" y="139" class="label">Volume Anchors</text>
+  <text x="120" y="176" class="small">planned status</text>
+  <text x="120" y="198" class="small">Volume VII handoff</text>
+
+  <rect x="612" y="72" width="236" height="150" class="panel"/>
+  <circle cx="652" cy="116" r="26" class="green"/>
+  <text x="652" y="122" text-anchor="middle" class="tiny">CL</text>
+  <text x="696" y="111" class="label">Clinton</text>
+  <text x="696" y="137" class="label">Library Files</text>
+  <text x="640" y="176" class="small">2013-0185-M</text>
+  <text x="640" y="198" class="small">MDR packets</text>
+
+  <rect x="80" y="426" width="260" height="146" class="panel"/>
+  <circle cx="120" cy="470" r="26" class="blue"/>
+  <text x="120" y="476" text-anchor="middle" class="tiny">FOIA</text>
+  <text x="164" y="465" class="label">State FOIA</text>
+  <text x="164" y="491" class="label">Talbott Trail</text>
+  <text x="108" y="530" class="small">CTBT, NMD, ABM</text>
+  <text x="108" y="552" class="small">CFE, South Asia</text>
+
+  <rect x="612" y="450" width="244" height="144" class="panel"/>
+  <circle cx="652" cy="492" r="26" class="gold"/>
+  <text x="652" y="498" text-anchor="middle" class="tiny">PPP</text>
+  <text x="696" y="486" class="label">GovInfo</text>
+  <text x="696" y="512" class="label">Public Line</text>
+  <text x="640" y="552" class="small">joint statements</text>
+  <text x="640" y="574" class="small">signing messages</text>
+
+  <rect x="328" y="30" width="264" height="130" class="panel"/>
+  <circle cx="368" cy="72" r="26" class="violet"/>
+  <text x="368" y="78" text-anchor="middle" class="tiny">NARA</text>
+  <text x="410" y="69" class="label">Catalog</text>
+  <text x="410" y="95" class="label">Collections</text>
+  <text x="356" y="132" class="small">NAIDs, series, folders</text>
+
+  <rect x="324" y="548" width="272" height="116" class="panel"/>
+  <circle cx="364" cy="588" r="26" class="red"/>
+  <text x="364" y="594" text-anchor="middle" class="tiny">GAP</text>
+  <text x="408" y="585" class="label">Compiler</text>
+  <text x="408" y="611" class="label">Gap Controls</text>
+  <text x="352" y="646" class="small">pull list and citation checks</text>
+
+  <rect x="338" y="210" width="92" height="38" class="green" rx="6"/>
+  <text x="384" y="235" text-anchor="middle" class="tiny">START</text>
+  <rect x="444" y="210" width="92" height="38" class="blue" rx="6"/>
+  <text x="490" y="235" text-anchor="middle" class="tiny">CTBT</text>
+  <rect x="550" y="210" width="92" height="38" class="gold" rx="6"/>
+  <text x="596" y="235" text-anchor="middle" class="tiny">NMD</text>
+
+  <rect x="338" y="424" width="92" height="38" class="red" rx="6"/>
+  <text x="384" y="449" text-anchor="middle" class="tiny">WMD</text>
+  <rect x="444" y="424" width="92" height="38" class="violet" rx="6"/>
+  <text x="490" y="449" text-anchor="middle" class="tiny">CFE</text>
+  <rect x="550" y="424" width="92" height="38" class="green" rx="6"/>
+  <text x="596" y="449" text-anchor="middle" class="tiny">DPRK</text>
+</svg>

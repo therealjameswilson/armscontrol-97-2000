@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FRUS 1993-2000 Volume VIII Assist</title>
+    <meta
+      name="description"
+      content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
+    />
+    <link rel="stylesheet" href="styles.css" />
+    <script defer src="data/volume-data.js"></script>
+    <script defer src="app.js"></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="FRUS Volume VIII Assist home">
+        <span class="brand-mark">VIII</span>
+        <span>Arms Control Desk</span>
+      </a>
+      <nav aria-label="Primary navigation">
+        <a href="#workbench">Desk</a>
+        <a href="#chapters">Lanes</a>
+        <a href="#documents">Documents</a>
+        <a href="#sources">Source Leads</a>
+        <a href="#public">Public</a>
+        <a href="#library">Library</a>
+        <a href="#gaps">Gaps</a>
+        <a href="#source-pools">Pools</a>
+        <a href="#ledger">Ledger</a>
+        <a href="#people">People</a>
+        <a href="#references">Refs</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <div class="hero-copy">
+          <p class="kicker">FRUS 1993-2000, Volume VIII</p>
+          <h1 id="hero-title">Arms Control and Nonproliferation, 1997-2000</h1>
+          <p class="lede">
+            A source-first compiler desk for the planned second Clinton arms-control volume:
+            strategic stability, CTBT ratification, ABM/NMD, fissile materials, regional
+            proliferation, CBW, CFE, and source-boundary controls.
+          </p>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="button primary" href="#documents">Browse Chronology</a>
+            <a class="button secondary" href="#gaps">Open Gap Tracker</a>
+            <a class="button secondary" href="https://history.state.gov/historicaldocuments/frus1993-00v08" rel="noreferrer">
+              Official Volume
+            </a>
+          </div>
+        </div>
+        <aside class="brief visual-brief" aria-label="Volume scope">
+          <img
+            id="source-map"
+            class="archive-map"
+            src="assets/volume-viii-source-map.svg"
+            alt="Source map for FRUS Volume VIII across official volume anchors, Clinton Library files, State FOIA records, GovInfo, NARA, and compiler gaps"
+          />
+          <p class="brief-label">Volume Snapshot</p>
+          <dl>
+            <div>
+              <dt>Status</dt>
+              <dd>Planned</dd>
+            </div>
+            <div>
+              <dt>Coverage</dt>
+              <dd>1997-2000</dd>
+            </div>
+            <div>
+              <dt>Core Offices</dt>
+              <dd>NSC Defense Policy; NSC Nonproliferation</dd>
+            </div>
+            <div>
+              <dt>Boundary</dt>
+              <dd>Volume VII covers 1993-1996</dd>
+            </div>
+          </dl>
+        </aside>
+      </section>
+
+      <section class="stats" aria-label="Research desk summary">
+        <div><span id="stat-documents">0</span><p>candidate records</p></div>
+        <div><span id="stat-public">0</span><p>public anchors</p></div>
+        <div><span id="stat-leads">0</span><p>source leads</p></div>
+        <div><span id="stat-gaps">0</span><p>open gaps</p></div>
+        <div><span id="stat-people">0</span><p>people tracked</p></div>
+        <div><span id="stat-pages">0</span><p>counted pages</p></div>
+      </section>
+
+      <section class="section workbench-section" id="workbench" aria-labelledby="workbench-title">
+        <div class="section-heading">
+          <p class="kicker">Compiler Desk</p>
+          <h2 id="workbench-title">Selection, Source, and Boundary Cockpit</h2>
+        </div>
+        <div id="workbench-root" class="workbench-root" aria-live="polite">
+          <p class="loading">Loading compiler desk...</p>
+        </div>
+      </section>
+
+      <section class="section" id="chapters" aria-labelledby="chapters-title">
+        <div class="section-heading">
+          <p class="kicker">Provisional Arrangement</p>
+          <h2 id="chapters-title">Compiler Lanes</h2>
+        </div>
+        <div id="lanes-root" class="lane-grid" aria-live="polite">
+          <p class="loading">Loading compiler lanes...</p>
+        </div>
+      </section>
+
+      <section class="section documents-section" id="documents" aria-labelledby="documents-title">
+        <div class="section-heading">
+          <p class="kicker">Candidate Chronology</p>
+          <h2 id="documents-title">Potential Documents and Released Records</h2>
+        </div>
+        <div class="tools" aria-label="Search and filter potential documents">
+          <label class="search-field"><span>Search</span><input id="document-search" type="search" placeholder="START III, CTBT, NMD, South Asia, CFE" /></label>
+          <label><span>Lane</span><select id="document-lane-filter"></select></label>
+          <label><span>Type</span><select id="document-type-filter"></select></label>
+          <label><span>Priority</span><select id="document-priority-filter"></select></label>
+          <button id="clear-document-filters" type="button">Reset</button>
+          <button id="export-documents" type="button">CSV</button>
+          <p id="document-summary" class="summary">Loading chronology...</p>
+        </div>
+        <div id="documents-root" class="records-root" aria-live="polite">
+          <p class="loading">Loading potential documents...</p>
+        </div>
+      </section>
+
+      <section class="section source-section" id="sources" aria-labelledby="source-title">
+        <div class="section-heading">
+          <p class="kicker">Archival Trail</p>
+          <h2 id="source-title">Source Leads</h2>
+        </div>
+        <div class="tools" aria-label="Search and filter source leads">
+          <label class="search-field"><span>Search</span><input id="lead-search" type="search" placeholder="Office, NAID, FOIA, folder, institution" /></label>
+          <label><span>Lane</span><select id="lead-lane-filter"></select></label>
+          <label><span>Institution</span><select id="lead-institution-filter"></select></label>
+          <label><span>Priority</span><select id="lead-priority-filter"></select></label>
+          <button id="clear-lead-filters" type="button">Reset</button>
+          <button id="export-leads" type="button">CSV</button>
+          <p id="lead-summary" class="summary">Loading source leads...</p>
+        </div>
+        <div id="leads-root" class="lead-grid" aria-live="polite">
+          <p class="loading">Loading source leads...</p>
+        </div>
+      </section>
+
+      <section class="section public-section" id="public" aria-labelledby="public-title">
+        <div class="section-heading">
+          <p class="kicker">Public Line</p>
+          <h2 id="public-title">Public Papers Anchors</h2>
+        </div>
+        <div class="tools" aria-label="Search and filter public records">
+          <label class="search-field"><span>Search</span><input id="public-search" type="search" placeholder="GovInfo title, identifier, topic" /></label>
+          <label><span>Year</span><select id="public-year-filter"></select></label>
+          <label><span>Lane</span><select id="public-lane-filter"></select></label>
+          <button id="clear-public-filters" type="button">Reset</button>
+          <button id="export-public" type="button">CSV</button>
+          <p id="public-summary" class="summary">Loading Public Papers...</p>
+        </div>
+        <div id="public-root" class="records-root compact-records" aria-live="polite">
+          <p class="loading">Loading public records...</p>
+        </div>
+      </section>
+
+      <section class="section library-section" id="library" aria-labelledby="library-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Clinton Library Visit</p>
+            <h2 id="library-title">On-Site Pull Plan</h2>
+          </div>
+          <a class="section-link" href="reports/clinton-library-research-plan.md">Visit report</a>
+        </div>
+        <div class="tools" aria-label="Search and filter library plan">
+          <label class="search-field"><span>Search</span><input id="library-search" type="search" placeholder="OA/ID, folder, office, target term" /></label>
+          <label><span>Lane</span><select id="library-lane-filter"></select></label>
+          <label><span>Priority</span><select id="library-priority-filter"></select></label>
+          <button id="clear-library-filters" type="button">Reset</button>
+          <button id="export-library" type="button">CSV</button>
+          <p id="library-summary" class="summary">Loading library pull plan...</p>
+        </div>
+        <div id="library-root" class="library-root" aria-live="polite">
+          <p class="loading">Loading library pull plan...</p>
+        </div>
+      </section>
+
+      <section class="section gaps-section" id="gaps" aria-labelledby="gaps-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Compiler Risk</p>
+            <h2 id="gaps-title">Gap Tracker</h2>
+          </div>
+          <a class="section-link" href="reports/compiler-gap-analysis.md">Gap report</a>
+        </div>
+        <div class="tools" aria-label="Search and filter gap tracker">
+          <label class="search-field"><span>Search</span><input id="gap-search" type="search" placeholder="problem, evidence, next action, source" /></label>
+          <label><span>Lane</span><select id="gap-lane-filter"></select></label>
+          <label><span>Priority</span><select id="gap-priority-filter"></select></label>
+          <label><span>Status</span><select id="gap-status-filter"></select></label>
+          <button id="clear-gap-filters" type="button">Reset</button>
+          <button id="export-gaps" type="button">CSV</button>
+          <p id="gap-summary" class="summary">Loading gap tracker...</p>
+        </div>
+        <div id="gaps-root" class="gap-grid" aria-live="polite">
+          <p class="loading">Loading gap tracker...</p>
+        </div>
+      </section>
+
+      <section class="section pool-section" id="source-pools" aria-labelledby="pool-title">
+        <div class="section-heading">
+          <p class="kicker">Source Pools</p>
+          <h2 id="pool-title">Next Harvest Queue</h2>
+        </div>
+        <div id="source-pools-root" class="pool-grid" aria-live="polite">
+          <p class="loading">Loading source pools...</p>
+        </div>
+      </section>
+
+      <section class="section ledger-section" id="ledger" aria-labelledby="ledger-title">
+        <div class="section-heading">
+          <p class="kicker">Source-Copy Ledger</p>
+          <h2 id="ledger-title">Copies, Markers, and Citation Controls</h2>
+        </div>
+        <div id="ledger-root" class="ledger-grid" aria-live="polite">
+          <p class="loading">Loading source-copy ledger...</p>
+        </div>
+      </section>
+
+      <section class="section people-section" id="people" aria-labelledby="people-title">
+        <div class="section-heading">
+          <p class="kicker">Persons List</p>
+          <h2 id="people-title">People, Offices, and Source Creators</h2>
+        </div>
+        <div class="tools" aria-label="Search and filter people">
+          <label class="search-field"><span>Search</span><input id="person-search" type="search" placeholder="person, role, office, lane" /></label>
+          <label><span>Lane</span><select id="person-lane-filter"></select></label>
+          <button id="clear-person-filters" type="button">Reset</button>
+          <button id="export-people" type="button">CSV</button>
+          <p id="person-summary" class="summary">Loading people...</p>
+        </div>
+        <div id="people-root" class="people-grid" aria-live="polite">
+          <p class="loading">Loading people...</p>
+        </div>
+      </section>
+
+      <section class="section references-section" id="references" aria-labelledby="references-title">
+        <div class="section-heading">
+          <p class="kicker">References</p>
+          <h2 id="references-title">Source Base</h2>
+        </div>
+        <div id="references-root" class="reference-grid" aria-live="polite">
+          <p class="loading">Loading references...</p>
+        </div>
+      </section>
+    </main>
+  </body>
+</html>
