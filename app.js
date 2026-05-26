@@ -3,6 +3,7 @@ const volumeHandoff = data.volumeHandoff || [];
 const lanes = data.lanes || [];
 const sourceLeads = data.sourceLeads || [];
 const potentialDocuments = data.potentialDocuments || [];
+const diaryReferences = data.diaryReferences || [];
 const publicRecords = potentialDocuments.filter((item) => item.type === "Public Papers");
 const libraryPlan = data.libraryPlan || [];
 const gapTracker = data.gapTracker || [];
@@ -17,6 +18,7 @@ const laneOrder = new Map(lanes.map((lane, index) => [lane.id, index]));
 const state = {
   documents: { query: "", lane: "", type: "", priority: "" },
   leads: { query: "", lane: "", institution: "", priority: "" },
+  diary: { query: "", lane: "", year: "", eventType: "" },
   public: { query: "", year: "", lane: "" },
   library: { query: "", lane: "", priority: "" },
   gaps: { query: "", lane: "", priority: "", status: "" },
@@ -51,6 +53,14 @@ const nodes = {
   leadPriorityFilter: document.querySelector("#lead-priority-filter"),
   clearLeadFilters: document.querySelector("#clear-lead-filters"),
   exportLeads: document.querySelector("#export-leads"),
+  diaryRoot: document.querySelector("#diary-root"),
+  diarySummary: document.querySelector("#diary-summary"),
+  diarySearch: document.querySelector("#diary-search"),
+  diaryLaneFilter: document.querySelector("#diary-lane-filter"),
+  diaryYearFilter: document.querySelector("#diary-year-filter"),
+  diaryEventFilter: document.querySelector("#diary-event-filter"),
+  clearDiaryFilters: document.querySelector("#clear-diary-filters"),
+  exportDiary: document.querySelector("#export-diary"),
   publicRoot: document.querySelector("#public-root"),
   publicSummary: document.querySelector("#public-summary"),
   publicSearch: document.querySelector("#public-search"),
@@ -167,6 +177,11 @@ function textForSearch(item) {
     item.priority,
     item.status,
     item.sourceClass,
+    item.eventType,
+    item.time,
+    item.location,
+    item.diaryEntry,
+    item.volumeConnection,
     item.laneId,
     laneTitle(item.laneId),
     item.summary,
@@ -186,6 +201,7 @@ function textForSearch(item) {
     item.nextUse,
     item.repositoryTrail,
     item.reviewCue,
+    item.pdfPacket,
     (item.tags || []).join(" "),
     (item.topics || []).join(" "),
     (item.targetFolders || []).join(" "),
@@ -236,6 +252,7 @@ function setStats() {
 function renderWorkbench() {
   const releasedItems = potentialDocuments.filter((item) => /released|memcon|cable/i.test(`${item.type} ${item.level}`));
   const publicOnly = publicRecords.length;
+  const highDiaryHits = diaryReferences.filter((entry) => entry.priority === "High");
   const critical = gapTracker.filter((gap) => gap.priority === "Critical");
   const highSourcePools = sourcePools.filter((pool) => pool.priority === "A");
   const lanesWithDocs = uniqueSorted(potentialDocuments.map((item) => item.laneId)).length;
@@ -244,6 +261,7 @@ function renderWorkbench() {
     metricCard("Item-level candidates", releasedItems.length, `${plural(publicOnly, "public anchor")} stay separate from released memcons, cables, and packet leads.`),
     metricCard("Lanes represented", lanesWithDocs, `${lanes.length} provisional lanes keep boundary cases visible.`),
     metricCard("Volume VII handoffs", volumeHandoff.length, "Every 1993-1996 chapter now has an explicit continuation path into the 1997-2000 lanes."),
+    metricCard("Daily Diary hits", highDiaryHits.length, `${plural(diaryReferences.length, "call/meeting reference")} from the Presidential Daily Diary now tie calendar evidence to the volume lanes.`),
     metricCard("Priority source pools", highSourcePools.length, "Clinton Library, State FOIA, GovInfo, and NARA trails are kept as separate intake lanes."),
     metricCard("Critical mitigations", critical.length, "Each critical risk now has a visible source trail, mitigation note, and remaining-risk statement.")
   ];
@@ -270,6 +288,7 @@ function renderLanes() {
     (lane) => {
       const docs = potentialDocuments.filter((item) => item.laneId === lane.id);
       const leads = sourceLeads.filter((item) => item.laneId === lane.id);
+      const diary = diaryReferences.filter((item) => item.laneId === lane.id);
       const gaps = gapTracker.filter((item) => item.laneId === lane.id);
       const card = document.createElement("a");
       card.className = "lane-card";
@@ -283,7 +302,7 @@ function renderLanes() {
       title.textContent = lane.title;
       const count = document.createElement("p");
       count.className = "lane-count";
-      count.textContent = `${plural(docs.length, "candidate")} / ${plural(leads.length, "source lead")} / ${plural(gaps.length, "gap")}`;
+      count.textContent = `${plural(docs.length, "candidate")} / ${plural(leads.length, "source lead")} / ${plural(diary.length, "diary hit")} / ${plural(gaps.length, "gap")}`;
       const summary = document.createElement("p");
       summary.textContent = lane.summary;
       const tags = tagList(lane.topics || []);
@@ -448,6 +467,57 @@ function leadCard(lead) {
   actions.className = "card-actions";
   if (lead.url) actions.append(linkButton("Open", lead.url));
   card.append(meta, title, note, details, tagList(lead.tags || []), actions);
+  return card;
+}
+
+function filteredDiary() {
+  return diaryReferences
+    .filter((entry) => {
+      if (!matchesQuery(entry, state.diary.query)) return false;
+      if (state.diary.lane && entry.laneId !== state.diary.lane) return false;
+      if (state.diary.year && getYear(entry.date) !== state.diary.year) return false;
+      if (state.diary.eventType && entry.eventType !== state.diary.eventType) return false;
+      return true;
+    })
+    .sort(byLaneThenDate);
+}
+
+function renderDiaryReferences() {
+  const visible = filteredDiary();
+  nodes.diarySummary.textContent = `${plural(visible.length, "diary reference")} visible from ${diaryReferences.length} searched calls and meetings.`;
+  renderList(nodes.diaryRoot, visible, diaryCard, "No diary references match the current filters.");
+}
+
+function diaryCard(entry) {
+  const card = document.createElement("article");
+  card.className = `diary-card priority-${(entry.priority || "").toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(formatDate(entry.date)), textSpan(laneNumber(entry.laneId)), textSpan(entry.eventType), textSpan(entry.priority));
+
+  const title = document.createElement("h3");
+  title.textContent = entry.title;
+
+  const entryText = document.createElement("p");
+  entryText.textContent = entry.diaryEntry;
+
+  const details = document.createElement("dl");
+  details.className = "detail-grid";
+  addDetail(details, "Time", entry.time);
+  addDetail(details, "Location", entry.location);
+  addDetail(details, "Packet", entry.pdfPacket);
+
+  const connection = document.createElement("p");
+  connection.className = "source-note";
+  connection.textContent = entry.volumeConnection;
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  if (entry.url) actions.append(linkButton("Catalog", entry.url));
+  if (entry.pdfUrl) actions.append(linkButton("PDF", entry.pdfUrl));
+
+  card.append(meta, title, entryText, details, tagList(entry.tags || []), connection, actions);
   return card;
 }
 
@@ -703,6 +773,7 @@ function setupFilters() {
   const laneSelects = [
     [nodes.documentLaneFilter, "All lanes"],
     [nodes.leadLaneFilter, "All lanes"],
+    [nodes.diaryLaneFilter, "All lanes"],
     [nodes.publicLaneFilter, "All lanes"],
     [nodes.libraryLaneFilter, "All lanes"],
     [nodes.gapLaneFilter, "All lanes"],
@@ -717,6 +788,8 @@ function setupFilters() {
   addOptions(nodes.documentPriorityFilter, uniqueSorted(potentialDocuments.map((item) => item.priority)), "All priorities");
   addOptions(nodes.leadInstitutionFilter, uniqueSorted(sourceLeads.map((item) => item.institution)), "All institutions");
   addOptions(nodes.leadPriorityFilter, uniqueSorted(sourceLeads.map((item) => item.priority)), "All priorities");
+  addOptions(nodes.diaryYearFilter, uniqueSorted(diaryReferences.map((item) => getYear(item.date))), "All years");
+  addOptions(nodes.diaryEventFilter, uniqueSorted(diaryReferences.map((item) => item.eventType)), "All event types");
   addOptions(nodes.publicYearFilter, uniqueSorted(publicRecords.map((item) => getYear(item.date))), "All years");
   addOptions(nodes.libraryPriorityFilter, uniqueSorted(libraryPlan.map((item) => item.priority)), "All priorities");
   addOptions(nodes.gapPriorityFilter, uniqueSorted(gapTracker.map((item) => item.priority)), "All priorities");
@@ -772,6 +845,28 @@ function bindEvents() {
     renderLeads();
   });
   nodes.exportLeads?.addEventListener("click", () => exportCsv("volume-viii-source-leads.csv", filteredLeads(), leadColumns()));
+
+  bindInput(nodes.diarySearch, (value) => {
+    state.diary.query = value;
+    renderDiaryReferences();
+  });
+  bindSelect(nodes.diaryLaneFilter, (value) => {
+    state.diary.lane = value;
+    renderDiaryReferences();
+  });
+  bindSelect(nodes.diaryYearFilter, (value) => {
+    state.diary.year = value;
+    renderDiaryReferences();
+  });
+  bindSelect(nodes.diaryEventFilter, (value) => {
+    state.diary.eventType = value;
+    renderDiaryReferences();
+  });
+  nodes.clearDiaryFilters?.addEventListener("click", () => {
+    resetGroup("diary", [nodes.diarySearch, nodes.diaryLaneFilter, nodes.diaryYearFilter, nodes.diaryEventFilter]);
+    renderDiaryReferences();
+  });
+  nodes.exportDiary?.addEventListener("click", () => exportCsv("volume-viii-daily-diary.csv", filteredDiary(), diaryColumns()));
 
   bindInput(nodes.publicSearch, (value) => {
     state.public.query = value;
@@ -893,6 +988,22 @@ function leadColumns() {
   ];
 }
 
+function diaryColumns() {
+  return [
+    ["date", (item) => item.date],
+    ["time", (item) => item.time],
+    ["lane", (item) => laneTitle(item.laneId)],
+    ["eventType", (item) => item.eventType],
+    ["title", (item) => item.title],
+    ["location", (item) => item.location],
+    ["diaryEntry", (item) => item.diaryEntry],
+    ["volumeConnection", (item) => item.volumeConnection],
+    ["packet", (item) => item.pdfPacket],
+    ["url", (item) => item.url],
+    ["pdfUrl", (item) => item.pdfUrl]
+  ];
+}
+
 function libraryColumns() {
   return [
     ["priority", (item) => item.priority],
@@ -962,6 +1073,7 @@ function renderAll() {
   renderHandoff();
   renderDocuments();
   renderLeads();
+  renderDiaryReferences();
   renderPublic();
   renderLibrary();
   renderGaps();

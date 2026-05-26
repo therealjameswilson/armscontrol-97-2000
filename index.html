@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=3" />
-    <script defer src="data/volume-data.js?v=3"></script>
-    <script defer src="app.js?v=3"></script>
+    <link rel="stylesheet" href="styles.css?v=4" />
+    <script defer src="data/volume-data.js?v=4"></script>
+    <script defer src="app.js?v=4"></script>
   </head>
   <body>
     <header class="site-header">
@@ -24,6 +24,7 @@
         <a href="#handoff">Handoff</a>
         <a href="#documents">Documents</a>
         <a href="#sources">Source Leads</a>
+        <a href="#diary">Diary</a>
         <a href="#public">Public</a>
         <a href="#library">Library</a>
         <a href="#gaps">Gaps</a>
@@ -158,6 +159,28 @@
         </div>
         <div id="leads-root" class="lead-grid" aria-live="polite">
           <p class="loading">Loading source leads...</p>
+        </div>
+      </section>
+
+      <section class="section diary-section" id="diary" aria-labelledby="diary-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Presidential Daily Diary</p>
+            <h2 id="diary-title">Calls, Meetings, and Calendar Cues</h2>
+          </div>
+          <a class="section-link" href="reports/presidential-daily-diary.md">Diary report</a>
+        </div>
+        <div class="tools" aria-label="Search and filter Presidential Daily Diary references">
+          <label class="search-field"><span>Search</span><input id="diary-search" type="search" placeholder="Yeltsin, CTBT, Sharif, Putin, Perry, Korea" /></label>
+          <label><span>Lane</span><select id="diary-lane-filter"></select></label>
+          <label><span>Year</span><select id="diary-year-filter"></select></label>
+          <label><span>Event</span><select id="diary-event-filter"></select></label>
+          <button id="clear-diary-filters" type="button">Reset</button>
+          <button id="export-diary" type="button">CSV</button>
+          <p id="diary-summary" class="summary">Loading diary references...</p>
+        </div>
+        <div id="diary-root" class="diary-grid" aria-live="polite">
+          <p class="loading">Loading Presidential Daily Diary references...</p>
         </div>
       </section>
 

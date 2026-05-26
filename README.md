@@ -11,9 +11,10 @@ Official volume anchor:
 
 - Provisional compiler lanes for START/strategic stability, CTBT, ABM/NMD, fissile materials, nonproliferation regimes, regional proliferation, CBW, and CFE/conventional arms.
 - Searchable/exportable candidate chronology.
-- Searchable/exportable source leads, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
+- Searchable/exportable source leads, Presidential Daily Diary references, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.
 - Source-copy ledger separating public anchors, released review copies, State FOIA PDFs, and collection-only folder-title leads.
+- Daily Diary call/meeting layer for Sharif, Vajpayee, Yeltsin, Putin, CTBT, DPRK/Perry, and allied Korea/Japan consultation cues.
 - Gap mitigation layer for CTBT Senate records, START/ABM internal-source trails, NMD allied consultations, South Asia, DPRK, CFE boundary control, and CBW implementation.
 - GitHub Pages workflow for root-level static deployment from `main`.
 
@@ -31,7 +32,7 @@ node --check data/volume-data.js
 ## Source Base
 
 - Office of the Historian official volume page and status list.
-- Clinton Presidential Library foreign-leader chronology, MDR releases, and textual holdings guide.
+- Clinton Presidential Library foreign-leader chronology, Presidential Daily Diary, MDR releases, and textual holdings guide.
 - National Archives Catalog collection/series leads.
 - GovInfo Public Papers of the Presidents.
 - Department of State FOIA Library Strobe Talbott release records.

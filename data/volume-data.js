@@ -7,7 +7,7 @@ window.VOLUME_VIII_DATA = {
     officialUrl: "https://history.state.gov/historicaldocuments/frus1993-00v08",
     siblingUrl: "https://history.state.gov/historicaldocuments/frus1993-00v07",
     summary:
-      "Compiler-facing source map for the planned second Clinton arms-control volume, with public anchors, archival leads, item-level released records, and source-gap controls kept visibly separate."
+      "Compiler-facing source map for the planned second Clinton arms-control volume, with public anchors, archival leads, Presidential Daily Diary calendar evidence, item-level released records, and source-gap controls kept visibly separate."
   },
   volumeHandoff: [
     {
@@ -589,6 +589,34 @@ window.VOLUME_VIII_DATA = {
       note:
         "Supplemental treaty-politics source path for CWC and CTBT acceptance/passage records involving the Senate side of arms-control diplomacy.",
       tags: ["CWC", "CTBT", "Senate"]
+    },
+    {
+      id: "lead-pdd-searchable",
+      title: "Presidential Daily Diary searchable collection",
+      laneId: "volume-control",
+      institution: "Clinton Presidential Library",
+      type: "Daily Diary source guide",
+      priority: "High",
+      date: "1993-2000",
+      identifier: "Presidential Daily Diary / Ellen McCathran",
+      url: "https://www.clintonlibrary.gov/research/daily-diary",
+      note:
+        "Searchable diary layer and source guide for President Clinton's daily meetings, phone calls, travel, events, locations, topics when available, participants, and links to source material.",
+      tags: ["Daily Diary", "calendar evidence", "calls", "meetings"]
+    },
+    {
+      id: "lead-pdd-2010-0083-f",
+      title: "Presidential Daily Diary hardcopy sample packets",
+      laneId: "volume-control",
+      institution: "National Archives / Clinton Presidential Library",
+      type: "FOIA sample packets",
+      priority: "High",
+      date: "1997-2000",
+      identifier: "2010-0083-F",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      note:
+        "Hardcopy Daily Diary sample-date FOIA packets. The searched packets expose calls and meetings that anchor South Asia, CTBT, DPRK, CFE, and U.S.-Russia strategic-stability lanes.",
+      tags: ["2010-0083-F", "Daily Diary", "FOIA", "calendar evidence"]
     }
   ],
   potentialDocuments: [
@@ -1594,6 +1622,272 @@ window.VOLUME_VIII_DATA = {
       tags: ["CWC", "CTBT", "Helms", "Senate"]
     }
   ],
+  diaryReferences: [
+    {
+      id: "pdd-1998-05-22-sharif-call",
+      laneId: "regional-proliferation",
+      date: "1998-05-22",
+      title: "Conference call with Prime Minister Nawaz Sharif",
+      eventType: "Foreign leader call",
+      priority: "High",
+      time: "12:56-1:17 p.m.",
+      location: "Naval Academy Sailing Center, Annapolis, Maryland",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 006, CP/CF 1985",
+      pdfPacket: "2010-0083-F Box 002 PDF 006",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-006-2015.pdf",
+      diaryEntry:
+        "The diary records a conference call with Pakistani Prime Minister Nawaz Sharif, Jason Greer of NSC Near East and South Asian Affairs, Bonnie Glick of NSC Defense Policy, and Situation Room staff.",
+      volumeConnection:
+        "Use as a calendar cue for the immediate South Asia nuclear-test response and the sanctions/restraint lane; pair with Talbott, State, and NSC South Asia files.",
+      tags: ["South Asia", "Pakistan", "Sharif", "nuclear tests"]
+    },
+    {
+      id: "pdd-1998-06-03-south-asia-statement",
+      laneId: "regional-proliferation",
+      date: "1998-06-03",
+      title: "Briefing and statement on nuclear proliferation in South Asia",
+      eventType: "Policy briefing",
+      priority: "High",
+      time: "10:05-10:15 a.m.",
+      location: "The White House, Washington, D.C.",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 006, CP/CF 1985",
+      pdfPacket: "2010-0083-F Box 002 PDF 006",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-006-2015.pdf",
+      diaryEntry:
+        "The diary shows a pre-statement briefing with Albright, Berger, Steinberg, Begala, Fuerth, and others, followed by a Rose Garden statement on action against nuclear proliferation in South Asia.",
+      volumeConnection:
+        "Tie this to the Public Papers anchor and backtrace the internal sanctions, export-control, and strategic-restraint decision papers.",
+      tags: ["South Asia", "India", "Pakistan", "nuclear proliferation"]
+    },
+    {
+      id: "pdd-1998-08-21-sharif-attempt",
+      laneId: "regional-proliferation",
+      date: "1998-08-21",
+      title: "Attempted telephone call to Prime Minister Nawaz Sharif",
+      eventType: "Attempted call",
+      priority: "Medium",
+      time: "8:43 a.m.",
+      location: "The White House, Washington, D.C.",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 007, CP/CF 1985",
+      pdfPacket: "2010-0083-F Box 002 PDF 007",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-007-2015.pdf",
+      diaryEntry:
+        "The diary records that Clinton telephoned Prime Minister Sharif and that the call was not completed after morning Berger contacts.",
+      volumeConnection:
+        "Keep as a call-trail marker only until State/NSC records establish the subject; useful for screening Pakistan restraint and crisis-diplomacy folders.",
+      tags: ["Pakistan", "Sharif", "South Asia", "call trail"]
+    },
+    {
+      id: "pdd-1998-09-02-moscow-yeltsin",
+      laneId: "strategic-stability",
+      date: "1998-09-02",
+      title: "Moscow meeting and common-security signing with President Boris Yeltsin",
+      eventType: "Leader meeting",
+      priority: "High",
+      time: "10:12 a.m.-2:05 p.m.",
+      location: "Kremlin and Spaso House, Moscow, Russia",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 007, CP/CF 1985",
+      pdfPacket: "2010-0083-F Box 002 PDF 007",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-007-2015.pdf",
+      diaryEntry:
+        "The diary records a pre-meeting briefing with Albright, Talbott, Berger, and Steinberg; an 10:50-11:50 a.m. meeting with Yeltsin; a signing ceremony for common-security documents; and follow-up meetings with Talbott/Berger and Duma/regional leaders.",
+      volumeConnection:
+        "Anchors the post-Helsinki strategic-stability line between the 1997 Volume VII handoff and the 1999-2000 START/ABM/NMD sequence.",
+      tags: ["Yeltsin", "Moscow", "strategic stability", "START"]
+    },
+    {
+      id: "pdd-1999-05-20-perry-dprk",
+      laneId: "regional-proliferation",
+      date: "1999-05-20",
+      title: "Meeting with William Perry, North Korea policy coordinator",
+      eventType: "Policy meeting",
+      priority: "High",
+      time: "10:56-11:07 a.m.",
+      location: "The White House, Washington, D.C.",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 010, CP/CF 1986",
+      pdfPacket: "2010-0083-F Box 002 PDF 010",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-010-2015.pdf",
+      diaryEntry:
+        "The diary lists a meeting with William J. Perry as Special Advisor to the President and Secretary of State and U.S. North Korea Policy Coordinator, with Podesta, Berger, and NSC Asian Affairs director Kenneth Lieberthal.",
+      volumeConnection:
+        "Use as a firm calendar cue for the Perry process and DPRK missile/nuclear diplomacy source pull.",
+      tags: ["DPRK", "North Korea", "Perry process", "missiles"]
+    },
+    {
+      id: "pdd-1999-06-20-cologne-yeltsin",
+      laneId: "strategic-stability",
+      date: "1999-06-20",
+      title: "Cologne briefing, luncheon, and U.S.-Russian meeting",
+      eventType: "Leader meeting",
+      priority: "High",
+      time: "12:09-2:03 p.m.",
+      location: "Hyatt Regency and Renaissance Hotel, Cologne, Germany",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 010, CP/CF 1986",
+      pdfPacket: "2010-0083-F Box 002 PDF 010",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-010-2015.pdf",
+      diaryEntry:
+        "The diary records a briefing/luncheon with Albright, Talbott, Berger, Steinberg, Pascual, and others before a 1:01-2:03 p.m. meeting with U.S. and Russian officials including Yeltsin, Mamedov, and Prikhodko.",
+      volumeConnection:
+        "Cross-reference with the Cologne memcon and public strategic-stability texts before selecting START III, ABM, and Russian-reaction documents.",
+      tags: ["Yeltsin", "Cologne", "START III", "ABM"]
+    },
+    {
+      id: "pdd-1999-10-06-ctbt-meeting",
+      laneId: "ctbt",
+      date: "1999-10-06",
+      title: "CTBT statement and State Dining Room meeting",
+      eventType: "Treaty meeting",
+      priority: "High",
+      time: "12:10-4:06 p.m.",
+      location: "The White House, Washington, D.C.",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 012, CP/CF 1986",
+      pdfPacket: "2010-0083-F Box 002 PDF 012",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-012-2015.pdf",
+      diaryEntry:
+        "The diary places a CTBT press statement at 12:10-12:15 p.m., a briefing with Berger, Podesta, and legislative affairs at 2:54-3:05 p.m., and a State Dining Room CTBT meeting at 3:07-4:06 p.m. with John Glenn and scientific/military validators listed in the appendix.",
+      volumeConnection:
+        "This is a high-value Senate-ratification campaign marker; pair with Treaty Doc. 105-28, S. Hrg. 106-262, 2015-1095-F files, and the October 13 defeat.",
+      tags: ["CTBT", "Senate", "ratification", "John Glenn"]
+    },
+    {
+      id: "pdd-1999-11-18-istanbul-yeltsin",
+      laneId: "conventional-cfe",
+      date: "1999-11-18",
+      title: "OSCE Istanbul briefing and meeting with Russian officials",
+      eventType: "Summit meeting",
+      priority: "High",
+      time: "11:17 a.m.-12:37 p.m.",
+      location: "Ciragan Palace, Istanbul, Turkey",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 002, PDF 012, CP/CF 1986",
+      pdfPacket: "2010-0083-F Box 002 PDF 012",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_002/42-t-7262157-20100083F-002-012-2015.pdf",
+      diaryEntry:
+        "The diary records OSCE Summit attendance, an 11:17-11:28 a.m. briefing with Berger, Albright, Sestanovich, Pascual, Steinberg, and Blinken, then an 11:31 a.m.-12:17 p.m. meeting with Russian officials after greeting Yeltsin.",
+      volumeConnection:
+        "Use with the Istanbul CFE adaptation agreement and final act, while treating broader OSCE/NATO context as boundary material.",
+      tags: ["CFE", "OSCE", "Istanbul", "Yeltsin"]
+    },
+    {
+      id: "pdd-2000-03-07-vajpayee-call",
+      laneId: "regional-proliferation",
+      date: "2000-03-07",
+      title: "Conference call with Prime Minister Atal Bihari Vajpayee",
+      eventType: "Foreign leader call",
+      priority: "High",
+      time: "11:54 a.m.-12:01 p.m.",
+      location: "The White House, Washington, D.C.",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 003, PDF 002, CP/CF 1987",
+      pdfPacket: "2010-0083-F Box 003 PDF 002",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_003/42-t-7262157-20100083F-003-002-2015.pdf",
+      diaryEntry:
+        "The diary records a conference call with Prime Minister Vajpayee, Berger, Podesta, Bradtke, and Bayley during the March 2000 South Asia trip-planning window.",
+      volumeConnection:
+        "Tie to South Asia trip books, strategic-restraint diplomacy, CTBT/NPT pressure, and post-test India policy.",
+      tags: ["India", "Vajpayee", "South Asia", "strategic restraint"]
+    },
+    {
+      id: "pdd-2000-06-08-japan-korea",
+      laneId: "regional-proliferation",
+      date: "2000-06-08",
+      title: "Japan and South Korea meetings after the Moscow summit",
+      eventType: "Allied consultation",
+      priority: "High",
+      time: "12:14-12:39 p.m.; 5:19-5:45 p.m.",
+      location: "Akasaka State Guest House and Okura Hotel, Tokyo, Japan",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 003, PDF 004, CP/CF 1987",
+      pdfPacket: "2010-0083-F Box 003 PDF 004",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_003/42-t-7262157-20100083F-003-004-2015.pdf",
+      diaryEntry:
+        "The diary records a U.S.-Japanese meeting with Prime Minister Yoshiro Mori and a later U.S.-South Korean meeting with President Kim Dae-jung, Foreign Minister Lee Joung-Binn, and National Security Adviser Hwang Won-Tak, with Berger and Lieberthal in the U.S. party.",
+      volumeConnection:
+        "Useful for DPRK missile/nuclear diplomacy and NMD/allied-consultation screening after the June 2000 Moscow strategic-stability package.",
+      tags: ["DPRK", "Japan", "South Korea", "Kim Dae-jung"]
+    },
+    {
+      id: "pdd-2000-07-21-okinawa-putin",
+      laneId: "strategic-stability",
+      date: "2000-07-21",
+      title: "Okinawa foreign policy briefing and meeting with President Vladimir Putin",
+      eventType: "Leader meeting",
+      priority: "High",
+      time: "2:28-2:43 p.m.; 6:16-7:51 p.m.",
+      location: "Ana Manza Beach Hotel and Busena Terrace Hotel, Okinawa, Japan",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 003, PDF 003, CP/CF 1987",
+      pdfPacket: "2010-0083-F Box 003 PDF 003",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_003/42-t-7262157-20100083F-003-003-2015.pdf",
+      diaryEntry:
+        "The diary records a foreign policy briefing on the upcoming meeting with Russian officials, a greeting with Putin at 6:16 p.m., and a meeting with Putin that ran until 7:51 p.m.",
+      volumeConnection:
+        "Use as the calendar bridge from the June Moscow summit to the September New York strategic-stability cooperation initiative.",
+      tags: ["Putin", "Okinawa", "strategic stability", "ABM"]
+    },
+    {
+      id: "pdd-2000-09-06-putin-signing",
+      laneId: "strategic-stability",
+      date: "2000-09-06",
+      title: "New York meeting with Putin and strategic-stability signing",
+      eventType: "Leader meeting",
+      priority: "High",
+      time: "10:55 a.m.-12:34 p.m.",
+      location: "Waldorf Astoria Hotel, New York, New York",
+      repository: "National Archives / Clinton Presidential Library",
+      collection: "Presidential Daily Diary hardcopy sample, 2010-0083-F",
+      identifier: "Box 003, PDF 003, CP/CF 1987",
+      pdfPacket: "2010-0083-F Box 003 PDF 003",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22",
+      pdfUrl:
+        "https://nara-media.s3.amazonaws.com/presidential-libraries/clinton/foia/2010-0083-F/2010-0083-F-PDF/Box_003/42-t-7262157-20100083F-003-003-2015.pdf",
+      diaryEntry:
+        "The diary records a 10:55-11:22 a.m. Russia briefing with Albright, Berger, Holbrooke, Sestanovich, Bradtke, and Medish; an 11:29 a.m.-12:26 p.m. meeting with Putin, Talbott, and Prikhodko; and a signing ceremony for the Strategic Stability Cooperation Initiative between the United States and Russia.",
+      volumeConnection:
+        "High-value endpoint for START/ABM/NMD, strategic stability, and the transition from Yeltsin to Putin source trails.",
+      tags: ["Putin", "strategic stability", "ABM", "New York"]
+    }
+  ],
   libraryPlan: [
     {
       id: "library-control-2013-0185",
@@ -1835,7 +2129,7 @@ window.VOLUME_VIII_DATA = {
       needed:
         "Defense Policy, State, JCS, OVP, and intelligence attachments from Clinton Library and State FOIA.",
       resolution:
-        "Added congressional, NATO, OSCE, Strobe FOIA, and Clinton Library pull-plan rows that triangulate START/ABM/NMD public statements against internal-source locations.",
+        "Added congressional, NATO, OSCE, Strobe FOIA, Presidential Daily Diary, and Clinton Library pull-plan rows that triangulate START/ABM/NMD public statements against internal-source locations.",
       remainingRisk:
         "This remains a source-acquisition gap until the Defense Policy folders and attached interagency papers are pulled and itemized.",
       nextActions: [
@@ -1857,7 +2151,7 @@ window.VOLUME_VIII_DATA = {
       needed:
         "2015-1095-F CTBT ratification files, congressional records, Senate committee material, and State/Russian reaction cables.",
       resolution:
-        "Added Treaty Document 105-28, the October 1999 Senate Foreign Relations final-review hearing, the Clinton Library CTBT finding aid, Public Papers markers, and the Mamedov reaction cable as a ratification-chain source map.",
+        "Added Treaty Document 105-28, the October 1999 Senate Foreign Relations final-review hearing, the Clinton Library CTBT finding aid, Presidential Daily Diary meeting markers, Public Papers markers, and the Mamedov reaction cable as a ratification-chain source map.",
       remainingRisk:
         "The Senate strategy gap is not closed until vote-count, science-adviser, stockpile-stewardship, and White House liaison records are extracted from the archival files.",
       nextActions: [
@@ -1901,7 +2195,7 @@ window.VOLUME_VIII_DATA = {
       needed:
         "State cables, NSC South Asia files, Talbott records, and trip briefing books with nuclear and missile sections identified.",
       resolution:
-        "The South Asia lane now links the June 1998 public statement, Clinton Digital Library MDR 2006-0859-M, the on-site pull plan, and Talbott FOIA search terms for strategic-restraint diplomacy.",
+        "The South Asia lane now links Daily Diary Sharif and Vajpayee call markers, the June 1998 public statement, Clinton Digital Library MDR 2006-0859-M, the on-site pull plan, and Talbott FOIA search terms for strategic-restraint diplomacy.",
       remainingRisk:
         "The source map still needs item-level sanctions, DC/PC, intelligence, and Talbott-Jaswant Singh records before document selection.",
       nextActions: [
@@ -1923,7 +2217,7 @@ window.VOLUME_VIII_DATA = {
       needed:
         "State EAP, NSC Nonproliferation, Perry process, Albright trip, and KEDO implementation records.",
       resolution:
-        "Added Clinton Digital Library DPRK/ROK collection leads and a late-Clinton North Korea folder lead so Taepo Dong, Perry process, KEDO, missile moratorium, and 2000 diplomacy have a source path.",
+        "Added Presidential Daily Diary Perry, Japan, and South Korea meeting markers plus Clinton Digital Library DPRK/ROK collection leads and a late-Clinton North Korea folder lead so Taepo Dong, Perry process, KEDO, missile moratorium, and 2000 diplomacy have a source path.",
       remainingRisk:
         "The DPRK lane is still collection-level until individual folders and cables are screened for nuclear versus missile diplomacy.",
       nextActions: [
@@ -1945,7 +2239,7 @@ window.VOLUME_VIII_DATA = {
       needed:
         "A clear rule: include CFE adaptation, arms-control guidance, and ratification records; leave broader NATO enlargement to European security volumes.",
       resolution:
-        "Added OSCE CFE adaptation and final-act records and kept the Clinton Library CFE pull plan scoped to adaptation, HLTF/JCG, flank, congressional report, and Istanbul endgame files.",
+        "Added the Daily Diary Istanbul/Yeltsin meeting marker, OSCE CFE adaptation and final-act records, and kept the Clinton Library CFE pull plan scoped to adaptation, HLTF/JCG, flank, congressional report, and Istanbul endgame files.",
       remainingRisk:
         "Boundary discipline still depends on tagging archival items as arms-control content versus broader NATO process content during pull review.",
       nextActions: [
@@ -2017,6 +2311,16 @@ window.VOLUME_VIII_DATA = {
       coverage: "Public statements, signing messages, joint statements, and public chronology.",
       nextUse: "Anchor public dates and policy language, then backtrace to internal records.",
       url: "https://www.govinfo.gov/app/collection/ppp/president-42_Clinton%2C%20William%20J."
+    },
+    {
+      id: "pool-pdd",
+      laneId: "volume-control",
+      priority: "A",
+      title: "Presidential Daily Diary",
+      institution: "Clinton Presidential Library / National Archives",
+      coverage: "President-level calls, meetings, briefings, travel, topics, participants, and sample hardcopy diary packets.",
+      nextUse: "Use to verify candidate dates and identify participant lists before pulling memcons, briefing papers, and cables.",
+      url: "https://www.clintonlibrary.gov/research/daily-diary"
     },
     {
       id: "pool-cdl",
@@ -2145,6 +2449,17 @@ window.VOLUME_VIII_DATA = {
         "GovInfo PPP package/access IDs and PDF links.",
       reviewCue:
         "Keep public statements in their own layer so they do not inflate the private source count."
+    },
+    {
+      id: "ledger-presidential-daily-diary",
+      title: "Presidential Daily Diary calls and meetings",
+      laneId: "volume-control",
+      status: "Search layer added",
+      sourceClass: "Clinton Library/NARA Daily Diary records",
+      repositoryTrail:
+        "Clinton Library Daily Diary source guide, NARA Catalog search for 2010-0083-F, and hardcopy sample PDFs from Boxes 002-003.",
+      reviewCue:
+        "Use the diary as calendar and participant evidence; promote a substantive document only after a memcon, briefing paper, cable, or source file gives content."
     },
     {
       id: "ledger-congressional",
@@ -2278,6 +2593,12 @@ window.VOLUME_VIII_DATA = {
       note: "Central counterpart in the post-1998 South Asia strategic restraint dialogue."
     },
     {
+      name: "Atal Bihari Vajpayee",
+      role: "Prime Minister of India",
+      laneIds: ["regional-proliferation"],
+      note: "Presidential Daily Diary call marker for March 2000 South Asia strategic-restraint and trip diplomacy."
+    },
+    {
       name: "Nawaz Sharif",
       role: "Prime Minister of Pakistan",
       laneIds: ["regional-proliferation"],
@@ -2328,6 +2649,14 @@ window.VOLUME_VIII_DATA = {
     {
       label: "Clinton Library foreign-leader meetings and calls",
       url: "https://www.clintonlibrary.gov/research/meetings-and-telephone-calls-foreign-leaders"
+    },
+    {
+      label: "Clinton Library Presidential Daily Diary",
+      url: "https://www.clintonlibrary.gov/research/daily-diary"
+    },
+    {
+      label: "NARA Catalog search for 2010-0083-F",
+      url: "https://catalog.archives.gov/search?collectionIdentifier=WJC*&q=%222010-0083-F%22"
     },
     {
       label: "Clinton Library Yeltsin release 2015-0782-M-2",
