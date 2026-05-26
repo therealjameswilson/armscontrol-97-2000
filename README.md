@@ -10,7 +10,7 @@ Official volume anchor:
 ## What It Includes
 
 - Provisional compiler lanes for START/strategic stability, CTBT, ABM/NMD, fissile materials, nonproliferation regimes, regional proliferation, CBW, and CFE/conventional arms.
-- Searchable/exportable candidate chronology.
+- Searchable/exportable declassified-document chronology, now placed first on the page.
 - Searchable/exportable source leads, Presidential Daily Diary references, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.
 - Source-copy ledger separating public anchors, released review copies, State FOIA PDFs, and collection-only folder-title leads.

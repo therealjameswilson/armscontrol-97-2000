@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=4" />
-    <script defer src="data/volume-data.js?v=4"></script>
-    <script defer src="app.js?v=4"></script>
+    <link rel="stylesheet" href="styles.css?v=5" />
+    <script defer src="data/volume-data.js?v=5"></script>
+    <script defer src="app.js?v=5"></script>
   </head>
   <body>
     <header class="site-header">
@@ -19,10 +19,10 @@
         <span>Arms Control Desk</span>
       </a>
       <nav aria-label="Primary navigation">
+        <a href="#documents">Documents</a>
         <a href="#workbench">Desk</a>
         <a href="#chapters">Lanes</a>
         <a href="#handoff">Handoff</a>
-        <a href="#documents">Documents</a>
         <a href="#sources">Source Leads</a>
         <a href="#diary">Diary</a>
         <a href="#public">Public</a>
@@ -46,7 +46,7 @@
             proliferation, CBW, CFE, and source-boundary controls.
           </p>
           <div class="hero-actions" aria-label="Primary actions">
-            <a class="button primary" href="#documents">Browse Chronology</a>
+            <a class="button primary" href="#documents">Browse Declassified Chronology</a>
             <a class="button secondary" href="#gaps">Open Gap Tracker</a>
             <a class="button secondary" href="https://history.state.gov/historicaldocuments/frus1993-00v08" rel="noreferrer">
               Official Volume
@@ -80,6 +80,25 @@
             </div>
           </dl>
         </aside>
+      </section>
+
+      <section class="section documents-section" id="documents" aria-labelledby="documents-title">
+        <div class="section-heading">
+          <p class="kicker">Declassified Chronology</p>
+          <h2 id="documents-title">Chronology of Declassified Documents</h2>
+        </div>
+        <div class="tools" aria-label="Search and filter declassified document chronology">
+          <label class="search-field"><span>Search</span><input id="document-search" type="search" placeholder="START III, CTBT, NMD, South Asia, CFE" /></label>
+          <label><span>Lane</span><select id="document-lane-filter"></select></label>
+          <label><span>Type</span><select id="document-type-filter"></select></label>
+          <label><span>Priority</span><select id="document-priority-filter"></select></label>
+          <button id="clear-document-filters" type="button">Reset</button>
+          <button id="export-documents" type="button">CSV</button>
+          <p id="document-summary" class="summary">Loading declassified chronology...</p>
+        </div>
+        <div id="documents-root" class="records-root" aria-live="polite">
+          <p class="loading">Loading declassified document chronology...</p>
+        </div>
       </section>
 
       <section class="stats" aria-label="Research desk summary">
@@ -121,25 +140,6 @@
         </div>
         <div id="handoff-root" class="handoff-grid" aria-live="polite">
           <p class="loading">Loading Volume VII handoff...</p>
-        </div>
-      </section>
-
-      <section class="section documents-section" id="documents" aria-labelledby="documents-title">
-        <div class="section-heading">
-          <p class="kicker">Candidate Chronology</p>
-          <h2 id="documents-title">Potential Documents and Released Records</h2>
-        </div>
-        <div class="tools" aria-label="Search and filter potential documents">
-          <label class="search-field"><span>Search</span><input id="document-search" type="search" placeholder="START III, CTBT, NMD, South Asia, CFE" /></label>
-          <label><span>Lane</span><select id="document-lane-filter"></select></label>
-          <label><span>Type</span><select id="document-type-filter"></select></label>
-          <label><span>Priority</span><select id="document-priority-filter"></select></label>
-          <button id="clear-document-filters" type="button">Reset</button>
-          <button id="export-documents" type="button">CSV</button>
-          <p id="document-summary" class="summary">Loading chronology...</p>
-        </div>
-        <div id="documents-root" class="records-root" aria-live="polite">
-          <p class="loading">Loading potential documents...</p>
         </div>
       </section>
 
