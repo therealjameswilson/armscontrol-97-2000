@@ -12,6 +12,7 @@ Official volume anchor:
 - Provisional compiler lanes for START/strategic stability, CTBT, ABM/NMD, fissile materials, nonproliferation regimes, regional proliferation, CBW, and CFE/conventional arms.
 - Searchable/exportable candidate chronology.
 - Searchable/exportable source leads, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
+- Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.
 - Source-copy ledger separating public anchors, released review copies, State FOIA PDFs, and collection-only folder-title leads.
 - Gap mitigation layer for CTBT Senate records, START/ABM internal-source trails, NMD allied consultations, South Asia, DPRK, CFE boundary control, and CBW implementation.
 - GitHub Pages workflow for root-level static deployment from `main`.
@@ -37,3 +38,4 @@ node --check data/volume-data.js
 - Congress.gov treaty, hearing, statutory, and Senate action records.
 - NATO and OSCE official consultation/treaty records.
 - Clinton Digital Library DPRK, South Asia, CWC, and treaty-politics collection leads.
+- Companion Volume VII assister: <https://therealjameswilson.github.io/Clinton-armscontrol-93-96/>

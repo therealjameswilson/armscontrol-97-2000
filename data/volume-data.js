@@ -9,6 +9,125 @@ window.VOLUME_VIII_DATA = {
     summary:
       "Compiler-facing source map for the planned second Clinton arms-control volume, with public anchors, archival leads, item-level released records, and source-gap controls kept visibly separate."
   },
+  volumeHandoff: [
+    {
+      id: "handoff-npt-ctbt",
+      priorChapter: "NPT and CTBT",
+      priorChapterId: "ctbt",
+      volumeViiiLaneIds: ["ctbt", "nonproliferation-regimes"],
+      continuity:
+        "Volume VII carries the 1995 NPT indefinite extension, nuclear testing review, CTBT negotiation, and 1996 signature sequence.",
+      newQuestion:
+        "Volume VIII follows how the signed treaty moved into Senate transmission, the ratification campaign, the October 1999 defeat, and diplomatic aftercare.",
+      sourceAction:
+        "Keep Treaty Doc. 105-28, 2015-1095-F, S. Hrg. 106-262, the October 1999 Public Papers statements, and the Mamedov cable tied back to the Volume VII CTBT signature and NPT Article VI frame.",
+      tags: ["CTBT", "NPT", "ratification", "Senate"]
+    },
+    {
+      id: "handoff-strategic-arms",
+      priorChapter: "Strategic Arms and Nuclear Security",
+      priorChapterId: "strategic-arms",
+      volumeViiiLaneIds: ["strategic-stability", "abm-nmd", "fissile-ctr"],
+      continuity:
+        "Volume VII tracks early Clinton strategic stability, missile systems, nuclear security, and post-Soviet weapons-reduction transparency.",
+      newQuestion:
+        "Volume VIII turns that foundation into the Helsinki, Cologne, Moscow, Okinawa, and New York sequence: START III, START II ratification politics, ABM/NMD pressure, early warning, and plutonium disposition.",
+      sourceAction:
+        "Pair public summit texts with Defense Policy folders, Strobe FOIA summit-prep records, Helsinki/Cologne memcons, and June 2000 Moscow source trails.",
+      tags: ["START III", "strategic stability", "ABM", "plutonium"]
+    },
+    {
+      id: "handoff-start-ii",
+      priorChapter: "START II Ratification",
+      priorChapterId: "start-ii",
+      volumeViiiLaneIds: ["strategic-stability", "abm-nmd"],
+      continuity:
+        "Volume VII isolates U.S. Senate handling, Russian linkage, and the January 1996 ratification moment.",
+      newQuestion:
+        "Volume VIII keeps START II alive as a Russian Duma, ABM, and START III sequencing problem rather than treating it as completed business.",
+      sourceAction:
+        "Use Helsinki START III guidelines, START II Duma statements, START III/ABM PC folders, and ABM demarcation/NMD records as the continuation chain.",
+      tags: ["START II", "Duma", "START III", "ABM"]
+    },
+    {
+      id: "handoff-ctr-heu",
+      priorChapter: "Cooperative Threat Reduction and HEU Agreement",
+      priorChapterId: "ctr-heu",
+      volumeViiiLaneIds: ["fissile-ctr"],
+      continuity:
+        "Volume VII covers Nunn-Lugar implementation, Ukraine denuclearization, HEU transparency, DOE/USEC/Minatom handling, and nuclear-materials security.",
+      newQuestion:
+        "Volume VIII should show implementation maturity: MPC&A, plutonium disposition, early-warning data exchange, launch notification, and Russia/Ukraine trip records.",
+      sourceAction:
+        "Keep June 2000 plutonium and Joint Center statements connected to DOE, DOD, USEC, Minatom, MPC&A, and trip-book pull targets.",
+      tags: ["CTR", "HEU", "MPC&A", "plutonium"]
+    },
+    {
+      id: "handoff-nonproliferation",
+      priorChapter: "Nonproliferation Regimes",
+      priorChapterId: "nonproliferation",
+      volumeViiiLaneIds: ["nonproliferation-regimes", "regional-proliferation"],
+      continuity:
+        "Volume VII collects fissile material policy, MTCR, nuclear smuggling, export controls, and multilateral nonproliferation planning outside the NPT/CTBT chapter.",
+      newQuestion:
+        "Volume VIII should carry that regime logic into the 2000 NPT review cycle, Iran Nonproliferation Act, WMD emergency renewals, export-control sanctions, and regional case files.",
+      sourceAction:
+        "Keep NSC Nonproliferation, Gary Samore, subject-file, GovInfo, Congress.gov, and State FOIA paths visible as separate source classes.",
+      tags: ["NPT review", "MTCR", "Iran", "export controls"]
+    },
+    {
+      id: "handoff-counterproliferation",
+      priorChapter: "Counterproliferation",
+      priorChapterId: "counterproliferation",
+      volumeViiiLaneIds: ["regional-proliferation", "abm-nmd", "cbw"],
+      continuity:
+        "Volume VII tracks PDD/NSC-18, the Defense Counterproliferation Initiative, WMD military planning, theater missile defense, biological defense, and intelligence support.",
+      newQuestion:
+        "Volume VIII should show how those concepts surfaced in NMD, South Asia sanctions and restraint diplomacy, DPRK missile diplomacy, CBW terrorism, and recurring WMD emergency reporting.",
+      sourceAction:
+        "Tag counterproliferation material separately from treaty diplomacy so theater missile defense, intelligence, military planning, and sanctions files do not disappear inside regional narratives.",
+      tags: ["counterproliferation", "WMD", "NMD", "sanctions"]
+    },
+    {
+      id: "handoff-regional",
+      priorChapter: "Regional Proliferation Cases",
+      priorChapterId: "regional",
+      volumeViiiLaneIds: ["regional-proliferation"],
+      continuity:
+        "Volume VII starts with North Korea, former-Soviet leakage, China, the Middle East, South Asia, and other regional source paths.",
+      newQuestion:
+        "Volume VIII must rebalance the regional chapter around South Asia nuclear tests, DPRK Taepo Dong/Perry process/KEDO diplomacy, Iran, Iraq/UNSCOM, China technology transfer, and former-Soviet leakage.",
+      sourceAction:
+        "Keep DPRK collection leads, South Asia MDR 2006-0859-M, Talbott FOIA searches, Iran/China source paths, and trip-book pulls in one comparative lane.",
+      tags: ["South Asia", "DPRK", "Iran", "China"]
+    },
+    {
+      id: "handoff-cbw",
+      priorChapter: "Chemical and Biological Weapons",
+      priorChapterId: "cbw-conventional",
+      volumeViiiLaneIds: ["cbw"],
+      continuity:
+        "Volume VII builds the CWC ratification, BWC strengthening, Australia Group, Aum Shinrikyo, UNSCOM, and CBW reporting base.",
+      newQuestion:
+        "Volume VIII should move from treaty passage to implementation: Russian CWC ratification, declarations, compliance, BWC protocol work, CBW terrorism, and legal/policy files.",
+      sourceAction:
+        "Use Elisa Harris CWC files, Helms treaty files, Legal Adviser and ACDA/State records, and Public Papers endpoint markers as separate evidence layers.",
+      tags: ["CWC", "BWC", "CBW terrorism", "compliance"]
+    },
+    {
+      id: "handoff-conventional-landmines",
+      priorChapter: "Conventional Arms and Landmines",
+      priorChapterId: "conventional-landmines",
+      volumeViiiLaneIds: ["conventional-cfe"],
+      continuity:
+        "Volume VII turns landmines, CCW/Protocol II, conventional arms transfers, and export controls into a visible review lane.",
+      newQuestion:
+        "Volume VIII should preserve that lane while adding CFE adaptation, Istanbul final-act records, flank issues, NATO/Russia conventional-force questions, and continued landmine policy.",
+      sourceAction:
+        "Keep OSCE CFE records and Clinton Library CFE folders tied to arms-control content, while broader NATO enlargement remains a boundary note.",
+      tags: ["CFE", "landmines", "CCW", "arms transfers"]
+    }
+  ],
   lanes: [
     {
       id: "volume-control",
@@ -148,6 +267,20 @@ window.VOLUME_VIII_DATA = {
       note:
         "Volume VII covers 1993-1996 and supplies the treaty-negotiation handoff for CTBT, CWC, START II, CTR, and regional cases continued here.",
       tags: ["Volume VII", "handoff", "1993-1996"]
+    },
+    {
+      id: "lead-volume-vii-assister",
+      title: "Volume VII arms-control assister handoff",
+      laneId: "volume-control",
+      institution: "GitHub Pages",
+      type: "Assister handoff",
+      priority: "High",
+      date: "1993-1996",
+      identifier: "Clinton-armscontrol-93-96",
+      url: "https://therealjameswilson.github.io/Clinton-armscontrol-93-96/",
+      note:
+        "Companion source map for the first Clinton arms-control volume. Use its chapter map, gap analysis, public statement index, and Clinton Library pull plan as the explicit starting point for Volume VIII continuity.",
+      tags: ["Volume VII", "handoff", "companion assister"]
     },
     {
       id: "lead-defense-policy",
@@ -2179,6 +2312,10 @@ window.VOLUME_VIII_DATA = {
     {
       label: "Official Volume VIII page",
       url: "https://history.state.gov/historicaldocuments/frus1993-00v08"
+    },
+    {
+      label: "Volume VII arms-control assister",
+      url: "https://therealjameswilson.github.io/Clinton-armscontrol-93-96/"
     },
     {
       label: "FRUS Status of the Series",

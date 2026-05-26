@@ -1,4 +1,5 @@
 const data = window.VOLUME_VIII_DATA || {};
+const volumeHandoff = data.volumeHandoff || [];
 const lanes = data.lanes || [];
 const sourceLeads = data.sourceLeads || [];
 const potentialDocuments = data.potentialDocuments || [];
@@ -33,6 +34,7 @@ const nodes = {
   },
   workbenchRoot: document.querySelector("#workbench-root"),
   lanesRoot: document.querySelector("#lanes-root"),
+  handoffRoot: document.querySelector("#handoff-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -88,6 +90,10 @@ function laneTitle(laneId) {
 
 function laneNumber(laneId) {
   return laneById.get(laneId)?.number || "Lane";
+}
+
+function laneList(laneIds = []) {
+  return laneIds.map((laneId) => laneTitle(laneId)).filter(Boolean).join("; ");
 }
 
 function byLaneThenDate(a, b) {
@@ -148,6 +154,8 @@ function textForSearch(item) {
   return [
     item.id,
     item.title,
+    item.priorChapter,
+    item.priorChapterId,
     item.name,
     item.role,
     item.office,
@@ -164,6 +172,9 @@ function textForSearch(item) {
     item.summary,
     item.note,
     item.sourceNote,
+    item.continuity,
+    item.newQuestion,
+    item.sourceAction,
     item.resolution,
     item.remainingRisk,
     item.problem,
@@ -180,7 +191,8 @@ function textForSearch(item) {
     (item.targetFolders || []).join(" "),
     (item.onsiteActions || []).join(" "),
     (item.nextActions || []).join(" "),
-    (item.laneIds || []).map(laneTitle).join(" ")
+    (item.laneIds || []).map(laneTitle).join(" "),
+    (item.volumeViiiLaneIds || []).map(laneTitle).join(" ")
   ]
     .filter(Boolean)
     .join(" ")
@@ -231,6 +243,7 @@ function renderWorkbench() {
     metricCard("Planned official status", data.meta?.status || "Planned", "The page preserves source-map logic until the Office of the Historian publishes official document numbers."),
     metricCard("Item-level candidates", releasedItems.length, `${plural(publicOnly, "public anchor")} stay separate from released memcons, cables, and packet leads.`),
     metricCard("Lanes represented", lanesWithDocs, `${lanes.length} provisional lanes keep boundary cases visible.`),
+    metricCard("Volume VII handoffs", volumeHandoff.length, "Every 1993-1996 chapter now has an explicit continuation path into the 1997-2000 lanes."),
     metricCard("Priority source pools", highSourcePools.length, "Clinton Library, State FOIA, GovInfo, and NARA trails are kept as separate intake lanes."),
     metricCard("Critical mitigations", critical.length, "Each critical risk now has a visible source trail, mitigation note, and remaining-risk statement.")
   ];
@@ -287,6 +300,33 @@ function renderLanes() {
       return card;
     },
     "No lanes loaded."
+  );
+}
+
+function renderHandoff() {
+  renderList(
+    nodes.handoffRoot,
+    volumeHandoff,
+    (handoff) => {
+      const card = document.createElement("article");
+      card.className = "handoff-card";
+      const meta = document.createElement("div");
+      meta.className = "record-meta";
+      meta.append(textSpan("Volume VII"), textSpan(handoff.priorChapter), textSpan(laneList(handoff.volumeViiiLaneIds)));
+      const title = document.createElement("h3");
+      title.textContent = `${handoff.priorChapter} continues here`;
+      const continuity = document.createElement("p");
+      continuity.textContent = handoff.continuity;
+      const question = document.createElement("p");
+      question.className = "handoff-question";
+      question.textContent = handoff.newQuestion;
+      const action = document.createElement("p");
+      action.className = "source-note";
+      action.textContent = handoff.sourceAction;
+      card.append(meta, title, continuity, question, action, tagList(handoff.tags || []));
+      return card;
+    },
+    "No Volume VII handoff records loaded."
   );
 }
 
@@ -919,6 +959,7 @@ function renderAll() {
   setStats();
   renderWorkbench();
   renderLanes();
+  renderHandoff();
   renderDocuments();
   renderLeads();
   renderPublic();

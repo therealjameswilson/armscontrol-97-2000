@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 690" role="img" aria-labelledby="title desc">
   <title id="title">FRUS Volume VIII source map</title>
-  <desc id="desc">A research map connecting the planned FRUS volume to official anchors, Clinton Library files, State FOIA records, GovInfo and Congress public records, NATO and OSCE treaty records, NARA catalog leads, and compiler gap controls.</desc>
+  <desc id="desc">A research map connecting the planned FRUS volume to Volume VII handoff anchors, Clinton Library files, State FOIA records, GovInfo and Congress public records, NATO and OSCE treaty records, NARA catalog leads, and compiler gap controls.</desc>
   <defs>
     <style>
       .bg { fill: #f8f6ef; }
@@ -39,8 +39,8 @@
   <rect x="92" y="74" width="244" height="142" class="panel"/>
   <circle cx="132" cy="116" r="26" class="red"/>
   <text x="132" y="122" text-anchor="middle" class="tiny">OH</text>
-  <text x="176" y="113" class="label">Official</text>
-  <text x="176" y="139" class="label">Volume Anchors</text>
+  <text x="176" y="113" class="label">Volume VII</text>
+  <text x="176" y="139" class="label">Handoff</text>
   <text x="120" y="176" class="small">planned status</text>
   <text x="120" y="198" class="small">Volume VII handoff</text>
 

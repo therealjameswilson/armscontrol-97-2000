@@ -334,6 +334,7 @@ dd {
 
 .workbench-root,
 .lane-grid,
+.handoff-grid,
 .lead-grid,
 .library-root,
 .gap-grid,
@@ -346,10 +347,14 @@ dd {
 }
 
 .workbench-root {
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 .lane-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.handoff-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
@@ -373,6 +378,7 @@ dd {
 
 .metric-card,
 .lane-card,
+.handoff-card,
 .record-card,
 .lead-card,
 .compact-card,
@@ -423,6 +429,17 @@ dd {
   padding: 20px;
   color: inherit;
   text-decoration: none;
+}
+
+.handoff-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+}
+
+.handoff-question {
+  color: var(--ink) !important;
+  font-weight: 750;
 }
 
 .lane-card:hover,
@@ -570,6 +587,7 @@ dd {
 .lead-card p,
 .compact-card p,
 .library-card p,
+.handoff-card p,
 .gap-card p,
 .pool-card p,
 .ledger-card p,
@@ -717,6 +735,7 @@ dd {
 
   .workbench-root,
   .lane-grid,
+  .handoff-grid,
   .reference-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -742,6 +761,7 @@ dd {
   .stats,
   .workbench-root,
   .lane-grid,
+  .handoff-grid,
   .lead-grid,
   .library-root,
   .gap-grid,
