@@ -316,6 +316,146 @@ window.VOLUME_VIII_DATA = {
       note:
         "Defines NSC offices and staff responsibilities for Defense Policy and Arms Control, Nonproliferation and Export Controls, Intelligence Programs, Legal Advisor, and Records Management.",
       tags: ["office guide", "Clinton Library", "NSC"]
+    },
+    {
+      id: "lead-ctbt-treaty-document",
+      title: "Senate Treaty Document 105-28",
+      laneId: "ctbt",
+      institution: "Congress.gov",
+      type: "Treaty document",
+      priority: "High",
+      date: "1997-09-23",
+      identifier: "Treaty Doc. 105-28",
+      url: "https://www.congress.gov/treaty-document/105th-congress/28/document-text",
+      note:
+        "Congressional anchor for the CTBT submission, treaty text, transmittal letter, State submittal letter, and verification materials.",
+      tags: ["CTBT", "Treaty Doc. 105-28", "Senate"]
+    },
+    {
+      id: "lead-ctbt-final-review",
+      title: "Final Review of the CTBT hearing",
+      laneId: "ctbt",
+      institution: "Congress.gov",
+      type: "Senate hearing",
+      priority: "High",
+      date: "1999-10-07",
+      identifier: "S. Hrg. 106-262",
+      url: "https://www.congress.gov/event/106th-congress/senate-event/LC19462/text",
+      note:
+        "Senate Foreign Relations hearing anchor for the ratification endgame and stockpile stewardship/verifiability debate immediately before the failed vote.",
+      tags: ["CTBT", "hearing", "Senate Foreign Relations"]
+    },
+    {
+      id: "lead-nmd-act-congress",
+      title: "National Missile Defense Act of 1999",
+      laneId: "abm-nmd",
+      institution: "Congress.gov",
+      type: "Statutory anchor",
+      priority: "High",
+      date: "1999-07-22",
+      identifier: "H.R.4 / Public Law 106-38",
+      url: "https://www.congress.gov/bill/106th-congress/house-bill/4",
+      note:
+        "Legislative anchor for NMD policy. Use with the signing statement, PRD-31 files, and NATO/Russia consultation records.",
+      tags: ["NMD", "Congress", "ABM"]
+    },
+    {
+      id: "lead-nato-nmd-consultation",
+      title: "NATO consultation record for NMD and ABM",
+      laneId: "abm-nmd",
+      institution: "NATO",
+      type: "Ministerial transcript",
+      priority: "High",
+      date: "2000-05-24",
+      identifier: "NATO transcript, Florence ministerial",
+      url: "https://www.nato.int/en/news-and-events/events/transcripts/2000/05/24/statement",
+      note:
+        "Official allied-consultation marker noting U.S. limited NMD testing, consultation with allies and Moscow, ABM Treaty commitment, and deployment criteria.",
+      tags: ["NATO", "NMD", "ABM", "allied consultation"]
+    },
+    {
+      id: "lead-dprk-collection",
+      title: "DPRK and ROK NSC collection",
+      laneId: "regional-proliferation",
+      institution: "Clinton Digital Library",
+      type: "Collection",
+      priority: "High",
+      date: "1994-2000",
+      identifier: "2009-0528-F Segment 2",
+      url: "https://clinton.presidentiallibraries.us/collections/show/182",
+      note:
+        "Primary late-Clinton Korea source pool for Agreed Framework implementation, KEDO, North Korea nuclear program, missile/WMD files, and 1999-2000 Korea folders.",
+      tags: ["DPRK", "KEDO", "missile diplomacy"]
+    },
+    {
+      id: "lead-dprk-north-korea-item",
+      title: "North Korea item from National Security Advisor files",
+      laneId: "regional-proliferation",
+      institution: "Clinton Digital Library",
+      type: "Folder-level item",
+      priority: "High",
+      date: "2000",
+      identifier: "2009-0528-F Segment 1 / Box 12",
+      url: "https://clinton.presidentiallibraries.us/items/show/72959",
+      note:
+        "Folder-level source path from National Security Advisor/Mara Rudman provenance for late-Clinton North Korea coverage.",
+      tags: ["DPRK", "Mara Rudman", "North Korea"]
+    },
+    {
+      id: "lead-osce-cfe-adaptation",
+      title: "Agreement on Adaptation of the CFE Treaty",
+      laneId: "conventional-cfe",
+      institution: "OSCE",
+      type: "Treaty record",
+      priority: "High",
+      date: "1999-11-19",
+      identifier: "CFE.DOC/1/99",
+      url: "https://www.osce.org/library/14108",
+      note:
+        "Official CFE adaptation record from the Istanbul Summit. Use as the public treaty endpoint while Clinton Library folders supply U.S. policy formation.",
+      tags: ["CFE", "OSCE", "Istanbul"]
+    },
+    {
+      id: "lead-osce-cfe-final-act",
+      title: "Final Act of the CFE States Parties Conference",
+      laneId: "conventional-cfe",
+      institution: "OSCE",
+      type: "Treaty record",
+      priority: "High",
+      date: "1999-11-19",
+      identifier: "CFE.DOC/2/99",
+      url: "https://www.osce.org/library/14114",
+      note:
+        "Official final-act record adopted at signature of the CFE adaptation agreement during the OSCE Istanbul Summit.",
+      tags: ["CFE", "Final Act", "Istanbul"]
+    },
+    {
+      id: "lead-cbw-elisa-harris",
+      title: "Elisa Harris CWC files",
+      laneId: "cbw",
+      institution: "Clinton Digital Library",
+      type: "Collection finding aid",
+      priority: "High",
+      date: "1993-2001",
+      identifier: "2016-0158-F Segment 1",
+      url: "https://clinton.presidentiallibraries.us/items/show/57270",
+      note:
+        "NSC Nonproliferation and Export Controls source path for CWC correspondence, memoranda, reports, briefings, meeting materials, emails, and notes.",
+      tags: ["CWC", "Elisa Harris", "CBW"]
+    },
+    {
+      id: "lead-cbw-helms",
+      title: "Senator Jesse Helms collection treaty files",
+      laneId: "cbw",
+      institution: "Clinton Digital Library",
+      type: "Collection finding aid",
+      priority: "Medium",
+      date: "1997-1999",
+      identifier: "2006-1363-F Segment 3",
+      url: "https://clinton.presidentiallibraries.us/items/show/94685",
+      note:
+        "Supplemental treaty-politics source path for CWC and CTBT acceptance/passage records involving the Senate side of arms-control diplomacy.",
+      tags: ["CWC", "CTBT", "Senate"]
     }
   ],
   potentialDocuments: [
@@ -1099,6 +1239,226 @@ window.VOLUME_VIII_DATA = {
       sourceNote:
         "Source: Public Papers of the Presidents of the United States: William J. Clinton, 2000-2001, Book III, pp. 2507-2516.",
       tags: ["WMD", "sanctions", "2000"]
+    },
+    {
+      id: "cong-ctbt-treaty-document",
+      laneId: "ctbt",
+      date: "1997-09-23",
+      title: "Comprehensive Nuclear Test-Ban Treaty submission to the Senate",
+      type: "Congressional source",
+      priority: "High",
+      level: "published treaty document",
+      confidence: "High",
+      score: 82,
+      repository: "Congress.gov",
+      collection: "Senate Treaty Documents",
+      identifier: "Treaty Doc. 105-28",
+      url: "https://www.congress.gov/treaty-document/105th-congress/28/document-text",
+      pages: "Treaty document text",
+      pageCount: 0,
+      summary:
+        "CTBT submission package with treaty text, transmittal material, and administration rationale. Use as the congressional starting point for the ratification lane.",
+      sourceNote:
+        "Source: Congress.gov, Treaty Document 105-28.",
+      tags: ["CTBT", "Treaty Doc. 105-28", "Senate"]
+    },
+    {
+      id: "cong-ctbt-final-review",
+      laneId: "ctbt",
+      date: "1999-10-07",
+      title: "Final Review of the Comprehensive Nuclear Test Ban Treaty hearing",
+      type: "Congressional source",
+      priority: "High",
+      level: "published hearing",
+      confidence: "High",
+      score: 84,
+      repository: "Congress.gov",
+      collection: "Senate Foreign Relations Committee hearings",
+      identifier: "S. Hrg. 106-262",
+      url: "https://www.congress.gov/event/106th-congress/senate-event/LC19462/text",
+      pages: "Hearing text",
+      pageCount: 0,
+      summary:
+        "Senate Foreign Relations hearing immediately before the CTBT vote, useful for verifiability, stockpile stewardship, and ratification strategy arguments.",
+      sourceNote:
+        "Source: Congress.gov, Senate event LC19462, Final Review of the Comprehensive Nuclear Test Ban Treaty.",
+      tags: ["CTBT", "Senate", "ratification"]
+    },
+    {
+      id: "cong-nmd-act-1999",
+      laneId: "abm-nmd",
+      date: "1999-07-22",
+      title: "National Missile Defense Act of 1999",
+      type: "Congressional source",
+      priority: "High",
+      level: "statutory anchor",
+      confidence: "High",
+      score: 82,
+      repository: "Congress.gov",
+      collection: "106th Congress legislation",
+      identifier: "H.R.4 / Public Law 106-38",
+      url: "https://www.congress.gov/bill/106th-congress/house-bill/4",
+      pages: "Bill and public-law record",
+      pageCount: 0,
+      summary:
+        "Statutory anchor for NMD deployment policy. Pair with the signing statement, PRD-31, Russian reaction, and allied consultation records.",
+      sourceNote:
+        "Source: Congress.gov, H.R.4, 106th Congress.",
+      tags: ["NMD", "ABM", "Congress"]
+    },
+    {
+      id: "nato-nmd-florence",
+      laneId: "abm-nmd",
+      date: "2000-05-24",
+      title: "Statement at the NATO North Atlantic Council on NMD consultation",
+      type: "NATO transcript",
+      priority: "High",
+      level: "published allied consultation marker",
+      confidence: "High",
+      score: 78,
+      repository: "NATO",
+      collection: "Official NATO transcript",
+      identifier: "Florence ministerial statement",
+      url: "https://www.nato.int/en/news-and-events/events/transcripts/2000/05/24/statement",
+      pages: "Transcript",
+      pageCount: 0,
+      summary:
+        "Allied consultation marker for the U.S. NMD testing program, deployment criteria, ABM Treaty consultations, and the Moscow channel before the June 2000 summit.",
+      sourceNote:
+        "Source: NATO, statement to the North Atlantic Council, Florence, May 24, 2000.",
+      tags: ["NATO", "NMD", "ABM", "consultation"]
+    },
+    {
+      id: "cdl-dprk-collection",
+      laneId: "regional-proliferation",
+      date: "1998-08-31",
+      title: "North Korea missile and nuclear diplomacy source pool",
+      type: "Clinton Digital Library source path",
+      priority: "High",
+      level: "collection-level source path",
+      confidence: "Review",
+      score: 76,
+      repository: "Clinton Digital Library",
+      collection: "DPRK and ROK collection, 2009-0528-F Segment 2",
+      identifier: "Collection 182",
+      url: "https://clinton.presidentiallibraries.us/collections/show/182",
+      pages: "Collection source path",
+      pageCount: 0,
+      summary:
+        "Collection-level source path for Taepo Dong, Agreed Framework implementation, KEDO, North Korean missile/WMD files, and 1999-2000 Korea records.",
+      sourceNote:
+        "Source-path lead: Clinton Digital Library DPRK and ROK collection, 2009-0528-F Segment 2.",
+      tags: ["DPRK", "Taepo Dong", "KEDO", "missiles"]
+    },
+    {
+      id: "cdl-north-korea-2000-folder",
+      laneId: "regional-proliferation",
+      date: "2000",
+      title: "North Korea folder from National Security Advisor files",
+      type: "Clinton Digital Library source path",
+      priority: "High",
+      level: "folder-level source path",
+      confidence: "Review",
+      score: 76,
+      repository: "Clinton Digital Library",
+      collection: "National Security Advisor files, 2009-0528-F Segment 1",
+      identifier: "Box 12 / Item 72959",
+      url: "https://clinton.presidentiallibraries.us/items/show/72959",
+      pages: "Folder-level item",
+      pageCount: 0,
+      summary:
+        "Folder-level lead for late-Clinton North Korea policy from the National Security Advisor files. Use to separate missile diplomacy from broader Korea summit material.",
+      sourceNote:
+        "Source-path lead: Clinton Digital Library item 72959.",
+      tags: ["DPRK", "North Korea", "Mara Rudman"]
+    },
+    {
+      id: "osce-cfe-adaptation",
+      laneId: "conventional-cfe",
+      date: "1999-11-19",
+      title: "Agreement on Adaptation of the Treaty on Conventional Armed Forces in Europe",
+      type: "OSCE treaty record",
+      priority: "High",
+      level: "published treaty record",
+      confidence: "High",
+      score: 82,
+      repository: "OSCE",
+      collection: "OSCE library",
+      identifier: "CFE.DOC/1/99",
+      url: "https://www.osce.org/library/14108",
+      pages: "Treaty record",
+      pageCount: 0,
+      summary:
+        "Official Istanbul adaptation agreement. Use as the public treaty endpoint while the CFE lane pulls Clinton Library internal endgame records.",
+      sourceNote:
+        "Source: OSCE, Agreement on Adaptation of the CFE Treaty, CFE.DOC/1/99.",
+      tags: ["CFE", "OSCE", "Istanbul"]
+    },
+    {
+      id: "osce-cfe-final-act",
+      laneId: "conventional-cfe",
+      date: "1999-11-19",
+      title: "Final Act of the Conference of the States Parties to the CFE Treaty",
+      type: "OSCE treaty record",
+      priority: "High",
+      level: "published treaty record",
+      confidence: "High",
+      score: 80,
+      repository: "OSCE",
+      collection: "OSCE library",
+      identifier: "CFE.DOC/2/99",
+      url: "https://www.osce.org/library/14114",
+      pages: "Final Act",
+      pageCount: 0,
+      summary:
+        "Official final-act record adopted at signature of the CFE adaptation agreement. Keeps the CFE boundary tied to arms-control content.",
+      sourceNote:
+        "Source: OSCE, CFE Final Act, CFE.DOC/2/99.",
+      tags: ["CFE", "Final Act", "Istanbul"]
+    },
+    {
+      id: "cdl-cbw-elisa-harris",
+      laneId: "cbw",
+      date: "1997-2000",
+      title: "Elisa Harris CWC implementation files",
+      type: "Clinton Digital Library source path",
+      priority: "High",
+      level: "collection-level source path",
+      confidence: "Review",
+      score: 74,
+      repository: "Clinton Digital Library",
+      collection: "Elisa Harris CWC files, 2016-0158-F Segment 1",
+      identifier: "Item 57270",
+      url: "https://clinton.presidentiallibraries.us/items/show/57270",
+      pages: "Collection source path",
+      pageCount: 0,
+      summary:
+        "NSC Nonproliferation source path for CWC correspondence, memoranda, reports, briefings, meeting materials, emails, and notes.",
+      sourceNote:
+        "Source-path lead: Clinton Digital Library item 57270, Elisa Harris files.",
+      tags: ["CWC", "CBW", "Elisa Harris"]
+    },
+    {
+      id: "cdl-helms-treaty-files",
+      laneId: "cbw",
+      date: "1997-1999",
+      title: "Senator Jesse Helms treaty files for CWC and CTBT",
+      type: "Clinton Digital Library source path",
+      priority: "Medium",
+      level: "collection-level source path",
+      confidence: "Review",
+      score: 68,
+      repository: "Clinton Digital Library",
+      collection: "Senator Jesse Helms material, 2006-1363-F Segment 3",
+      identifier: "Item 94685",
+      url: "https://clinton.presidentiallibraries.us/items/show/94685",
+      pages: "Collection source path",
+      pageCount: 0,
+      summary:
+        "Supplemental Senate-side treaty-politics source path for CWC and CTBT passage/acceptance material.",
+      sourceNote:
+        "Source-path lead: Clinton Digital Library item 94685.",
+      tags: ["CWC", "CTBT", "Helms", "Senate"]
     }
   ],
   libraryPlan: [
@@ -1213,6 +1573,29 @@ window.VOLUME_VIII_DATA = {
       ]
     },
     {
+      id: "library-dprk",
+      laneId: "regional-proliferation",
+      priority: "A",
+      title: "DPRK missile and nuclear diplomacy, 1998-2000",
+      office: "Nonproliferation and Export Controls; Asian Affairs; National Security Advisor files",
+      sourcePart: "DPRK/ROK collections and 2009-0528-F segments",
+      targetFolders: [
+        "Taepo Dong and North Korean missile launch folders",
+        "Perry process and North Korea policy review",
+        "KEDO and Agreed Framework implementation",
+        "Albright trip and 2000 North Korea diplomacy"
+      ],
+      visitGoal:
+        "Build an item-level lane for Taepo Dong, Perry review, missile moratorium diplomacy, KEDO, and late-Clinton North Korea contacts.",
+      whyItMatters:
+        "Without DPRK material, the regional-proliferation lane overweights South Asia and misses the major 1998-2000 missile diplomacy arc.",
+      onsiteActions: [
+        "Use Clinton Digital Library DPRK/ROK collection IDs as call-slip seeds.",
+        "Separate nuclear-reactor/KEDO implementation from missile moratorium and export-control diplomacy.",
+        "Backtrace Albright-trip and Perry-process public records to NSC and State source files."
+      ]
+    },
+    {
       id: "library-cfe",
       laneId: "conventional-cfe",
       priority: "A",
@@ -1288,7 +1671,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-planned-volume",
       laneId: "volume-control",
       priority: "Critical",
-      status: "Open",
+      status: "Guardrail added",
       title: "Do not treat public anchors as a published FRUS chronology",
       evidence:
         "The Office of the Historian lists Volume VIII as planned, so there are no official document numbers or editorial selections.",
@@ -1296,6 +1679,10 @@ window.VOLUME_VIII_DATA = {
         "Public statements and released memcons can look definitive if the site does not visibly mark them as candidates and source leads.",
       needed:
         "Keep item level, confidence, source type, and compiler-risk metadata on every card.",
+      resolution:
+        "The interface now labels the volume as planned, keeps source type and item level visible, separates Public Papers from released records and source paths, and exports the metadata needed to preserve that distinction.",
+      remainingRisk:
+        "Only an official Office of the Historian publication can close the chronology risk; until then, document numbers must remain absent.",
       nextActions: [
         "Preserve the official planned status in the hero and source notes.",
         "Mark released memcons, public statements, folder-title leads, and FOIA records distinctly.",
@@ -1306,7 +1693,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-start-abm-internal",
       laneId: "strategic-stability",
       priority: "Critical",
-      status: "Open",
+      status: "Source plan added",
       title: "Pair Helsinki, Cologne, and Moscow public statements with internal decision records",
       evidence:
         "Released leader memcons and public joint statements identify key dates, but they do not expose the full U.S. negotiating position.",
@@ -1314,6 +1701,10 @@ window.VOLUME_VIII_DATA = {
         "A chapter built only from public joint statements would understate interagency debate over START III, ABM, NMD, and Duma ratification strategy.",
       needed:
         "Defense Policy, State, JCS, OVP, and intelligence attachments from Clinton Library and State FOIA.",
+      resolution:
+        "Added congressional, NATO, OSCE, Strobe FOIA, and Clinton Library pull-plan rows that triangulate START/ABM/NMD public statements against internal-source locations.",
+      remainingRisk:
+        "This remains a source-acquisition gap until the Defense Policy folders and attached interagency papers are pulled and itemized.",
       nextActions: [
         "Pull START III/ABM PC Meeting, START Helsinki, and START III 2000 folders.",
         "Cross-check C09000042 and C09000063 with June 2000 public statements.",
@@ -1324,7 +1715,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-ctbt-senate",
       laneId: "ctbt",
       priority: "Critical",
-      status: "Open",
+      status: "Source plan added",
       title: "Reconstruct the CTBT Senate campaign, not only the defeat",
       evidence:
         "The current public layer has several October 1999 statements and a Russian reaction cable.",
@@ -1332,6 +1723,10 @@ window.VOLUME_VIII_DATA = {
         "The compiler needs the preceding vote strategy, science and stockpile-stewardship argument, Senate contacts, and post-defeat diplomatic cleanup.",
       needed:
         "2015-1095-F CTBT ratification files, congressional records, Senate committee material, and State/Russian reaction cables.",
+      resolution:
+        "Added Treaty Document 105-28, the October 1999 Senate Foreign Relations final-review hearing, the Clinton Library CTBT finding aid, Public Papers markers, and the Mamedov reaction cable as a ratification-chain source map.",
+      remainingRisk:
+        "The Senate strategy gap is not closed until vote-count, science-adviser, stockpile-stewardship, and White House liaison records are extracted from the archival files.",
       nextActions: [
         "Screen the Clinton Library CTBT ratification finding aid.",
         "Add Senate Treaty Document and Congressional Record rows with exact pages.",
@@ -1342,7 +1737,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-nmd-abm-allied",
       laneId: "abm-nmd",
       priority: "High",
-      status: "Open",
+      status: "Source plan added",
       title: "Add allied consultation records for NMD/ABM",
       evidence:
         "Strobe FOIA has a NAC briefing after the Moscow summit and a Yavlinsky NMD cable, but the allied consultation trail is still thin.",
@@ -1350,6 +1745,10 @@ window.VOLUME_VIII_DATA = {
         "The ABM/NMD chapter needs NATO and allied reaction, not only U.S.-Russia bilateral records.",
       needed:
         "NAC, NATO, State EUR, Defense, and OVP consultation records tied to 1999-2000 NMD decisions.",
+      resolution:
+        "Added NATO Florence ministerial consultation, the NMD Act congressional anchor, and the NAC Moscow-summit State FOIA cable to the ABM/NMD lane.",
+      remainingRisk:
+        "NATO public/transcript records do not replace State EUR, Defense, OVP, and embassy cables; those still need item-level extraction.",
       nextActions: [
         "Search Strobe FOIA for NAC, NMD, ABM, and theater missile defense.",
         "Pull NMD/ABM 2000 trip folders and PRD-31 files.",
@@ -1360,7 +1759,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-south-asia",
       laneId: "regional-proliferation",
       priority: "High",
-      status: "Open",
+      status: "Source plan added",
       title: "Build the South Asia nuclear-test record beyond public remarks",
       evidence:
         "The June 3, 1998 Public Papers item and 2006-0859-M source path are strong locators, but not a complete policy record.",
@@ -1368,6 +1767,10 @@ window.VOLUME_VIII_DATA = {
         "The India/Pakistan chapter needs sanctions decisions, Talbott diplomacy, DC/PC records, intelligence assessments, and March 2000 trip files.",
       needed:
         "State cables, NSC South Asia files, Talbott records, and trip briefing books with nuclear and missile sections identified.",
+      resolution:
+        "The South Asia lane now links the June 1998 public statement, Clinton Digital Library MDR 2006-0859-M, the on-site pull plan, and Talbott FOIA search terms for strategic-restraint diplomacy.",
+      remainingRisk:
+        "The source map still needs item-level sanctions, DC/PC, intelligence, and Talbott-Jaswant Singh records before document selection.",
       nextActions: [
         "Screen 2006-0859-M for exact documents and attachments.",
         "Search Talbott FOIA for strategic restraint, fissile material, Jaswant Singh, and Pakistan.",
@@ -1378,7 +1781,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-dprk-balance",
       laneId: "regional-proliferation",
       priority: "High",
-      status: "Open",
+      status: "Source plan added",
       title: "Add DPRK missile and nuclear diplomacy for 1998-2000",
       evidence:
         "Volume VII source work already had DPRK-heavy 1993-1994 file units, but Volume VIII needs Taepo Dong, Perry process, missile moratorium, and 2000 diplomacy.",
@@ -1386,6 +1789,10 @@ window.VOLUME_VIII_DATA = {
         "DPRK coverage will otherwise stop at the Agreed Framework handoff and miss the late-Clinton missile diplomacy.",
       needed:
         "State EAP, NSC Nonproliferation, Perry process, Albright trip, and KEDO implementation records.",
+      resolution:
+        "Added Clinton Digital Library DPRK/ROK collection leads and a late-Clinton North Korea folder lead so Taepo Dong, Perry process, KEDO, missile moratorium, and 2000 diplomacy have a source path.",
+      remainingRisk:
+        "The DPRK lane is still collection-level until individual folders and cables are screened for nuclear versus missile diplomacy.",
       nextActions: [
         "Search NARA/Clinton Library for Perry process, Taepo Dong, missile moratorium, and DPRK.",
         "Separate nuclear-reactor implementation from missile diplomacy.",
@@ -1396,7 +1803,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-cfe-boundary",
       laneId: "conventional-cfe",
       priority: "Medium",
-      status: "Open",
+      status: "Boundary rule added",
       title: "Control CFE boundary with Europe/NATO volumes",
       evidence:
         "CFE adaptation belongs to European security but also sits inside arms-control subject matter.",
@@ -1404,6 +1811,10 @@ window.VOLUME_VIII_DATA = {
         "Without explicit boundary notes, CFE can drift into NATO enlargement pages or disappear from the arms-control volume.",
       needed:
         "A clear rule: include CFE adaptation, arms-control guidance, and ratification records; leave broader NATO enlargement to European security volumes.",
+      resolution:
+        "Added OSCE CFE adaptation and final-act records and kept the Clinton Library CFE pull plan scoped to adaptation, HLTF/JCG, flank, congressional report, and Istanbul endgame files.",
+      remainingRisk:
+        "Boundary discipline still depends on tagging archival items as arms-control content versus broader NATO process content during pull review.",
       nextActions: [
         "Pull CFE-Istanbul and CFE-October/November Endgame folders.",
         "Tag CFE records by arms-control content versus NATO process content.",
@@ -1414,7 +1825,7 @@ window.VOLUME_VIII_DATA = {
       id: "gap-cbw-implementation",
       laneId: "cbw",
       priority: "Medium",
-      status: "Open",
+      status: "Source plan added",
       title: "Move CBW from treaty headlines to implementation records",
       evidence:
         "Public statements identify CWC Russian ratification and chemical weapons commitments.",
@@ -1422,6 +1833,10 @@ window.VOLUME_VIII_DATA = {
         "The chapter still needs ACDA, State, Legal Advisor, and NSC implementation files, especially for verification, declarations, compliance, and BWC strengthening.",
       needed:
         "Legal and policy records that distinguish CWC ratification, implementation, BWC protocol work, and CBW terrorism.",
+      resolution:
+        "Added Elisa Harris CWC collection material and Helms treaty-file leads alongside existing CWC public markers, so CBW now has implementation and Senate-side source trails.",
+      remainingRisk:
+        "Actual closure requires item-level CWC declarations/compliance, BWC protocol, Legal Adviser, ACDA, State, and NSC implementation records.",
       nextActions: [
         "Pull legal and Defense Policy CWC/BWC folders before speechwriting.",
         "Record Russian compliance and declaration issues separately.",
@@ -1489,6 +1904,26 @@ window.VOLUME_VIII_DATA = {
       coverage: "CTBT, ABM MOU, CWC, START II, sanctions legislation, NMD Act.",
       nextUse: "Legislative and treaty context for Senate conditions and floor action.",
       url: "https://www.congress.gov/"
+    },
+    {
+      id: "pool-nato-osce",
+      laneId: "conventional-cfe",
+      priority: "B",
+      title: "NATO and OSCE consultation/treaty records",
+      institution: "NATO / OSCE",
+      coverage: "NMD allied consultations, CFE adaptation, Istanbul final act, and public allied treaty endpoints.",
+      nextUse: "Boundary and public-allied context before selecting internal U.S. decision records.",
+      url: "https://www.osce.org/library"
+    },
+    {
+      id: "pool-dprk-cdl",
+      laneId: "regional-proliferation",
+      priority: "B",
+      title: "Clinton Digital Library DPRK and ROK files",
+      institution: "Clinton Digital Library",
+      coverage: "Taepo Dong, KEDO, North Korea missile/WMD files, Perry process, Albright trip, and 2000 diplomacy.",
+      nextUse: "Seed an item-level DPRK lane before broader State EAP and NSC pulls.",
+      url: "https://clinton.presidentiallibraries.us/collections/show/182"
     },
     {
       id: "pool-state-foia",
@@ -1577,6 +2012,39 @@ window.VOLUME_VIII_DATA = {
         "GovInfo PPP package/access IDs and PDF links.",
       reviewCue:
         "Keep public statements in their own layer so they do not inflate the private source count."
+    },
+    {
+      id: "ledger-congressional",
+      title: "Congressional treaty, hearing, and statutory anchors",
+      laneId: "ctbt",
+      status: "Public source stable",
+      sourceClass: "Congress.gov records",
+      repositoryTrail:
+        "Treaty Doc. 105-28, S. Hrg. 106-262, H.R.4/Public Law 106-38, and related Senate action pages.",
+      reviewCue:
+        "Use as public congressional anchors; pair with White House liaison, vote-count, and interagency files before selection."
+    },
+    {
+      id: "ledger-nato-osce",
+      title: "NATO and OSCE public treaty/consultation records",
+      laneId: "conventional-cfe",
+      status: "Boundary controls added",
+      sourceClass: "Official international-organization records",
+      repositoryTrail:
+        "NATO ministerial transcript for NMD consultation; OSCE CFE.DOC/1/99 and CFE.DOC/2/99 for Istanbul CFE adaptation.",
+      reviewCue:
+        "Use as public-allied context and treaty endpoints; do not let them replace internal U.S. guidance and negotiation records."
+    },
+    {
+      id: "ledger-cdl-source-paths",
+      title: "Clinton Digital Library source paths",
+      laneId: "regional-proliferation",
+      status: "Pull seeds added",
+      sourceClass: "Collection and folder-level source paths",
+      repositoryTrail:
+        "DPRK/ROK collection, North Korea folder item, South Asia MDR, Elisa Harris CWC files, and Helms treaty-file leads.",
+      reviewCue:
+        "Treat as call-slip and screening starts, not final document copies, until the relevant folders are pulled and itemized."
     }
   ],
   persons: [
@@ -1693,6 +2161,18 @@ window.VOLUME_VIII_DATA = {
       role: "Former Secretary of Defense / North Korea policy coordinator",
       laneIds: ["regional-proliferation"],
       note: "Namesake for the late-1990s DPRK policy review and missile/nuclear diplomacy."
+    },
+    {
+      name: "Elisa D. Harris",
+      role: "NSC Nonproliferation and Export Controls",
+      laneIds: ["cbw", "nonproliferation-regimes"],
+      note: "Source creator for CWC implementation files and CBW policy records."
+    },
+    {
+      name: "Jesse Helms",
+      role: "Chairman, Senate Foreign Relations Committee",
+      laneIds: ["ctbt", "cbw"],
+      note: "Senate-side treaty politics source path for CTBT and CWC records."
     }
   ],
   sources: [
@@ -1727,6 +2207,30 @@ window.VOLUME_VIII_DATA = {
     {
       label: "NARA Catalog",
       url: "https://catalog.archives.gov/"
+    },
+    {
+      label: "Congress.gov CTBT Treaty Document 105-28",
+      url: "https://www.congress.gov/treaty-document/105th-congress/28/document-text"
+    },
+    {
+      label: "Congress.gov CTBT final review hearing",
+      url: "https://www.congress.gov/event/106th-congress/senate-event/LC19462/text"
+    },
+    {
+      label: "NATO NMD consultation transcript",
+      url: "https://www.nato.int/en/news-and-events/events/transcripts/2000/05/24/statement"
+    },
+    {
+      label: "OSCE CFE adaptation agreement",
+      url: "https://www.osce.org/library/14108"
+    },
+    {
+      label: "Clinton Digital Library DPRK and ROK collection",
+      url: "https://clinton.presidentiallibraries.us/collections/show/182"
+    },
+    {
+      label: "Clinton Digital Library Elisa Harris CWC files",
+      url: "https://clinton.presidentiallibraries.us/items/show/57270"
     }
   ]
 };

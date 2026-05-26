@@ -640,6 +640,20 @@ dd {
   font-weight: 750;
 }
 
+.gap-resolution {
+  border-left: 3px solid var(--green);
+  color: var(--ink) !important;
+  font-weight: 750;
+  margin: 0;
+  padding-left: 0.8rem;
+}
+
+.remaining-risk {
+  color: var(--muted) !important;
+  font-style: italic;
+  margin: 0;
+}
+
 .action-list {
   margin: 14px 0 0;
   padding-left: 22px;

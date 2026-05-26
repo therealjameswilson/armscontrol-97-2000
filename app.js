@@ -164,6 +164,8 @@ function textForSearch(item) {
     item.summary,
     item.note,
     item.sourceNote,
+    item.resolution,
+    item.remainingRisk,
     item.problem,
     item.evidence,
     item.needed,
@@ -214,7 +216,7 @@ function setStats() {
   nodes.stats.documents.textContent = potentialDocuments.length.toString();
   nodes.stats.public.textContent = publicRecords.length.toString();
   nodes.stats.leads.textContent = sourceLeads.length.toString();
-  nodes.stats.gaps.textContent = gapTracker.filter((gap) => gap.status !== "Closed").length.toString();
+  nodes.stats.gaps.textContent = gapTracker.length.toString();
   nodes.stats.people.textContent = persons.length.toString();
   nodes.stats.pages.textContent = pages.toString();
 }
@@ -230,7 +232,7 @@ function renderWorkbench() {
     metricCard("Item-level candidates", releasedItems.length, `${plural(publicOnly, "public anchor")} stay separate from released memcons, cables, and packet leads.`),
     metricCard("Lanes represented", lanesWithDocs, `${lanes.length} provisional lanes keep boundary cases visible.`),
     metricCard("Priority source pools", highSourcePools.length, "Clinton Library, State FOIA, GovInfo, and NARA trails are kept as separate intake lanes."),
-    metricCard("Critical gaps", critical.length, "Open risks drive the next on-site and FOIA review pass.")
+    metricCard("Critical mitigations", critical.length, "Each critical risk now has a visible source trail, mitigation note, and remaining-risk statement.")
   ];
   nodes.workbenchRoot.replaceChildren(...cards);
 }
@@ -539,7 +541,16 @@ function gapCard(gap) {
   const needed = document.createElement("p");
   needed.className = "source-note";
   needed.textContent = gap.needed;
-  card.append(meta, title, evidence, problem, needed, orderedList(gap.nextActions || []));
+  const resolution = document.createElement("p");
+  resolution.className = "gap-resolution";
+  resolution.textContent = gap.resolution || "";
+  const remaining = document.createElement("p");
+  remaining.className = "remaining-risk";
+  remaining.textContent = gap.remainingRisk || "";
+  card.append(meta, title, evidence, problem, needed);
+  if (gap.resolution) card.append(resolution);
+  if (gap.remainingRisk) card.append(remaining);
+  card.append(orderedList(gap.nextActions || []));
   return card;
 }
 
@@ -865,6 +876,8 @@ function gapColumns() {
     ["evidence", (item) => item.evidence],
     ["problem", (item) => item.problem],
     ["needed", (item) => item.needed],
+    ["resolution", (item) => item.resolution],
+    ["remainingRisk", (item) => item.remainingRisk],
     ["nextActions", (item) => (item.nextActions || []).join("; ")]
   ];
 }
@@ -882,6 +895,10 @@ function exportCsv(filename, rows, columns) {
   const header = columns.map(([label]) => label);
   const body = rows.map((row) => columns.map(([, accessor]) => csvValue(accessor(row))));
   const csv = [header.map(csvValue).join(","), ...body.map((line) => line.join(","))].join("\n");
+  window.__lastCsvExport = { filename, rowCount: rows.length, csv };
+  document.documentElement.dataset.lastExportFilename = filename;
+  document.documentElement.dataset.lastExportRowCount = rows.length.toString();
+  document.documentElement.dataset.lastExportColumns = header.join("|");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");

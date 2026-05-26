@@ -13,6 +13,8 @@ Official volume anchor:
 - Searchable/exportable candidate chronology.
 - Searchable/exportable source leads, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Source-copy ledger separating public anchors, released review copies, State FOIA PDFs, and collection-only folder-title leads.
+- Gap mitigation layer for CTBT Senate records, START/ABM internal-source trails, NMD allied consultations, South Asia, DPRK, CFE boundary control, and CBW implementation.
+- GitHub Pages workflow for root-level static deployment from `main`.
 
 ## Run Locally
 
@@ -22,6 +24,7 @@ Validation:
 
 ```bash
 node --check app.js
+node --check data/volume-data.js
 ```
 
 ## Source Base
@@ -31,3 +34,6 @@ node --check app.js
 - National Archives Catalog collection/series leads.
 - GovInfo Public Papers of the Presidents.
 - Department of State FOIA Library Strobe Talbott release records.
+- Congress.gov treaty, hearing, statutory, and Senate action records.
+- NATO and OSCE official consultation/treaty records.
+- Clinton Digital Library DPRK, South Asia, CWC, and treaty-politics collection leads.
