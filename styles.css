@@ -473,7 +473,7 @@ dd {
 
 .tools {
   display: grid;
-  grid-template-columns: minmax(260px, 1.25fr) repeat(3, minmax(150px, 0.55fr)) auto auto;
+  grid-template-columns: minmax(260px, 1.25fr) repeat(4, minmax(140px, 0.55fr)) auto auto;
   gap: 10px;
   align-items: end;
   margin-bottom: 18px;

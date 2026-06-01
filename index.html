@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=5" />
-    <script defer src="data/volume-data.js?v=5"></script>
-    <script defer src="app.js?v=5"></script>
+    <link rel="stylesheet" href="styles.css?v=6" />
+    <script defer src="data/volume-data.js?v=6"></script>
+    <script defer src="app.js?v=6"></script>
   </head>
   <body>
     <header class="site-header">
@@ -92,6 +92,7 @@
           <label><span>Lane</span><select id="document-lane-filter"></select></label>
           <label><span>Type</span><select id="document-type-filter"></select></label>
           <label><span>Priority</span><select id="document-priority-filter"></select></label>
+          <label><span>Sort</span><select id="document-sort"><option value="">Chronological</option><option value="lane">Lane grouped</option><option value="priority">Priority first</option></select></label>
           <button id="clear-document-filters" type="button">Reset</button>
           <button id="export-documents" type="button">CSV</button>
           <p id="document-summary" class="summary">Loading declassified chronology...</p>

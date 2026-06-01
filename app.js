@@ -16,7 +16,7 @@ const laneById = new Map(lanes.map((lane) => [lane.id, lane]));
 const laneOrder = new Map(lanes.map((lane, index) => [lane.id, index]));
 
 const state = {
-  documents: { query: "", lane: "", type: "", priority: "" },
+  documents: { query: "", lane: "", type: "", priority: "", sort: "" },
   leads: { query: "", lane: "", institution: "", priority: "" },
   diary: { query: "", lane: "", year: "", eventType: "" },
   public: { query: "", year: "", lane: "" },
@@ -43,6 +43,7 @@ const nodes = {
   documentLaneFilter: document.querySelector("#document-lane-filter"),
   documentTypeFilter: document.querySelector("#document-type-filter"),
   documentPriorityFilter: document.querySelector("#document-priority-filter"),
+  documentSort: document.querySelector("#document-sort"),
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
   leadsRoot: document.querySelector("#leads-root"),
@@ -109,6 +110,30 @@ function laneList(laneIds = []) {
 function byLaneThenDate(a, b) {
   return (
     (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99) ||
+    (a.date || "").localeCompare(b.date || "") ||
+    (b.score || 0) - (a.score || 0) ||
+    (a.title || "").localeCompare(b.title || "")
+  );
+}
+
+function byDateThenLane(a, b) {
+  return (
+    (a.date || "").localeCompare(b.date || "") ||
+    (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99) ||
+    (b.score || 0) - (a.score || 0) ||
+    (a.title || "").localeCompare(b.title || "")
+  );
+}
+
+function byPriorityThenDate(a, b) {
+  const priorityRank = new Map([
+    ["Anchor", 1],
+    ["High", 2],
+    ["Medium", 3],
+    ["Low", 4]
+  ]);
+  return (
+    (priorityRank.get(a.priority) || 99) - (priorityRank.get(b.priority) || 99) ||
     (a.date || "").localeCompare(b.date || "") ||
     (b.score || 0) - (a.score || 0) ||
     (a.title || "").localeCompare(b.title || "")
@@ -369,7 +394,13 @@ function filteredDocuments() {
       if (state.documents.priority && item.priority !== state.documents.priority) return false;
       return true;
     })
-    .sort(byLaneThenDate);
+    .sort(documentSortFunction());
+}
+
+function documentSortFunction() {
+  if (state.documents.sort === "lane") return byLaneThenDate;
+  if (state.documents.sort === "priority") return byPriorityThenDate;
+  return byDateThenLane;
 }
 
 function renderDocuments() {
@@ -813,12 +844,17 @@ function bindEvents() {
     state.documents.priority = value;
     renderDocuments();
   });
+  bindSelect(nodes.documentSort, (value) => {
+    state.documents.sort = value;
+    renderDocuments();
+  });
   nodes.clearDocumentFilters?.addEventListener("click", () => {
     resetGroup("documents", [
       nodes.documentSearch,
       nodes.documentLaneFilter,
       nodes.documentTypeFilter,
-      nodes.documentPriorityFilter
+      nodes.documentPriorityFilter,
+      nodes.documentSort
     ]);
     renderDocuments();
   });
