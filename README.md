@@ -15,6 +15,7 @@ Official volume anchor:
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Chapter coverage matrix comparing readiness buckets, Diary cues, and open gaps across every provisional lane with click-through filters.
+- Source request queue that turns source pools into copyable repository/pull request packets with linked leads, library targets, and risk checks.
 - Copy-ready citation, diary, source-lead, pull-plan, gap, pool, and ledger notes directly from the review cards.
 - Searchable/exportable source leads, Presidential Daily Diary references, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.

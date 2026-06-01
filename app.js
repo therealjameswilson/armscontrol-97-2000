@@ -82,6 +82,7 @@ const nodes = {
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   coverageRoot: document.querySelector("#coverage-root"),
+  requestsRoot: document.querySelector("#requests-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -400,6 +401,26 @@ function sourcePoolNote(pool) {
     pool.institution ? `Institution: ${pool.institution}` : "",
     pool.coverage ? `Coverage: ${pool.coverage}` : "",
     pool.nextUse ? `Next use: ${pool.nextUse}` : "",
+    pool.url ? `URL: ${pool.url}` : ""
+  ]);
+}
+
+function sourceRequestNote(pool, leads, pulls, gaps) {
+  return noteLines([
+    `Priority ${pool.priority} / ${pool.title}`,
+    pool.institution ? `Institution: ${pool.institution}` : "",
+    `Lane: ${laneNumber(pool.laneId)} / ${laneTitle(pool.laneId)}`,
+    pool.coverage ? `Coverage: ${pool.coverage}` : "",
+    pool.nextUse ? `Next use: ${pool.nextUse}` : "",
+    leads.length
+      ? `Source leads: ${leads.map((lead) => `${lead.title} (${lead.identifier || lead.institution || "no identifier"})`).join("; ")}`
+      : "",
+    pulls.length
+      ? `Pull targets: ${pulls.map((pull) => `${pull.title}: ${pull.visitGoal || pull.sourcePart || ""}`).join("; ")}`
+      : "",
+    gaps.length
+      ? `Risk check: ${gaps.map((gap) => `${gap.priority} ${gap.title}: ${gap.remainingRisk || gap.needed || gap.problem}`).join("; ")}`
+      : "",
     pool.url ? `URL: ${pool.url}` : ""
   ]);
 }
@@ -744,12 +765,21 @@ function showLaneDocuments(laneId) {
     nodes.documentLaneFilter,
     nodes.documentTypeFilter,
     nodes.documentPriorityFilter,
+    nodes.documentReadinessFilter,
     nodes.documentSort
   ]);
   state.documents.lane = laneId;
   if (nodes.documentLaneFilter) nodes.documentLaneFilter.value = laneId;
   renderDocuments();
   scrollToSection("#documents");
+}
+
+function showLaneLeads(laneId) {
+  resetGroup("leads", [nodes.leadSearch, nodes.leadLaneFilter, nodes.leadInstitutionFilter, nodes.leadPriorityFilter]);
+  state.leads.lane = laneId;
+  if (nodes.leadLaneFilter) nodes.leadLaneFilter.value = laneId;
+  renderLeads();
+  scrollToSection("#sources");
 }
 
 function showLaneDiary(laneId) {
@@ -969,6 +999,91 @@ function coverageNote(lane, documents, diary, gaps, counts) {
     documents.length ? `Top records: ${documents.sort(byPriorityThenDate).slice(0, 5).map((item) => item.title).join("; ")}` : "",
     gaps.length ? `First gap: ${gaps.sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0].title}` : ""
   ]);
+}
+
+function renderRequestQueue() {
+  const pools = [...sourcePools].sort(
+    (a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99)
+  );
+  renderList(nodes.requestsRoot, pools, requestCard, "No source request pools loaded.");
+}
+
+function requestCard(pool) {
+  const leads = sourceLeads.filter((item) => item.laneId === pool.laneId).sort(byPriorityThenDate).slice(0, 2);
+  const pulls = libraryPlan
+    .filter((item) => item.laneId === pool.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))
+    .slice(0, 2);
+  const gaps = gapTracker
+    .filter((item) => item.laneId === pool.laneId)
+    .sort(
+      (a, b) =>
+        priorityValue(a.priority) - priorityValue(b.priority) ||
+        (a.status || "").localeCompare(b.status || "") ||
+        a.title.localeCompare(b.title)
+    )
+    .slice(0, 1);
+
+  const card = document.createElement("article");
+  card.className = "request-card";
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(`Priority ${pool.priority}`), textSpan(laneNumber(pool.laneId)), textSpan(pool.institution));
+
+  const title = document.createElement("h3");
+  title.textContent = pool.title;
+
+  const coverage = document.createElement("p");
+  coverage.textContent = pool.coverage;
+
+  const next = document.createElement("p");
+  next.className = "source-note";
+  next.textContent = pool.nextUse;
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  if (pool.url) actions.append(linkButton("Open", pool.url));
+  if (leads.length) actions.append(packetActionButton("Leads", () => showLaneLeads(pool.laneId)));
+  if (pulls.length) actions.append(packetActionButton("Library", () => showLaneLibrary(pool.laneId)));
+  if (gaps.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(pool.laneId)));
+  actions.append(clipboardButton("Copy request", sourceRequestNote(pool, leads, pulls, gaps), "Request copied"));
+
+  card.append(
+    meta,
+    title,
+    coverage,
+    next,
+    packetBlock(
+      "Source leads",
+      packetList(
+        leads,
+        (lead) => lead.title,
+        (lead) => lead.identifier || lead.institution || lead.type || "No identifier listed.",
+        "No source leads mapped for this lane."
+      )
+    ),
+    packetBlock(
+      "Pull targets",
+      packetList(
+        pulls,
+        (pull) => pull.title,
+        (pull) => pull.visitGoal || pull.sourcePart || "No pull target note listed.",
+        "No library pull target mapped for this lane."
+      )
+    ),
+    packetBlock(
+      "Risk check",
+      packetList(
+        gaps,
+        (gap) => gap.title,
+        (gap) => `${gap.priority} / ${gap.status || "status not listed"}`,
+        "No open gap mapped for this lane."
+      )
+    ),
+    actions
+  );
+  return card;
 }
 
 function renderConcordance() {
@@ -1844,6 +1959,7 @@ function renderAll() {
   renderConcordance();
   renderSelectionBoard();
   renderCoverageMatrix();
+  renderRequestQueue();
   renderLeads();
   renderDiaryReferences();
   renderPublic();
