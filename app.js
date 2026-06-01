@@ -24,9 +24,40 @@ const priorityRank = new Map([
   ["C", 3],
   ["Low", 4]
 ]);
+const readinessBuckets = [
+  {
+    id: "review-copy",
+    label: "Review copy",
+    title: "Review-Copy Candidates",
+    description: "Released memcons and State FOIA records with substantive text ready for close comparison against the source file.",
+    empty: "No released review-copy candidates mapped yet."
+  },
+  {
+    id: "public-anchor",
+    label: "Public anchor",
+    title: "Public Statement Anchors",
+    description: "Public Papers items that fix public chronology and presidential framing, but should be paired with internal files before final selection.",
+    empty: "No public anchors mapped yet."
+  },
+  {
+    id: "formal-record",
+    label: "Formal public record",
+    title: "Treaty, Hearing, and Multilateral Records",
+    description: "Congressional, NATO, and OSCE records that establish formal action, testimony, or treaty text for the editorial frame.",
+    empty: "No formal public records mapped yet."
+  },
+  {
+    id: "pull-lead",
+    label: "Pull lead",
+    title: "Pull Before Selection",
+    description: "MDR and Clinton Digital Library source-path leads that should guide folder requests before being treated as documents.",
+    empty: "No pull leads mapped yet."
+  }
+];
+const readinessById = new Map(readinessBuckets.map((bucket) => [bucket.id, bucket]));
 
 const state = {
-  documents: { query: "", lane: "", type: "", priority: "", sort: "" },
+  documents: { query: "", lane: "", type: "", priority: "", readiness: "", sort: "" },
   leads: { query: "", lane: "", institution: "", priority: "" },
   diary: { query: "", lane: "", year: "", eventType: "" },
   public: { query: "", year: "", lane: "" },
@@ -49,12 +80,14 @@ const nodes = {
   handoffRoot: document.querySelector("#handoff-root"),
   packetsRoot: document.querySelector("#packets-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
+  selectionRoot: document.querySelector("#selection-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
   documentLaneFilter: document.querySelector("#document-lane-filter"),
   documentTypeFilter: document.querySelector("#document-type-filter"),
   documentPriorityFilter: document.querySelector("#document-priority-filter"),
+  documentReadinessFilter: document.querySelector("#document-readiness-filter"),
   documentSort: document.querySelector("#document-sort"),
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
@@ -151,6 +184,18 @@ function byPriorityThenDate(a, b) {
 
 function priorityValue(value) {
   return priorityRank.get(value) || 99;
+}
+
+function documentReadiness(item) {
+  if (/released memcon|state foia/i.test(item.type || "")) return "review-copy";
+  if (item.type === "Public Papers") return "public-anchor";
+  if (/congressional|nato|osce/i.test(item.type || "")) return "formal-record";
+  if (/source path|mdr/i.test(`${item.type} ${item.level}`)) return "pull-lead";
+  return "review";
+}
+
+function readinessLabel(id) {
+  return readinessById.get(id)?.label || "Review";
 }
 
 function uniqueSorted(values) {
@@ -264,6 +309,7 @@ function documentNote(item) {
     `${formatDate(item.date)} - ${item.title}`,
     `Lane: ${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}`,
     `Type: ${item.type}`,
+    `Readiness: ${readinessLabel(documentReadiness(item))}`,
     item.priority ? `Priority: ${item.priority}` : "",
     item.repository ? `Repository: ${item.repository}` : "",
     item.collection ? `Collection: ${item.collection}` : "",
@@ -383,6 +429,7 @@ function textForSearch(item) {
     item.identifier,
     item.type,
     item.priority,
+    readinessLabel(documentReadiness(item)),
     item.status,
     item.sourceClass,
     item.eventType,
@@ -732,6 +779,88 @@ function scrollToSection(selector) {
   document.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+function renderSelectionBoard() {
+  renderList(nodes.selectionRoot, readinessBuckets, selectionCard, "No selection readiness buckets loaded.");
+}
+
+function selectionCard(bucket) {
+  const items = potentialDocuments
+    .filter((item) => documentReadiness(item) === bucket.id)
+    .sort(byPriorityThenDate);
+  const lanesRepresented = uniqueSorted(items.map((item) => laneTitle(item.laneId))).length;
+  const topScore = items.reduce((max, item) => Math.max(max, item.score || 0), 0);
+
+  const card = document.createElement("article");
+  card.className = `selection-card readiness-${bucket.id}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(bucket.label), textSpan(plural(items.length, "record")));
+
+  const title = document.createElement("h3");
+  title.textContent = bucket.title;
+
+  const description = document.createElement("p");
+  description.textContent = bucket.description;
+
+  const details = document.createElement("dl");
+  details.className = "detail-grid selection-metrics";
+  addDetail(details, "Lanes", lanesRepresented);
+  addDetail(details, "Top score", topScore || "Review");
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  actions.append(packetActionButton("Filter chronology", () => showReadinessDocuments(bucket.id)));
+  actions.append(clipboardButton("Copy shortlist", selectionNote(bucket, items), "Shortlist copied"));
+
+  card.append(
+    meta,
+    title,
+    description,
+    details,
+    packetBlock(
+      "Top records",
+      packetList(
+        items.slice(0, 5),
+        (item) => item.title,
+        (item) => `${formatDate(item.date)} / ${laneNumber(item.laneId)} / ${item.priority} / score ${item.score || "review"}`,
+        bucket.empty
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function selectionNote(bucket, items) {
+  return noteLines([
+    `${bucket.title} (${plural(items.length, "record")})`,
+    bucket.description,
+    ...items.slice(0, 12).map(
+      (item) =>
+        `- ${formatDate(item.date)} | ${laneNumber(item.laneId)} | ${item.priority} | ${item.type} | ${item.title} | ${item.repository || ""} ${item.identifier || ""}`.trim()
+    )
+  ]);
+}
+
+function showReadinessDocuments(readiness) {
+  resetGroup("documents", [
+    nodes.documentSearch,
+    nodes.documentLaneFilter,
+    nodes.documentTypeFilter,
+    nodes.documentPriorityFilter,
+    nodes.documentReadinessFilter,
+    nodes.documentSort
+  ]);
+  state.documents.readiness = readiness;
+  state.documents.sort = "priority";
+  if (nodes.documentReadinessFilter) nodes.documentReadinessFilter.value = readiness;
+  if (nodes.documentSort) nodes.documentSort.value = "priority";
+  renderDocuments();
+  scrollToSection("#documents");
+}
+
 function renderConcordance() {
   renderList(
     nodes.concordanceRoot,
@@ -851,6 +980,7 @@ function filteredDocuments() {
       if (state.documents.lane && item.laneId !== state.documents.lane) return false;
       if (state.documents.type && item.type !== state.documents.type) return false;
       if (state.documents.priority && item.priority !== state.documents.priority) return false;
+      if (state.documents.readiness && documentReadiness(item) !== state.documents.readiness) return false;
       return true;
     })
     .sort(documentSortFunction());
@@ -876,7 +1006,13 @@ function documentCard(item) {
   const titleBlock = document.createElement("div");
   const meta = document.createElement("div");
   meta.className = "record-meta";
-  meta.append(textSpan(formatDate(item.date)), textSpan(laneNumber(item.laneId)), textSpan(item.type), textSpan(item.priority));
+  meta.append(
+    textSpan(formatDate(item.date)),
+    textSpan(laneNumber(item.laneId)),
+    textSpan(item.type),
+    textSpan(item.priority),
+    textSpan(readinessLabel(documentReadiness(item)))
+  );
   const title = document.createElement("h3");
   title.textContent = item.title;
   titleBlock.append(meta, title);
@@ -1291,6 +1427,12 @@ function setupFilters() {
 
   addOptions(nodes.documentTypeFilter, uniqueSorted(potentialDocuments.map((item) => item.type)), "All types");
   addOptions(nodes.documentPriorityFilter, uniqueSorted(potentialDocuments.map((item) => item.priority)), "All priorities");
+  addOptions(nodes.documentReadinessFilter, readinessBuckets.map((bucket) => bucket.id), "All readiness");
+  if (nodes.documentReadinessFilter) {
+    for (const option of nodes.documentReadinessFilter.options) {
+      if (option.value) option.textContent = readinessLabel(option.value);
+    }
+  }
   addOptions(nodes.leadInstitutionFilter, uniqueSorted(sourceLeads.map((item) => item.institution)), "All institutions");
   addOptions(nodes.leadPriorityFilter, uniqueSorted(sourceLeads.map((item) => item.priority)), "All priorities");
   addOptions(nodes.diaryYearFilter, uniqueSorted(diaryReferences.map((item) => getYear(item.date))), "All years");
@@ -1318,6 +1460,10 @@ function bindEvents() {
     state.documents.priority = value;
     renderDocuments();
   });
+  bindSelect(nodes.documentReadinessFilter, (value) => {
+    state.documents.readiness = value;
+    renderDocuments();
+  });
   bindSelect(nodes.documentSort, (value) => {
     state.documents.sort = value;
     renderDocuments();
@@ -1328,6 +1474,7 @@ function bindEvents() {
       nodes.documentLaneFilter,
       nodes.documentTypeFilter,
       nodes.documentPriorityFilter,
+      nodes.documentReadinessFilter,
       nodes.documentSort
     ]);
     renderDocuments();
@@ -1473,6 +1620,7 @@ function documentColumns() {
     ["title", (item) => item.title],
     ["type", (item) => item.type],
     ["priority", (item) => item.priority],
+    ["readiness", (item) => readinessLabel(documentReadiness(item))],
     ["score", (item) => item.score],
     ["repository", (item) => item.repository],
     ["collection", (item) => item.collection],
@@ -1584,6 +1732,7 @@ function renderAll() {
   renderDocuments();
   renderPackets();
   renderConcordance();
+  renderSelectionBoard();
   renderLeads();
   renderDiaryReferences();
   renderPublic();

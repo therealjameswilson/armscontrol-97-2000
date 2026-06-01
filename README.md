@@ -13,6 +13,7 @@ Official volume anchor:
 - Searchable/exportable declassified-document chronology, now placed first on the page with chronological, lane-grouped, and priority sort modes.
 - Chapter packet cards that crosswalk each Volume VIII lane to its top chronology candidates, Presidential Daily Diary cues, pull targets, and remaining gap.
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
+- Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Copy-ready citation, diary, source-lead, pull-plan, gap, pool, and ledger notes directly from the review cards.
 - Searchable/exportable source leads, Presidential Daily Diary references, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.
