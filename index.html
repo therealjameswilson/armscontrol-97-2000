@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=6" />
-    <script defer src="data/volume-data.js?v=6"></script>
-    <script defer src="app.js?v=6"></script>
+    <link rel="stylesheet" href="styles.css?v=7" />
+    <script defer src="data/volume-data.js?v=7"></script>
+    <script defer src="app.js?v=7"></script>
   </head>
   <body>
     <header class="site-header">
@@ -20,6 +20,7 @@
       </a>
       <nav aria-label="Primary navigation">
         <a href="#documents">Documents</a>
+        <a href="#packets">Packets</a>
         <a href="#workbench">Desk</a>
         <a href="#chapters">Lanes</a>
         <a href="#handoff">Handoff</a>
@@ -99,6 +100,16 @@
         </div>
         <div id="documents-root" class="records-root" aria-live="polite">
           <p class="loading">Loading declassified document chronology...</p>
+        </div>
+      </section>
+
+      <section class="section packet-section" id="packets" aria-labelledby="packets-title">
+        <div class="section-heading">
+          <p class="kicker">Compiler Packets</p>
+          <h2 id="packets-title">Chapter Packets</h2>
+        </div>
+        <div id="packets-root" class="packet-grid" aria-live="polite">
+          <p class="loading">Loading chapter packets...</p>
         </div>
       </section>
 

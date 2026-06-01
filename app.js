@@ -14,6 +14,16 @@ const references = data.sources || [];
 
 const laneById = new Map(lanes.map((lane) => [lane.id, lane]));
 const laneOrder = new Map(lanes.map((lane, index) => [lane.id, index]));
+const priorityRank = new Map([
+  ["Anchor", 1],
+  ["Critical", 1],
+  ["A", 1],
+  ["High", 2],
+  ["B", 2],
+  ["Medium", 3],
+  ["C", 3],
+  ["Low", 4]
+]);
 
 const state = {
   documents: { query: "", lane: "", type: "", priority: "", sort: "" },
@@ -37,6 +47,7 @@ const nodes = {
   workbenchRoot: document.querySelector("#workbench-root"),
   lanesRoot: document.querySelector("#lanes-root"),
   handoffRoot: document.querySelector("#handoff-root"),
+  packetsRoot: document.querySelector("#packets-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -126,18 +137,16 @@ function byDateThenLane(a, b) {
 }
 
 function byPriorityThenDate(a, b) {
-  const priorityRank = new Map([
-    ["Anchor", 1],
-    ["High", 2],
-    ["Medium", 3],
-    ["Low", 4]
-  ]);
   return (
-    (priorityRank.get(a.priority) || 99) - (priorityRank.get(b.priority) || 99) ||
+    priorityValue(a.priority) - priorityValue(b.priority) ||
     (a.date || "").localeCompare(b.date || "") ||
     (b.score || 0) - (a.score || 0) ||
     (a.title || "").localeCompare(b.title || "")
   );
+}
+
+function priorityValue(value) {
+  return priorityRank.get(value) || 99;
 }
 
 function uniqueSorted(values) {
@@ -372,6 +381,181 @@ function renderHandoff() {
     },
     "No Volume VII handoff records loaded."
   );
+}
+
+function renderPackets() {
+  renderList(nodes.packetsRoot, lanes, packetCard, "No chapter packets loaded.");
+}
+
+function packetCard(lane) {
+  const documents = potentialDocuments.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate);
+  const diary = diaryReferences.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate);
+  const leads = sourceLeads.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate);
+  const pulls = libraryPlan
+    .filter((item) => item.laneId === lane.id)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+  const gaps = gapTracker
+    .filter((item) => item.laneId === lane.id)
+    .sort(
+      (a, b) =>
+        priorityValue(a.priority) - priorityValue(b.priority) ||
+        (a.status || "").localeCompare(b.status || "") ||
+        a.title.localeCompare(b.title)
+    );
+
+  const card = document.createElement("article");
+  card.className = "packet-card";
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(lane.number), textSpan(lane.status));
+
+  const title = document.createElement("h3");
+  title.textContent = lane.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = lane.summary;
+
+  const details = document.createElement("dl");
+  details.className = "detail-grid packet-metrics";
+  addDetail(details, "Records", documents.length);
+  addDetail(details, "Diary", diary.length);
+  addDetail(details, "Leads", leads.length);
+  addDetail(details, "Gaps", gaps.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Chronology", () => showLaneDocuments(lane.id)));
+  if (diary.length) actions.append(packetActionButton("Diary", () => showLaneDiary(lane.id)));
+  if (pulls.length) actions.append(packetActionButton("Library", () => showLaneLibrary(lane.id)));
+  if (gaps.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(lane.id)));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    details,
+    packetBlock(
+      "Ready records",
+      packetList(
+        documents.slice(0, 3),
+        (item) => item.title,
+        (item) => `${formatDate(item.date)} / ${item.type} / ${item.priority}`,
+        "No candidate records mapped yet."
+      )
+    ),
+    packetBlock(
+      "Calendar cues",
+      packetList(
+        diary.slice(0, 2),
+        (item) => item.title,
+        (item) => `${formatDate(item.date)} / ${item.eventType} / ${item.time || "time not listed"}`,
+        "No Daily Diary cue mapped yet."
+      )
+    ),
+    packetBlock(
+      "Pull next",
+      packetList(
+        [...pulls.slice(0, 1), ...leads.slice(0, 1)].slice(0, 2),
+        (item) => item.title,
+        (item) => item.visitGoal || item.note || item.identifier || item.institution,
+        "No pull target mapped yet."
+      )
+    ),
+    packetBlock(
+      "Watch gap",
+      packetList(
+        gaps.slice(0, 1),
+        (item) => item.title,
+        (item) => item.remainingRisk || item.needed || item.problem,
+        "No open gap mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function packetBlock(title, content) {
+  const section = document.createElement("section");
+  section.className = "packet-block";
+  const heading = document.createElement("h4");
+  heading.textContent = title;
+  section.append(heading, content);
+  return section;
+}
+
+function packetList(items, primary, secondary, emptyText) {
+  if (!items.length) {
+    const empty = document.createElement("p");
+    empty.className = "packet-empty";
+    empty.textContent = emptyText;
+    return empty;
+  }
+  const list = document.createElement("ul");
+  list.className = "packet-list";
+  for (const item of items) {
+    const entry = document.createElement("li");
+    const title = document.createElement("strong");
+    title.textContent = primary(item);
+    const detail = document.createElement("span");
+    detail.textContent = secondary(item);
+    entry.append(title, detail);
+    list.append(entry);
+  }
+  return list;
+}
+
+function packetActionButton(label, onClick) {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "link-button";
+  button.textContent = label;
+  button.addEventListener("click", onClick);
+  return button;
+}
+
+function showLaneDocuments(laneId) {
+  resetGroup("documents", [
+    nodes.documentSearch,
+    nodes.documentLaneFilter,
+    nodes.documentTypeFilter,
+    nodes.documentPriorityFilter,
+    nodes.documentSort
+  ]);
+  state.documents.lane = laneId;
+  if (nodes.documentLaneFilter) nodes.documentLaneFilter.value = laneId;
+  renderDocuments();
+  scrollToSection("#documents");
+}
+
+function showLaneDiary(laneId) {
+  resetGroup("diary", [nodes.diarySearch, nodes.diaryLaneFilter, nodes.diaryYearFilter, nodes.diaryEventFilter]);
+  state.diary.lane = laneId;
+  if (nodes.diaryLaneFilter) nodes.diaryLaneFilter.value = laneId;
+  renderDiaryReferences();
+  scrollToSection("#diary");
+}
+
+function showLaneLibrary(laneId) {
+  resetGroup("library", [nodes.librarySearch, nodes.libraryLaneFilter, nodes.libraryPriorityFilter]);
+  state.library.lane = laneId;
+  if (nodes.libraryLaneFilter) nodes.libraryLaneFilter.value = laneId;
+  renderLibrary();
+  scrollToSection("#library");
+}
+
+function showLaneGaps(laneId) {
+  resetGroup("gaps", [nodes.gapSearch, nodes.gapLaneFilter, nodes.gapPriorityFilter, nodes.gapStatusFilter]);
+  state.gaps.lane = laneId;
+  if (nodes.gapLaneFilter) nodes.gapLaneFilter.value = laneId;
+  renderGaps();
+  scrollToSection("#gaps");
+}
+
+function scrollToSection(selector) {
+  document.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function tagList(values) {
@@ -1108,6 +1292,7 @@ function renderAll() {
   renderLanes();
   renderHandoff();
   renderDocuments();
+  renderPackets();
   renderLeads();
   renderDiaryReferences();
   renderPublic();
