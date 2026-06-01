@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=10" />
-    <script defer src="data/volume-data.js?v=10"></script>
-    <script defer src="app.js?v=10"></script>
+    <link rel="stylesheet" href="styles.css?v=11" />
+    <script defer src="data/volume-data.js?v=11"></script>
+    <script defer src="app.js?v=11"></script>
   </head>
   <body>
     <header class="site-header">
@@ -23,6 +23,7 @@
         <a href="#packets">Packets</a>
         <a href="#concordance">Concordance</a>
         <a href="#selection">Selection</a>
+        <a href="#coverage">Coverage</a>
         <a href="#workbench">Desk</a>
         <a href="#chapters">Lanes</a>
         <a href="#handoff">Handoff</a>
@@ -133,6 +134,16 @@
         </div>
         <div id="selection-root" class="selection-grid" aria-live="polite">
           <p class="loading">Loading selection readiness board...</p>
+        </div>
+      </section>
+
+      <section class="section coverage-section" id="coverage" aria-labelledby="coverage-title">
+        <div class="section-heading">
+          <p class="kicker">Chapter Balance</p>
+          <h2 id="coverage-title">Chapter Coverage Matrix</h2>
+        </div>
+        <div id="coverage-root" class="coverage-root" aria-live="polite">
+          <p class="loading">Loading chapter coverage matrix...</p>
         </div>
       </section>
 

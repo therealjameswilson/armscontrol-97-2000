@@ -81,6 +81,7 @@ const nodes = {
   packetsRoot: document.querySelector("#packets-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
+  coverageRoot: document.querySelector("#coverage-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -859,6 +860,115 @@ function showReadinessDocuments(readiness) {
   if (nodes.documentSort) nodes.documentSort.value = "priority";
   renderDocuments();
   scrollToSection("#documents");
+}
+
+function showCoverageDocuments(laneId, readiness = "") {
+  resetGroup("documents", [
+    nodes.documentSearch,
+    nodes.documentLaneFilter,
+    nodes.documentTypeFilter,
+    nodes.documentPriorityFilter,
+    nodes.documentReadinessFilter,
+    nodes.documentSort
+  ]);
+  state.documents.lane = laneId;
+  state.documents.readiness = readiness;
+  state.documents.sort = readiness ? "priority" : "";
+  if (nodes.documentLaneFilter) nodes.documentLaneFilter.value = laneId;
+  if (nodes.documentReadinessFilter) nodes.documentReadinessFilter.value = readiness;
+  if (nodes.documentSort) nodes.documentSort.value = state.documents.sort;
+  renderDocuments();
+  scrollToSection("#documents");
+}
+
+function renderCoverageMatrix() {
+  if (!nodes.coverageRoot) return;
+  const wrapper = document.createElement("div");
+  wrapper.className = "coverage-table-wrap";
+  const table = document.createElement("table");
+  table.className = "coverage-table";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const label of ["Chapter", "Review", "Public", "Formal", "Pull", "Diary", "Gaps", "Copy"]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = label;
+    headerRow.append(th);
+  }
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+  for (const lane of lanes) {
+    const row = coverageRow(lane);
+    tbody.append(row);
+  }
+
+  table.append(thead, tbody);
+  wrapper.append(table);
+  nodes.coverageRoot.replaceChildren(wrapper);
+}
+
+function coverageRow(lane) {
+  const documents = potentialDocuments.filter((item) => item.laneId === lane.id);
+  const counts = Object.fromEntries(readinessBuckets.map((bucket) => [bucket.id, documents.filter((item) => documentReadiness(item) === bucket.id).length]));
+  const diary = diaryReferences.filter((item) => item.laneId === lane.id);
+  const gaps = gapTracker.filter((item) => item.laneId === lane.id);
+  const criticalGaps = gaps.filter((item) => ["Critical", "High"].includes(item.priority));
+
+  const row = document.createElement("tr");
+  row.append(coverageChapterCell(lane));
+  row.append(coverageCountCell(counts["review-copy"], "Review-copy records", () => showCoverageDocuments(lane.id, "review-copy")));
+  row.append(coverageCountCell(counts["public-anchor"], "Public anchors", () => showCoverageDocuments(lane.id, "public-anchor")));
+  row.append(coverageCountCell(counts["formal-record"], "Formal public records", () => showCoverageDocuments(lane.id, "formal-record")));
+  row.append(coverageCountCell(counts["pull-lead"], "Pull leads", () => showCoverageDocuments(lane.id, "pull-lead")));
+  row.append(coverageCountCell(diary.length, "Diary cues", () => showLaneDiary(lane.id)));
+  row.append(coverageCountCell(criticalGaps.length || gaps.length, criticalGaps.length ? "Critical/high gaps" : "Gaps", () => showLaneGaps(lane.id)));
+
+  const copy = document.createElement("td");
+  copy.append(clipboardButton("Copy", coverageNote(lane, documents, diary, gaps, counts), "Coverage row copied"));
+  row.append(copy);
+  return row;
+}
+
+function coverageChapterCell(lane) {
+  const cell = document.createElement("th");
+  cell.scope = "row";
+  const title = document.createElement("strong");
+  title.textContent = lane.title;
+  const meta = document.createElement("span");
+  meta.textContent = `${lane.number} / ${lane.status}`;
+  cell.append(title, meta);
+  return cell;
+}
+
+function coverageCountCell(count, label, onClick) {
+  const cell = document.createElement("td");
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "coverage-count";
+  button.disabled = count === 0;
+  button.textContent = count.toString();
+  button.setAttribute("aria-label", `${label}: ${count}`);
+  button.addEventListener("click", onClick);
+  cell.append(button);
+  return cell;
+}
+
+function coverageNote(lane, documents, diary, gaps, counts) {
+  return noteLines([
+    `${lane.number} / ${lane.title}`,
+    `Status: ${lane.status}`,
+    `Summary: ${lane.summary}`,
+    `Review copies: ${counts["review-copy"]}`,
+    `Public anchors: ${counts["public-anchor"]}`,
+    `Formal public records: ${counts["formal-record"]}`,
+    `Pull leads: ${counts["pull-lead"]}`,
+    `Diary cues: ${diary.length}`,
+    `Open gaps: ${gaps.length}`,
+    documents.length ? `Top records: ${documents.sort(byPriorityThenDate).slice(0, 5).map((item) => item.title).join("; ")}` : "",
+    gaps.length ? `First gap: ${gaps.sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0].title}` : ""
+  ]);
 }
 
 function renderConcordance() {
@@ -1733,6 +1843,7 @@ function renderAll() {
   renderPackets();
   renderConcordance();
   renderSelectionBoard();
+  renderCoverageMatrix();
   renderLeads();
   renderDiaryReferences();
   renderPublic();
