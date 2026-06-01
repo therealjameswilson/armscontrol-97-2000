@@ -31,6 +31,7 @@ Searched the 1997-2000 sampled hardcopy packets for: `Yeltsin`, `Putin`, `START`
 ## Source Notes
 
 - The Diary is calendar and participant evidence, not a substitute for memcons, briefing papers, cables, or policy files. The page now treats each hit as a call/meeting reference and source cue.
+- The live concordance section now pairs each Diary cue with exact-day or nearby candidate records, the leading pull target, and the remaining source risk for that lane.
 - China/Jiang secure voice calls appeared in the hardcopy samples, but the diary text did not state a nonproliferation or arms-control subject for those calls. They remain watch items until China-proliferation files tie them to this volume.
 - The extracted Box 003 PDF 003/004 text has a marker/content mismatch: the FOIA marker date range and the diary pages do not line up cleanly. The assister cites the PDF file where the extracted diary page appears and keeps the packet identifier visible for re-checking against the original image.
 

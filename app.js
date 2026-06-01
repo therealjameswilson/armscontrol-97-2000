@@ -48,6 +48,7 @@ const nodes = {
   lanesRoot: document.querySelector("#lanes-root"),
   handoffRoot: document.querySelector("#handoff-root"),
   packetsRoot: document.querySelector("#packets-root"),
+  concordanceRoot: document.querySelector("#concordance-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -181,6 +182,18 @@ function getYear(value) {
   return /^\d{4}/.test(value || "") ? value.slice(0, 4) : "";
 }
 
+function dateValue(value) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value || "")) return null;
+  return new Date(`${value}T00:00:00Z`);
+}
+
+function dayDistance(a, b) {
+  const first = dateValue(a);
+  const second = dateValue(b);
+  if (!first || !second) return Number.POSITIVE_INFINITY;
+  return Math.abs(first - second) / 86400000;
+}
+
 function textSpan(value) {
   const span = document.createElement("span");
   span.textContent = value;
@@ -288,6 +301,18 @@ function diaryNote(entry) {
     entry.pdfPacket ? `Packet: ${entry.pdfPacket}` : "",
     entry.url ? `Catalog URL: ${entry.url}` : "",
     entry.pdfUrl ? `PDF: ${entry.pdfUrl}` : ""
+  ]);
+}
+
+function concordanceNote(entry, matches) {
+  return noteLines([
+    diaryNote(entry),
+    matches.exact.length ? `Exact-day records: ${matches.exact.map((item) => item.title).join("; ")}` : "",
+    matches.nearby.length
+      ? `Nearby records: ${matches.nearby.map((item) => `${formatDate(item.date)} - ${item.title}`).join("; ")}`
+      : "",
+    matches.pull ? `Pull target: ${matches.pull.title}` : "",
+    matches.gap ? `Open risk: ${matches.gap.title}` : ""
   ]);
 }
 
@@ -705,6 +730,107 @@ function showLaneGaps(laneId) {
 
 function scrollToSection(selector) {
   document.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+function renderConcordance() {
+  renderList(
+    nodes.concordanceRoot,
+    [...diaryReferences].sort(byDateThenLane),
+    concordanceCard,
+    "No diary concordance records loaded."
+  );
+}
+
+function concordanceCard(entry) {
+  const matches = concordanceMatches(entry);
+  const card = document.createElement("article");
+  card.className = `concordance-card priority-${(entry.priority || "").toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(formatDate(entry.date)), textSpan(laneNumber(entry.laneId)), textSpan(entry.eventType), textSpan(entry.priority));
+
+  const title = document.createElement("h3");
+  title.textContent = entry.title;
+
+  const entryText = document.createElement("p");
+  entryText.textContent = entry.diaryEntry;
+
+  const details = document.createElement("dl");
+  details.className = "detail-grid";
+  addDetail(details, "Time", entry.time);
+  addDetail(details, "Location", entry.location);
+  addDetail(details, "Packet", entry.pdfPacket);
+
+  const route = document.createElement("div");
+  route.className = "concordance-route";
+  if (matches.pull) route.append(routePill("Pull", matches.pull.title));
+  if (matches.leads.length) route.append(routePill("Lead", matches.leads[0].title));
+  if (matches.gap) route.append(routePill("Gap", matches.gap.title));
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  if (entry.url) actions.append(linkButton("Catalog", entry.url));
+  if (entry.pdfUrl) actions.append(linkButton("PDF", entry.pdfUrl));
+  actions.append(clipboardButton("Copy concordance", concordanceNote(entry, matches), "Concordance copied"));
+
+  card.append(
+    meta,
+    title,
+    entryText,
+    details,
+    packetBlock(
+      "Exact-day records",
+      packetList(
+        matches.exact,
+        (item) => item.title,
+        (item) => `${item.type} / ${item.priority}`,
+        "No exact-day record mapped yet."
+      )
+    ),
+    packetBlock(
+      "Nearby records",
+      packetList(
+        matches.nearby,
+        (item) => item.title,
+        (item) => `${formatDate(item.date)} / ${item.type} / ${item.priority}`,
+        "No nearby record within 30 days in this lane."
+      )
+    ),
+    route,
+    actions
+  );
+
+  return card;
+}
+
+function concordanceMatches(entry) {
+  const laneDocuments = potentialDocuments.filter((item) => item.laneId === entry.laneId);
+  const exact = laneDocuments.filter((item) => item.date === entry.date).sort(byPriorityThenDate).slice(0, 3);
+  const nearby = laneDocuments
+    .filter((item) => item.date !== entry.date && dayDistance(item.date, entry.date) <= 30)
+    .sort((a, b) => dayDistance(a.date, entry.date) - dayDistance(b.date, entry.date) || byPriorityThenDate(a, b))
+    .slice(0, 3);
+  const leads = sourceLeads.filter((item) => item.laneId === entry.laneId).sort(byPriorityThenDate).slice(0, 2);
+  const pull = libraryPlan
+    .filter((item) => item.laneId === entry.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+  const gap = gapTracker
+    .filter((item) => item.laneId === entry.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+
+  return { exact, nearby, leads, pull, gap };
+}
+
+function routePill(label, value) {
+  const pill = document.createElement("p");
+  pill.className = "route-pill";
+  const strong = document.createElement("strong");
+  strong.textContent = label;
+  const span = document.createElement("span");
+  span.textContent = value;
+  pill.append(strong, span);
+  return pill;
 }
 
 function tagList(values) {
@@ -1457,6 +1583,7 @@ function renderAll() {
   renderHandoff();
   renderDocuments();
   renderPackets();
+  renderConcordance();
   renderLeads();
   renderDiaryReferences();
   renderPublic();

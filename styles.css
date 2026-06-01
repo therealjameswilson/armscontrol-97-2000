@@ -334,6 +334,7 @@ dd {
 
 .workbench-root,
 .packet-grid,
+.concordance-grid,
 .lane-grid,
 .handoff-grid,
 .lead-grid,
@@ -358,6 +359,10 @@ dd {
 
 .packet-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.concordance-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .handoff-grid {
@@ -385,6 +390,7 @@ dd {
 
 .metric-card,
 .packet-card,
+.concordance-card,
 .lane-card,
 .handoff-card,
 .record-card,
@@ -481,6 +487,42 @@ dd {
 
 .packet-actions {
   align-self: end;
+}
+
+.concordance-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--violet);
+}
+
+.concordance-route {
+  display: grid;
+  gap: 8px;
+}
+
+.route-pill {
+  display: grid;
+  grid-template-columns: 62px minmax(0, 1fr);
+  gap: 10px;
+  margin: 0;
+  padding: 10px 12px;
+  background: rgba(73, 111, 145, 0.07);
+  border: 1px solid rgba(73, 111, 145, 0.14);
+  border-radius: 6px;
+}
+
+.route-pill strong {
+  color: var(--red);
+  font-size: 0.76rem;
+  text-transform: uppercase;
+}
+
+.route-pill span {
+  min-width: 0;
+  color: var(--ink);
+  font-weight: 750;
+  overflow-wrap: break-word;
 }
 
 .metric-card strong {
@@ -670,6 +712,7 @@ dd {
 
 .record-card p,
 .packet-card p,
+.concordance-card p,
 .lead-card p,
 .diary-card p,
 .compact-card p,
@@ -851,6 +894,7 @@ dd {
 
   .workbench-root,
   .packet-grid,
+  .concordance-grid,
   .lane-grid,
   .handoff-grid,
   .diary-grid,
@@ -879,6 +923,7 @@ dd {
   .stats,
   .workbench-root,
   .packet-grid,
+  .concordance-grid,
   .lane-grid,
   .handoff-grid,
   .lead-grid,
@@ -913,7 +958,8 @@ dd {
   }
 
   .brief dl div,
-  .detail-grid div {
+  .detail-grid div,
+  .route-pill {
     grid-template-columns: 1fr;
     gap: 3px;
   }
