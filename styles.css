@@ -338,6 +338,7 @@ dd {
 .selection-grid,
 .request-grid,
 .action-grid,
+.briefing-grid,
 .lane-grid,
 .handoff-grid,
 .lead-grid,
@@ -380,6 +381,10 @@ dd {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.briefing-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .handoff-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -409,6 +414,7 @@ dd {
 .selection-card,
 .request-card,
 .action-card,
+.briefing-card,
 .lane-card,
 .handoff-card,
 .record-card,
@@ -567,6 +573,17 @@ dd {
 
 .detail-grid.action-metrics div {
   grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.briefing-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-top: 5px solid var(--green);
+}
+
+.briefing-card > p {
+  margin-bottom: 0;
 }
 
 .coverage-root {
@@ -887,6 +904,7 @@ dd {
 .selection-card p,
 .request-card p,
 .action-card p,
+.briefing-card p,
 .lead-card p,
 .diary-card p,
 .compact-card p,
@@ -1072,6 +1090,7 @@ dd {
   .selection-grid,
   .request-grid,
   .action-grid,
+  .briefing-grid,
   .lane-grid,
   .handoff-grid,
   .diary-grid,
@@ -1104,6 +1123,7 @@ dd {
   .selection-grid,
   .request-grid,
   .action-grid,
+  .briefing-grid,
   .lane-grid,
   .handoff-grid,
   .lead-grid,

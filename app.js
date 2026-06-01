@@ -84,6 +84,7 @@ const nodes = {
   coverageRoot: document.querySelector("#coverage-root"),
   requestsRoot: document.querySelector("#requests-root"),
   actionsRoot: document.querySelector("#actions-root"),
+  briefsRoot: document.querySelector("#briefs-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -1271,6 +1272,195 @@ function compilerActionNote(action) {
   ]);
 }
 
+function renderBriefingPack() {
+  renderList(nodes.briefsRoot, compilerBriefs(), briefingCard, "No compiler briefs loaded.");
+}
+
+function compilerBriefs() {
+  const actions = lanes.map(compilerAction).sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.lane.id) ?? 99) - (laneOrder.get(b.lane.id) ?? 99));
+  const urgentActions = actions.filter((action) => priorityValue(action.priority) <= 2).slice(0, 6);
+  const highPools = sourcePools
+    .filter((pool) => pool.priority === "A")
+    .sort((a, b) => (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99) || a.title.localeCompare(b.title));
+  const priorityPulls = [...libraryPlan].sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99)).slice(0, 6);
+  const reviewDocs = potentialDocuments.filter((item) => documentReadiness(item) === "review-copy").sort(byPriorityThenDate);
+  const publicAnchors = potentialDocuments.filter((item) => documentReadiness(item) === "public-anchor").sort(byPriorityThenDate);
+  const formalRecords = potentialDocuments.filter((item) => documentReadiness(item) === "formal-record").sort(byPriorityThenDate);
+  const pullLeads = potentialDocuments.filter((item) => documentReadiness(item) === "pull-lead").sort(byPriorityThenDate);
+  const highDiary = [...diaryReferences].sort(byPriorityThenDate).slice(0, 8);
+  const highGaps = gapTracker
+    .filter((gap) => ["Critical", "High"].includes(gap.priority))
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99));
+  const carryovers = [...volumeHandoff].sort((a, b) => a.priorChapter.localeCompare(b.priorChapter));
+
+  return [
+    {
+      kind: "Status",
+      title: "Weekly Compiler Status Brief",
+      detail: `${plural(potentialDocuments.length, "candidate")} across ${plural(lanes.length, "lane")}, with chronology, source requests, action queue, and risk controls ready for review.`,
+      count: plural(urgentActions.length, "priority action"),
+      items: urgentActions.map((action) => ({
+        title: `${action.priority} / ${action.lane.number}`,
+        detail: `${action.title}: ${action.nextStep}`
+      })),
+      actions: [{ label: "Actions", target: "#actions" }],
+      copyLabel: "Copy status",
+      text: statusBriefNote(urgentActions)
+    },
+    {
+      kind: "Pulls",
+      title: "Archive and FOIA Pull Memo",
+      detail: `${plural(highPools.length, "priority source pool")} and ${plural(priorityPulls.length, "pull-plan item")} define the next request package.`,
+      count: plural(highPools.length + priorityPulls.length, "source move"),
+      items: [
+        ...highPools.map((pool) => ({ title: pool.title, detail: `${pool.institution}: ${pool.nextUse}` })),
+        ...priorityPulls.map((pull) => ({ title: pull.title, detail: pull.visitGoal || pull.sourcePart || pull.whyItMatters }))
+      ].slice(0, 8),
+      actions: [
+        { label: "Requests", target: "#requests" },
+        { label: "Library", target: "#library" }
+      ],
+      copyLabel: "Copy pull memo",
+      text: pullBriefNote(highPools, priorityPulls)
+    },
+    {
+      kind: "Selection",
+      title: "Document Selection Memo",
+      detail: `${plural(reviewDocs.length, "review-copy record")} should be weighed against ${plural(publicAnchors.length, "public anchor")}, ${plural(formalRecords.length, "formal record")}, and ${plural(pullLeads.length, "pull lead")}.`,
+      count: plural(reviewDocs.length, "review copy"),
+      items: reviewDocs.slice(0, 8).map((item) => ({
+        title: item.title,
+        detail: `${formatDate(item.date)} / ${laneNumber(item.laneId)} / score ${item.score || "review"}`
+      })),
+      actions: [
+        { label: "Chronology", target: "#documents" },
+        { label: "Selection", target: "#selection" }
+      ],
+      copyLabel: "Copy selection",
+      text: selectionBriefNote(reviewDocs, publicAnchors, formalRecords, pullLeads)
+    },
+    {
+      kind: "Diary",
+      title: "Presidential Daily Diary Memo",
+      detail: `${plural(diaryReferences.length, "call/meeting cue")} can anchor participant lists, exact-day checks, and nearby document pulls.`,
+      count: plural(highDiary.length, "top cue"),
+      items: highDiary.map((entry) => ({
+        title: entry.title,
+        detail: `${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${laneNumber(entry.laneId)}`
+      })),
+      actions: [
+        { label: "Concordance", target: "#concordance" },
+        { label: "Diary", target: "#diary" }
+      ],
+      copyLabel: "Copy diary",
+      text: diaryBriefNote(highDiary)
+    },
+    {
+      kind: "Risks",
+      title: "Boundary and Gap Memo",
+      detail: `${plural(highGaps.length, "critical/high gap")} and ${plural(carryovers.length, "Volume VII carryover")} frame the editorial risk review.`,
+      count: plural(highGaps.length, "priority gap"),
+      items: [
+        ...highGaps.map((gap) => ({ title: `${gap.priority} / ${gap.title}`, detail: gap.remainingRisk || gap.needed || gap.problem })),
+        ...carryovers.map((handoff) => ({ title: handoff.priorChapter, detail: handoff.newQuestion }))
+      ].slice(0, 9),
+      actions: [
+        { label: "Gaps", target: "#gaps" },
+        { label: "Handoff", target: "#handoff" }
+      ],
+      copyLabel: "Copy risks",
+      text: riskBriefNote(highGaps, carryovers)
+    }
+  ];
+}
+
+function briefingCard(brief) {
+  const card = document.createElement("article");
+  card.className = "briefing-card";
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(brief.kind), textSpan(brief.count));
+
+  const title = document.createElement("h3");
+  title.textContent = brief.title;
+
+  const detail = document.createElement("p");
+  detail.textContent = brief.detail;
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  for (const action of brief.actions) {
+    actions.append(packetActionButton(action.label, () => scrollToSection(action.target)));
+  }
+  actions.append(clipboardButton(brief.copyLabel, brief.text, "Brief copied"));
+
+  card.append(
+    meta,
+    title,
+    detail,
+    packetBlock(
+      "Use first",
+      packetList(
+        brief.items,
+        (item) => item.title,
+        (item) => item.detail,
+        "No brief items mapped yet."
+      )
+    ),
+    actions
+  );
+  return card;
+}
+
+function statusBriefNote(actions) {
+  return noteLines([
+    `${data.meta?.title || "FRUS Volume VIII"} compiler status brief`,
+    data.meta?.subtitle || "",
+    `Status: ${data.meta?.status || "Unknown"}`,
+    `Counts: ${potentialDocuments.length} candidate records; ${sourceLeads.length} source leads; ${diaryReferences.length} Daily Diary cues; ${gapTracker.length} gap actions; ${volumeHandoff.length} Volume VII carryovers.`,
+    actions.length ? "Priority actions:" : "",
+    ...actions.map((action, index) => `${index + 1}. [${action.priority}] ${action.lane.number} / ${action.title}: ${action.nextStep}`)
+  ]);
+}
+
+function pullBriefNote(pools, pulls) {
+  return noteLines([
+    "Archive and FOIA pull memo",
+    pools.length ? "Priority source pools:" : "",
+    ...pools.map((pool, index) => `${index + 1}. ${pool.title} (${pool.institution}) - ${pool.coverage}; next use: ${pool.nextUse}`),
+    pulls.length ? "Pull-plan items:" : "",
+    ...pulls.map((pull, index) => `${index + 1}. ${laneNumber(pull.laneId)} / ${pull.title}: ${pull.visitGoal || pull.sourcePart || pull.whyItMatters}`)
+  ]);
+}
+
+function selectionBriefNote(reviewDocs, publicAnchors, formalRecords, pullLeads) {
+  return noteLines([
+    "Document selection memo",
+    `Readiness: ${reviewDocs.length} review-copy; ${publicAnchors.length} public-anchor; ${formalRecords.length} formal-record; ${pullLeads.length} pull-lead.`,
+    reviewDocs.length ? "Top review-copy records:" : "",
+    ...reviewDocs.slice(0, 10).map((item, index) => `${index + 1}. ${formatDate(item.date)} / ${laneNumber(item.laneId)} / ${item.title} / ${item.repository || item.collection || item.type}`)
+  ]);
+}
+
+function diaryBriefNote(entries) {
+  return noteLines([
+    "Presidential Daily Diary memo",
+    `${diaryReferences.length} call/meeting cues are mapped to Volume VIII lanes.`,
+    ...entries.map((entry, index) => `${index + 1}. ${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${laneNumber(entry.laneId)} / ${entry.title}: ${entry.volumeConnection}`)
+  ]);
+}
+
+function riskBriefNote(gaps, handoffs) {
+  return noteLines([
+    "Boundary and gap memo",
+    gaps.length ? "Critical/high gaps:" : "",
+    ...gaps.map((gap, index) => `${index + 1}. [${gap.priority}] ${laneNumber(gap.laneId)} / ${gap.title}: ${gap.remainingRisk || gap.needed || gap.problem}`),
+    handoffs.length ? "Volume VII carryovers:" : "",
+    ...handoffs.map((handoff, index) => `${index + 1}. ${handoff.priorChapter}: ${handoff.newQuestion}`)
+  ]);
+}
+
 function renderConcordance() {
   renderList(
     nodes.concordanceRoot,
@@ -2146,6 +2336,7 @@ function renderAll() {
   renderCoverageMatrix();
   renderRequestQueue();
   renderActionQueue();
+  renderBriefingPack();
   renderLeads();
   renderDiaryReferences();
   renderPublic();
