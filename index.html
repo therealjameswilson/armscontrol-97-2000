@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=12" />
-    <script defer src="data/volume-data.js?v=12"></script>
-    <script defer src="app.js?v=12"></script>
+    <link rel="stylesheet" href="styles.css?v=13" />
+    <script defer src="data/volume-data.js?v=13"></script>
+    <script defer src="app.js?v=13"></script>
   </head>
   <body>
     <header class="site-header">
@@ -25,6 +25,7 @@
         <a href="#selection">Selection</a>
         <a href="#coverage">Coverage</a>
         <a href="#requests">Requests</a>
+        <a href="#actions">Actions</a>
         <a href="#workbench">Desk</a>
         <a href="#chapters">Lanes</a>
         <a href="#handoff">Handoff</a>
@@ -155,6 +156,16 @@
         </div>
         <div id="requests-root" class="request-grid" aria-live="polite">
           <p class="loading">Loading source request queue...</p>
+        </div>
+      </section>
+
+      <section class="section action-section" id="actions" aria-labelledby="actions-title">
+        <div class="section-heading">
+          <p class="kicker">Next Moves</p>
+          <h2 id="actions-title">First-Pass Action Queue</h2>
+        </div>
+        <div id="actions-root" class="action-grid" aria-live="polite">
+          <p class="loading">Loading compiler action queue...</p>
         </div>
       </section>
 

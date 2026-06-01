@@ -83,6 +83,7 @@ const nodes = {
   selectionRoot: document.querySelector("#selection-root"),
   coverageRoot: document.querySelector("#coverage-root"),
   requestsRoot: document.querySelector("#requests-root"),
+  actionsRoot: document.querySelector("#actions-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -144,6 +145,7 @@ const nodes = {
 };
 
 let copyStatusTimer;
+let requestHighlightTimer;
 
 function laneTitle(laneId) {
   return laneById.get(laneId)?.title || "Unassigned";
@@ -198,6 +200,14 @@ function documentReadiness(item) {
 
 function readinessLabel(id) {
   return readinessById.get(id)?.label || "Review";
+}
+
+function readinessCounts(items) {
+  return Object.fromEntries(readinessBuckets.map((bucket) => [bucket.id, items.filter((item) => documentReadiness(item) === bucket.id).length]));
+}
+
+function handoffsForLane(laneId) {
+  return volumeHandoff.filter((handoff) => (handoff.volumeViiiLaneIds || []).includes(laneId));
 }
 
 function uniqueSorted(values) {
@@ -806,6 +816,19 @@ function showLaneGaps(laneId) {
   scrollToSection("#gaps");
 }
 
+function showLaneRequests(laneId) {
+  scrollToSection("#requests");
+  const requestCards = document.querySelectorAll("#requests-root .request-card");
+  for (const card of requestCards) card.dataset.highlighted = "false";
+  for (const card of requestCards) {
+    if (card.dataset.lane === laneId) card.dataset.highlighted = "true";
+  }
+  clearTimeout(requestHighlightTimer);
+  requestHighlightTimer = setTimeout(() => {
+    for (const card of requestCards) card.dataset.highlighted = "false";
+  }, 2800);
+}
+
 function scrollToSection(selector) {
   document.querySelector(selector)?.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -941,7 +964,7 @@ function renderCoverageMatrix() {
 
 function coverageRow(lane) {
   const documents = potentialDocuments.filter((item) => item.laneId === lane.id);
-  const counts = Object.fromEntries(readinessBuckets.map((bucket) => [bucket.id, documents.filter((item) => documentReadiness(item) === bucket.id).length]));
+  const counts = readinessCounts(documents);
   const diary = diaryReferences.filter((item) => item.laneId === lane.id);
   const gaps = gapTracker.filter((item) => item.laneId === lane.id);
   const criticalGaps = gaps.filter((item) => ["Critical", "High"].includes(item.priority));
@@ -1026,6 +1049,7 @@ function requestCard(pool) {
 
   const card = document.createElement("article");
   card.className = "request-card";
+  card.dataset.lane = pool.laneId;
 
   const meta = document.createElement("div");
   meta.className = "record-meta";
@@ -1084,6 +1108,167 @@ function requestCard(pool) {
     actions
   );
   return card;
+}
+
+function renderActionQueue() {
+  const actions = lanes.map(compilerAction).sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.lane.id) ?? 99) - (laneOrder.get(b.lane.id) ?? 99));
+  renderList(nodes.actionsRoot, actions, actionCard, "No compiler actions loaded.");
+}
+
+function compilerAction(lane) {
+  const documents = potentialDocuments.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate);
+  const counts = readinessCounts(documents);
+  const diary = diaryReferences.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate);
+  const leads = sourceLeads.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate);
+  const pulls = libraryPlan
+    .filter((item) => item.laneId === lane.id)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+  const gaps = gapTracker
+    .filter((item) => item.laneId === lane.id)
+    .sort(
+      (a, b) =>
+        priorityValue(a.priority) - priorityValue(b.priority) ||
+        (a.status || "").localeCompare(b.status || "") ||
+        a.title.localeCompare(b.title)
+    );
+  const pools = sourcePools
+    .filter((item) => item.laneId === lane.id)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+  const handoffs = handoffsForLane(lane.id);
+  const urgentGap = gaps.find((gap) => ["Critical", "High"].includes(gap.priority)) || gaps[0];
+
+  let priority = "Medium";
+  let type = "Selection";
+  let title = `Assemble first-pass packet for ${lane.title}`;
+  let detail = `${plural(documents.length, "candidate")} and ${plural(handoffs.length, "Volume VII carryover")} are ready for chapter framing.`;
+  let nextStep = documents[0] ? `Start with ${formatDate(documents[0].date)} - ${documents[0].title}.` : "Use the mapped source pool before drafting document order.";
+
+  if (urgentGap && priorityValue(urgentGap.priority) <= 2) {
+    priority = urgentGap.priority;
+    type = "Gap";
+    title = `Resolve ${urgentGap.title}`;
+    detail = urgentGap.problem || urgentGap.evidence || urgentGap.needed || detail;
+    nextStep = urgentGap.nextActions?.[0] || urgentGap.needed || urgentGap.resolution || urgentGap.remainingRisk || nextStep;
+  } else if (lane.id !== "volume-control" && counts["review-copy"] === 0) {
+    priority = "High";
+    type = "Pull";
+    title = `Pull internal records for ${lane.title}`;
+    detail = `${plural(documents.length, "mapped record")} are public, formal, or source-path anchors, but none are review-copy text yet.`;
+    nextStep = pulls[0]?.visitGoal || leads[0]?.note || pools[0]?.nextUse || "Use source requests before selecting final documents.";
+  } else if (diary.length && documents.length) {
+    priority = "High";
+    type = "Diary";
+    title = `Pair diary cues with ${lane.title} records`;
+    detail = `${plural(diary.length, "Presidential Daily Diary cue")} can pin participants and sequence around the mapped documents.`;
+    nextStep = `Start with ${formatDate(diary[0].date)} - ${diary[0].title}.`;
+  } else if (counts["public-anchor"] > counts["review-copy"]) {
+    priority = "Medium";
+    type = "Public/Internal";
+    title = `Backfill public anchors for ${lane.title}`;
+    detail = `${plural(counts["public-anchor"], "public anchor")} outnumber released review-copy records.`;
+    nextStep = pulls[0]?.visitGoal || leads[0]?.note || "Trace public dates back to internal memoranda, briefing papers, or cables.";
+  } else if (pools.length || pulls.length || leads.length) {
+    priority = "Medium";
+    type = "Source";
+    title = `Open source trail for ${lane.title}`;
+    detail = pools[0]?.coverage || pulls[0]?.whyItMatters || leads[0]?.note || detail;
+    nextStep = pools[0]?.nextUse || pulls[0]?.visitGoal || leads[0]?.note || nextStep;
+  }
+
+  return { lane, priority, type, title, detail, nextStep, documents, counts, diary, leads, pulls, gaps, pools, handoffs };
+}
+
+function actionCard(action) {
+  const card = document.createElement("article");
+  card.className = `action-card priority-${(action.priority || "").toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(action.priority), textSpan(action.lane.number), textSpan(action.type));
+
+  const title = document.createElement("h3");
+  title.textContent = action.title;
+
+  const detail = document.createElement("p");
+  detail.textContent = action.detail;
+
+  const next = document.createElement("p");
+  next.className = "source-note";
+  next.textContent = action.nextStep;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid action-metrics";
+  addDetail(metrics, "Review", action.counts["review-copy"]);
+  addDetail(metrics, "Public", action.counts["public-anchor"]);
+  addDetail(metrics, "Pull", action.counts["pull-lead"] + action.leads.length + action.pulls.length);
+  addDetail(metrics, "Diary", action.diary.length);
+  addDetail(metrics, "Gaps", action.gaps.length);
+
+  const sourceMoves = [...action.pulls.slice(0, 1), ...action.leads.slice(0, 1), ...action.pools.slice(0, 1)].slice(0, 3);
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  if (action.documents.length) actions.append(packetActionButton("Chronology", () => showLaneDocuments(action.lane.id)));
+  if (action.diary.length) actions.append(packetActionButton("Diary", () => showLaneDiary(action.lane.id)));
+  if (action.leads.length) actions.append(packetActionButton("Leads", () => showLaneLeads(action.lane.id)));
+  if (action.pulls.length) actions.append(packetActionButton("Library", () => showLaneLibrary(action.lane.id)));
+  if (action.pools.length) actions.append(packetActionButton("Requests", () => showLaneRequests(action.lane.id)));
+  if (action.gaps.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(action.lane.id)));
+  actions.append(clipboardButton("Copy action", compilerActionNote(action), "Action copied"));
+
+  card.append(
+    meta,
+    title,
+    detail,
+    next,
+    metrics,
+    packetBlock(
+      "Top records",
+      packetList(
+        action.documents.slice(0, 2),
+        (item) => item.title,
+        (item) => `${formatDate(item.date)} / ${readinessLabel(documentReadiness(item))} / ${item.priority}`,
+        "No chronology candidate mapped yet."
+      )
+    ),
+    packetBlock(
+      "Volume VII carryover",
+      packetList(
+        action.handoffs.slice(0, 2),
+        (handoff) => handoff.priorChapter,
+        (handoff) => handoff.newQuestion || handoff.continuity,
+        "No explicit Volume VII carryover mapped yet."
+      )
+    ),
+    packetBlock(
+      "Source move",
+      packetList(
+        sourceMoves,
+        (item) => item.title,
+        (item) => item.visitGoal || item.note || item.nextUse || item.institution,
+        "No source move mapped yet."
+      )
+    ),
+    actions
+  );
+  return card;
+}
+
+function compilerActionNote(action) {
+  return noteLines([
+    `${action.priority} / ${action.title}`,
+    `Lane: ${action.lane.number} / ${action.lane.title}`,
+    `Type: ${action.type}`,
+    `Reason: ${action.detail}`,
+    `Next step: ${action.nextStep}`,
+    `Readiness: ${action.counts["review-copy"]} review-copy; ${action.counts["public-anchor"]} public; ${action.counts["formal-record"]} formal; ${action.counts["pull-lead"]} pull-lead`,
+    action.documents.length ? `Top records: ${action.documents.slice(0, 4).map((item) => `${formatDate(item.date)} - ${item.title}`).join("; ")}` : "",
+    action.diary.length ? `Diary cues: ${action.diary.slice(0, 3).map((entry) => `${formatDate(entry.date)} - ${entry.title}`).join("; ")}` : "",
+    action.handoffs.length ? `Volume VII carryover: ${action.handoffs.map((handoff) => `${handoff.priorChapter}: ${handoff.newQuestion}`).join("; ")}` : "",
+    action.gaps.length ? `Gaps: ${action.gaps.map((gap) => `${gap.priority} ${gap.title}`).join("; ")}` : "",
+    action.pulls.length ? `Library pulls: ${action.pulls.map((pull) => pull.title).join("; ")}` : "",
+    action.leads.length ? `Source leads: ${action.leads.map((lead) => lead.title).join("; ")}` : "",
+    action.pools.length ? `Request pools: ${action.pools.map((pool) => `${pool.title} (${pool.institution})`).join("; ")}` : ""
+  ]);
 }
 
 function renderConcordance() {
@@ -1960,6 +2145,7 @@ function renderAll() {
   renderSelectionBoard();
   renderCoverageMatrix();
   renderRequestQueue();
+  renderActionQueue();
   renderLeads();
   renderDiaryReferences();
   renderPublic();

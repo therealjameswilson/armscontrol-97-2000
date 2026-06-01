@@ -16,6 +16,7 @@ Official volume anchor:
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Chapter coverage matrix comparing readiness buckets, Diary cues, and open gaps across every provisional lane with click-through filters.
 - Source request queue that turns source pools into copyable repository/pull request packets with linked leads, library targets, and risk checks.
+- First-pass action queue that tells the compiler the next move for each lane, including Volume VII carryover, top records, source moves, and copy-ready action notes.
 - Copy-ready citation, diary, source-lead, pull-plan, gap, pool, and ledger notes directly from the review cards.
 - Searchable/exportable source leads, Presidential Daily Diary references, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.
