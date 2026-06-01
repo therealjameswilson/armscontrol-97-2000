@@ -805,6 +805,31 @@ dd {
   border-radius: 8px;
 }
 
+.copy-status {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 30;
+  max-width: min(320px, calc(100% - 36px));
+  padding: 12px 14px;
+  color: white;
+  font-weight: 850;
+  background: var(--green);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 160ms ease,
+    transform 160ms ease;
+}
+
+.copy-status[data-visible="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
 @media (max-width: 1080px) {
   .site-header {
     align-items: flex-start;

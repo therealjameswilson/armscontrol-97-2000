@@ -103,8 +103,11 @@ const nodes = {
   personLaneFilter: document.querySelector("#person-lane-filter"),
   clearPersonFilters: document.querySelector("#clear-person-filters"),
   exportPeople: document.querySelector("#export-people"),
-  referencesRoot: document.querySelector("#references-root")
+  referencesRoot: document.querySelector("#references-root"),
+  copyStatus: document.querySelector("#copy-status")
 };
+
+let copyStatusTimer;
 
 function laneTitle(laneId) {
   return laneById.get(laneId)?.title || "Unassigned";
@@ -192,6 +195,152 @@ function linkButton(label, href, className = "link-button") {
   anchor.target = "_blank";
   anchor.textContent = label;
   return anchor;
+}
+
+function clipboardButton(label, text, message = "Copied") {
+  const button = document.createElement("button");
+  button.type = "button";
+  button.className = "link-button";
+  button.textContent = label;
+  button.addEventListener("click", () => copyText(text, message));
+  return button;
+}
+
+async function copyText(text, message) {
+  window.__lastCopiedText = text;
+  document.documentElement.dataset.lastCopiedText = text;
+  document.documentElement.dataset.lastCopiedMessage = message;
+  try {
+    if (!navigator.clipboard?.writeText) throw new Error("Clipboard API unavailable");
+    await navigator.clipboard.writeText(text);
+    showCopyStatus(message);
+  } catch {
+    fallbackCopyText(text);
+    showCopyStatus(message);
+  }
+}
+
+function fallbackCopyText(text) {
+  const field = document.createElement("textarea");
+  field.value = text;
+  field.setAttribute("readonly", "");
+  field.style.position = "fixed";
+  field.style.left = "-9999px";
+  document.body.append(field);
+  field.select();
+  document.execCommand("copy");
+  field.remove();
+}
+
+function showCopyStatus(message) {
+  if (!nodes.copyStatus) return;
+  nodes.copyStatus.textContent = message;
+  nodes.copyStatus.dataset.visible = "true";
+  clearTimeout(copyStatusTimer);
+  copyStatusTimer = setTimeout(() => {
+    if (nodes.copyStatus) nodes.copyStatus.dataset.visible = "false";
+  }, 2200);
+}
+
+function noteLines(lines) {
+  return lines.filter((line) => line || line === 0).map((line) => line.toString()).join("\n");
+}
+
+function documentNote(item) {
+  return noteLines([
+    `${formatDate(item.date)} - ${item.title}`,
+    `Lane: ${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}`,
+    `Type: ${item.type}`,
+    item.priority ? `Priority: ${item.priority}` : "",
+    item.repository ? `Repository: ${item.repository}` : "",
+    item.collection ? `Collection: ${item.collection}` : "",
+    item.identifier ? `Identifier: ${item.identifier}` : "",
+    item.pages ? `Pages: ${item.pages}` : "",
+    item.summary ? `Summary: ${item.summary}` : "",
+    item.sourceNote ? `Source note: ${item.sourceNote}` : "",
+    item.url ? `Source URL: ${item.url}` : "",
+    item.pdfUrl ? `Review PDF: ${item.pdfUrl}` : ""
+  ]);
+}
+
+function leadNote(lead) {
+  return noteLines([
+    `${lead.title}`,
+    `Lane: ${laneNumber(lead.laneId)} / ${laneTitle(lead.laneId)}`,
+    lead.priority ? `Priority: ${lead.priority}` : "",
+    lead.institution ? `Institution: ${lead.institution}` : "",
+    lead.type ? `Type: ${lead.type}` : "",
+    lead.identifier ? `Identifier: ${lead.identifier}` : "",
+    lead.note ? `Note: ${lead.note}` : "",
+    lead.url ? `URL: ${lead.url}` : ""
+  ]);
+}
+
+function diaryNote(entry) {
+  return noteLines([
+    `${formatDate(entry.date)} - ${entry.title}`,
+    `Lane: ${laneNumber(entry.laneId)} / ${laneTitle(entry.laneId)}`,
+    entry.eventType ? `Event: ${entry.eventType}` : "",
+    entry.time ? `Time: ${entry.time}` : "",
+    entry.location ? `Location: ${entry.location}` : "",
+    entry.diaryEntry ? `Diary entry: ${entry.diaryEntry}` : "",
+    entry.volumeConnection ? `Volume connection: ${entry.volumeConnection}` : "",
+    entry.pdfPacket ? `Packet: ${entry.pdfPacket}` : "",
+    entry.url ? `Catalog URL: ${entry.url}` : "",
+    entry.pdfUrl ? `PDF: ${entry.pdfUrl}` : ""
+  ]);
+}
+
+function libraryNote(item) {
+  return noteLines([
+    `${item.title}`,
+    `Lane: ${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}`,
+    item.priority ? `Priority: ${item.priority}` : "",
+    item.office ? `Office: ${item.office}` : "",
+    item.sourcePart ? `Source part: ${item.sourcePart}` : "",
+    item.targetFolders?.length ? `Target folders: ${item.targetFolders.join("; ")}` : "",
+    item.visitGoal ? `Visit goal: ${item.visitGoal}` : "",
+    item.whyItMatters ? `Why it matters: ${item.whyItMatters}` : "",
+    item.onsiteActions?.length ? `On-site actions: ${item.onsiteActions.join("; ")}` : ""
+  ]);
+}
+
+function gapNote(gap) {
+  return noteLines([
+    `${gap.title}`,
+    `Lane: ${laneNumber(gap.laneId)} / ${laneTitle(gap.laneId)}`,
+    gap.priority ? `Priority: ${gap.priority}` : "",
+    gap.status ? `Status: ${gap.status}` : "",
+    gap.evidence ? `Evidence: ${gap.evidence}` : "",
+    gap.problem ? `Problem: ${gap.problem}` : "",
+    gap.needed ? `Needed: ${gap.needed}` : "",
+    gap.resolution ? `Resolution: ${gap.resolution}` : "",
+    gap.remainingRisk ? `Remaining risk: ${gap.remainingRisk}` : "",
+    gap.nextActions?.length ? `Next actions: ${gap.nextActions.join("; ")}` : ""
+  ]);
+}
+
+function sourcePoolNote(pool) {
+  return noteLines([
+    `${pool.title}`,
+    `Lane: ${laneNumber(pool.laneId)} / ${laneTitle(pool.laneId)}`,
+    pool.priority ? `Priority: ${pool.priority}` : "",
+    pool.institution ? `Institution: ${pool.institution}` : "",
+    pool.coverage ? `Coverage: ${pool.coverage}` : "",
+    pool.nextUse ? `Next use: ${pool.nextUse}` : "",
+    pool.url ? `URL: ${pool.url}` : ""
+  ]);
+}
+
+function ledgerNote(entry) {
+  return noteLines([
+    `${entry.title}`,
+    `Lane: ${laneNumber(entry.laneId)} / ${laneTitle(entry.laneId)}`,
+    entry.status ? `Status: ${entry.status}` : "",
+    entry.sourceClass ? `Source class: ${entry.sourceClass}` : "",
+    entry.repositoryTrail ? `Repository trail: ${entry.repositoryTrail}` : "",
+    entry.reviewCue ? `Review cue: ${entry.reviewCue}` : ""
+  ]);
 }
 
 function textForSearch(item) {
@@ -630,6 +779,7 @@ function documentCard(item) {
   actions.className = "card-actions";
   if (item.url) actions.append(linkButton("Source", item.url));
   if (item.pdfUrl) actions.append(linkButton("PDF", item.pdfUrl));
+  actions.append(clipboardButton("Copy cite", documentNote(item), "Citation copied"));
 
   card.append(header, summary, details, tagList(item.tags || []), note, actions);
   return card;
@@ -681,6 +831,7 @@ function leadCard(lead) {
   const actions = document.createElement("div");
   actions.className = "card-actions";
   if (lead.url) actions.append(linkButton("Open", lead.url));
+  actions.append(clipboardButton("Copy lead", leadNote(lead), "Lead copied"));
   card.append(meta, title, note, details, tagList(lead.tags || []), actions);
   return card;
 }
@@ -731,6 +882,7 @@ function diaryCard(entry) {
   actions.className = "card-actions";
   if (entry.url) actions.append(linkButton("Catalog", entry.url));
   if (entry.pdfUrl) actions.append(linkButton("PDF", entry.pdfUrl));
+  actions.append(clipboardButton("Copy diary", diaryNote(entry), "Diary note copied"));
 
   card.append(meta, title, entryText, details, tagList(entry.tags || []), connection, actions);
   return card;
@@ -767,6 +919,7 @@ function compactRecordCard(item) {
   actions.className = "card-actions";
   if (item.url) actions.append(linkButton("GovInfo", item.url));
   if (item.pdfUrl) actions.append(linkButton("PDF", item.pdfUrl));
+  actions.append(clipboardButton("Copy cite", documentNote(item), "Citation copied"));
   card.append(meta, title, note, actions);
   return card;
 }
@@ -805,8 +958,11 @@ function libraryCard(item) {
   why.className = "source-note";
   why.textContent = item.whyItMatters;
   const folders = tagList(item.targetFolders || []);
-  const actions = orderedList(item.onsiteActions || []);
-  card.append(meta, title, office, goal, why, folders, actions);
+  const onsiteActions = orderedList(item.onsiteActions || []);
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  actions.append(clipboardButton("Copy pull", libraryNote(item), "Pull note copied"));
+  card.append(meta, title, office, goal, why, folders, onsiteActions, actions);
   return card;
 }
 
@@ -876,6 +1032,10 @@ function gapCard(gap) {
   if (gap.resolution) card.append(resolution);
   if (gap.remainingRisk) card.append(remaining);
   card.append(orderedList(gap.nextActions || []));
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  actions.append(clipboardButton("Copy gap", gapNote(gap), "Gap note copied"));
+  card.append(actions);
   return card;
 }
 
@@ -902,6 +1062,7 @@ function renderSourcePools() {
       const actions = document.createElement("div");
       actions.className = "card-actions";
       if (pool.url) actions.append(linkButton("Open", pool.url));
+      actions.append(clipboardButton("Copy pool", sourcePoolNote(pool), "Pool note copied"));
       card.append(meta, title, coverage, next, actions);
       return card;
     },
@@ -926,7 +1087,10 @@ function renderLedger() {
       const cue = document.createElement("p");
       cue.className = "source-note";
       cue.textContent = entry.reviewCue;
-      card.append(meta, title, trail, cue);
+      const actions = document.createElement("div");
+      actions.className = "card-actions";
+      actions.append(clipboardButton("Copy ledger", ledgerNote(entry), "Ledger note copied"));
+      card.append(meta, title, trail, cue, actions);
       return card;
     },
     "No source-copy controls loaded."
