@@ -336,6 +336,7 @@ dd {
 
 .workbench-root,
 .packet-grid,
+.outline-grid,
 .concordance-grid,
 .selection-grid,
 .sequence-root,
@@ -373,6 +374,10 @@ dd {
 
 .packet-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.outline-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .concordance-grid {
@@ -452,6 +457,7 @@ dd {
 
 .metric-card,
 .packet-card,
+.outline-card,
 .concordance-card,
 .selection-card,
 .backtrace-card,
@@ -498,6 +504,29 @@ dd {
   margin-bottom: 0;
 }
 
+.outline-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-top: 5px solid var(--navy);
+}
+
+.outline-card.priority-critical {
+  border-top-color: var(--red);
+}
+
+.outline-card.priority-high {
+  border-top-color: var(--gold);
+}
+
+.outline-card.priority-medium {
+  border-top-color: var(--green);
+}
+
+.outline-card > p {
+  margin-bottom: 0;
+}
+
 .backtrace-card {
   display: grid;
   gap: 12px;
@@ -539,6 +568,15 @@ dd {
 
 .detail-grid.packet-metrics div {
   grid-template-columns: 78px minmax(0, 1fr);
+}
+
+.detail-grid.outline-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.outline-metrics div {
+  grid-template-columns: 76px minmax(0, 1fr);
 }
 
 .packet-block {
@@ -1189,6 +1227,7 @@ dd {
 
 .record-card p,
 .packet-card p,
+.outline-card p,
 .concordance-card p,
 .selection-card p,
 .backtrace-card p,
@@ -1382,6 +1421,7 @@ dd {
 
   .workbench-root,
   .packet-grid,
+  .outline-grid,
   .concordance-grid,
   .selection-grid,
   .backtrace-grid,
@@ -1422,6 +1462,7 @@ dd {
   .stats,
   .workbench-root,
   .packet-grid,
+  .outline-grid,
   .concordance-grid,
   .selection-grid,
   .backtrace-grid,

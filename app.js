@@ -79,6 +79,7 @@ const nodes = {
   lanesRoot: document.querySelector("#lanes-root"),
   handoffRoot: document.querySelector("#handoff-root"),
   packetsRoot: document.querySelector("#packets-root"),
+  outlinesRoot: document.querySelector("#outlines-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -103,6 +104,7 @@ const nodes = {
   documentSort: document.querySelector("#document-sort"),
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
+  copyOutlines: document.querySelector("#copy-outlines"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -781,6 +783,179 @@ function chapterDossierNote(lane, documents, diary, leads, pulls, gaps) {
     ...gaps.map((gap) => `- [${gap.priority}] ${gap.title}: ${gap.remainingRisk || gap.needed || gap.problem} Next: ${(gap.nextActions || []).join("; ")}`),
     people.length ? "People and offices:" : "",
     ...people.slice(0, 10).map((person) => `- ${person.name}: ${person.role}. ${person.note}`)
+  ]);
+}
+
+function renderChapterOutlines() {
+  renderList(nodes.outlinesRoot, chapterOutlineItems(), chapterOutlineCard, "No chapter outlines loaded.");
+}
+
+function chapterOutlineItems() {
+  return lanes
+    .filter((lane) => lane.id !== "volume-control")
+    .map((lane) => {
+      const documents = potentialDocuments.filter((item) => item.laneId === lane.id).sort(byDateThenLane);
+      const sequence = selectionSequenceItems().filter((entry) => entry.item.laneId === lane.id);
+      const publicAnchors = documents.filter((item) => documentReadiness(item) === "public-anchor").sort(byDateThenLane);
+      const reviewCopies = documents.filter((item) => documentReadiness(item) === "review-copy").sort(byPriorityThenDate);
+      const diary = diaryReferences.filter((entry) => entry.laneId === lane.id).sort(byDateThenLane);
+      const pulls = libraryPlan
+        .filter((item) => item.laneId === lane.id)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+      const gaps = gapTracker
+        .filter((item) => item.laneId === lane.id)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+      const handoffs = handoffsForLane(lane.id);
+      const people = persons.filter((person) => (person.laneIds || []).includes(lane.id)).sort((a, b) => a.name.localeCompare(b.name));
+      const lead = sourceLeads.filter((item) => item.laneId === lane.id).sort(byPriorityThenDate)[0];
+      return { lane, documents, sequence, publicAnchors, reviewCopies, diary, pulls, gaps, handoffs, people, lead };
+    });
+}
+
+function chapterOutlineCard(outline) {
+  const { lane } = outline;
+  const card = document.createElement("article");
+  card.className = `outline-card priority-${outline.gaps[0]?.priority?.toLowerCase() || "medium"}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(lane.number), textSpan(lane.status), textSpan(plural(outline.sequence.length, "sequence row")));
+
+  const title = document.createElement("h3");
+  title.textContent = lane.title;
+
+  const framing = document.createElement("p");
+  framing.textContent = chapterThesis(outline);
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid outline-metrics";
+  addDetail(metrics, "Records", outline.documents.length);
+  addDetail(metrics, "Review", outline.reviewCopies.length);
+  addDetail(metrics, "Public", outline.publicAnchors.length);
+  addDetail(metrics, "Diary", outline.diary.length);
+  addDetail(metrics, "Pulls", outline.pulls.length);
+  addDetail(metrics, "People", outline.people.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Chronology", () => showLaneDocuments(lane.id)));
+  if (outline.diary.length) actions.append(packetActionButton("Diary", () => showLaneDiary(lane.id)));
+  if (outline.pulls.length) actions.append(packetActionButton("Call slips", () => scrollToSection("#call-slips")));
+  if (outline.gaps.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(lane.id)));
+  actions.append(clipboardButton("Copy outline", chapterOutlineNote(outline), "Outline copied"));
+
+  card.append(
+    meta,
+    title,
+    framing,
+    metrics,
+    packetBlock(
+      "Volume VII entry point",
+      packetList(
+        outline.handoffs.slice(0, 3),
+        (handoff) => handoff.priorChapter,
+        (handoff) => handoff.newQuestion || handoff.continuity,
+        "No explicit Volume VII handoff mapped yet."
+      )
+    ),
+    packetBlock(
+      "Opening document run",
+      packetList(
+        outlineRunItems(outline).slice(0, 5),
+        (item) => item.title,
+        (item) => item.detail,
+        "No opening document run mapped yet."
+      )
+    ),
+    packetBlock(
+      "Drafting cautions",
+      packetList(
+        outlineRiskItems(outline),
+        (item) => item.title,
+        (item) => item.detail,
+        "No drafting caution mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function chapterThesis(outline) {
+  const handoff = outline.handoffs[0]?.newQuestion || outline.lane.summary;
+  const firstDate = outline.documents[0]?.date ? formatDate(outline.documents[0].date) : "the opening file";
+  const lastDate = outline.documents.at(-1)?.date ? formatDate(outline.documents.at(-1).date) : "the closing file";
+  return `${outline.lane.summary} Draft this chapter as the ${firstDate} to ${lastDate} continuation of the Volume VII problem: ${handoff}`;
+}
+
+function outlineRunItems(outline) {
+  return outline.sequence.length
+    ? outline.sequence.map((entry) => ({
+        title: `${entry.number}. ${entry.item.title}`,
+        detail: `${formatDate(entry.item.date)} / ${readinessLabel(documentReadiness(entry.item))} / ${entry.item.repository || entry.item.type}`
+      }))
+    : outline.documents.slice(0, 6).map((item) => ({
+        title: item.title,
+        detail: `${formatDate(item.date)} / ${readinessLabel(documentReadiness(item))} / ${item.repository || item.type}`
+      }));
+}
+
+function outlineRiskItems(outline) {
+  return [
+    outline.publicAnchors.length > outline.reviewCopies.length
+      ? {
+          title: "Public/internal balance",
+          detail: `${outline.publicAnchors.length} public anchors vs. ${outline.reviewCopies.length} review-copy records.`
+        }
+      : null,
+    outline.gaps[0]
+      ? {
+          title: `${outline.gaps[0].priority} gap: ${outline.gaps[0].title}`,
+          detail: outline.gaps[0].remainingRisk || outline.gaps[0].needed || outline.gaps[0].problem
+        }
+      : null,
+    outline.pulls[0]
+      ? {
+          title: `Source pull: ${outline.pulls[0].title}`,
+          detail: outline.pulls[0].visitGoal || outline.pulls[0].whyItMatters || outline.pulls[0].sourcePart
+        }
+      : null,
+    outline.diary[0]
+      ? {
+          title: `Calendar cue: ${outline.diary[0].title}`,
+          detail: `${formatDate(outline.diary[0].date)} / ${outline.diary[0].time || "time not listed"}`
+        }
+      : null
+  ].filter(Boolean).slice(0, 4);
+}
+
+function chapterOutlineNote(outline) {
+  return noteLines([
+    `${outline.lane.number} / ${outline.lane.title} drafting outline`,
+    `Status: ${outline.lane.status}`,
+    `Thesis: ${chapterThesis(outline)}`,
+    outline.handoffs.length ? "Volume VII entry point:" : "",
+    ...outline.handoffs.map((handoff) => `- ${handoff.priorChapter}: ${handoff.continuity} New Volume VIII question: ${handoff.newQuestion}`),
+    outline.sequence.length ? "Provisional document run:" : "",
+    ...outline.sequence.map((entry) => `- ${entry.number}. ${formatDate(entry.item.date)} / ${readinessLabel(documentReadiness(entry.item))} / ${entry.item.title}`),
+    outline.diary.length ? "Presidential Daily Diary anchors:" : "",
+    ...outline.diary.slice(0, 5).map((entry) => `- ${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${entry.title}: ${entry.volumeConnection}`),
+    outline.pulls.length ? "Archive call-slip/source base:" : "",
+    ...outline.pulls.slice(0, 5).map((pull) => `- ${pull.title}: ${pull.visitGoal || pull.whyItMatters || pull.sourcePart}`),
+    outline.people.length ? "People/offices to keep visible:" : "",
+    ...outline.people.slice(0, 8).map((person) => `- ${person.name}: ${person.role}`),
+    outline.gaps.length ? "Drafting risks:" : "",
+    ...outline.gaps.map((gap) => `- [${gap.priority}] ${gap.title}: ${gap.remainingRisk || gap.needed || gap.problem}`),
+    "Compiler check: confirm this outline against the final source pull, avoid public-anchor over-selection, and keep adjacent FRUS volume boundaries explicit."
+  ]);
+}
+
+function chapterOutlinesNote(outlines) {
+  return noteLines([
+    "Chapter drafting outlines",
+    `${outlines.length} substantive chapter outlines tie Volume VII handoff questions to Volume VIII chronology, Diary cues, source pulls, people, and risks.`,
+    ...outlines.map((outline) => `${outline.lane.number}. ${outline.lane.title}: ${chapterThesis(outline)}`)
   ]);
 }
 
@@ -3407,6 +3582,7 @@ function bindEvents() {
     renderDocuments();
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
+  nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -3665,6 +3841,7 @@ function renderAll() {
   renderHandoff();
   renderDocuments();
   renderPackets();
+  renderChapterOutlines();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();
