@@ -338,6 +338,7 @@ dd {
 .selection-grid,
 .sequence-root,
 .request-grid,
+.agenda-grid,
 .action-grid,
 .briefing-grid,
 .lane-grid,
@@ -382,6 +383,10 @@ dd {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.agenda-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .action-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -418,6 +423,7 @@ dd {
 .concordance-card,
 .selection-card,
 .request-card,
+.agenda-card,
 .action-card,
 .briefing-card,
 .lane-card,
@@ -628,6 +634,22 @@ dd {
 .request-card[data-highlighted="true"] {
   outline: 3px solid rgba(185, 133, 46, 0.38);
   box-shadow: var(--shadow);
+}
+
+.agenda-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--green);
+}
+
+.detail-grid.agenda-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.agenda-metrics div {
+  grid-template-columns: 74px minmax(0, 1fr);
 }
 
 .action-card {
@@ -982,6 +1004,7 @@ dd {
 .concordance-card p,
 .selection-card p,
 .request-card p,
+.agenda-card p,
 .action-card p,
 .briefing-card p,
 .lead-card p,
@@ -1168,6 +1191,7 @@ dd {
   .concordance-grid,
   .selection-grid,
   .request-grid,
+  .agenda-grid,
   .action-grid,
   .briefing-grid,
   .lane-grid,
@@ -1201,6 +1225,7 @@ dd {
   .concordance-grid,
   .selection-grid,
   .request-grid,
+  .agenda-grid,
   .action-grid,
   .briefing-grid,
   .lane-grid,

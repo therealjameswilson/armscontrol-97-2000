@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=15" />
-    <script defer src="data/volume-data.js?v=15"></script>
-    <script defer src="app.js?v=15"></script>
+    <link rel="stylesheet" href="styles.css?v=16" />
+    <script defer src="data/volume-data.js?v=16"></script>
+    <script defer src="app.js?v=16"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -122,6 +122,7 @@
         <a href="#sequence">Sequence</a>
         <a href="#coverage">Coverage</a>
         <a href="#requests">Requests</a>
+        <a href="#agenda">Agenda</a>
         <a href="#actions">Actions</a>
         <a href="#briefs">Briefs</a>
         <a href="#workbench">Desk</a>
@@ -267,6 +268,16 @@
         </div>
         <div id="requests-root" class="request-grid" aria-live="polite">
           <p class="loading">Loading source request queue...</p>
+        </div>
+      </section>
+
+      <section class="section agenda-section" id="agenda" aria-labelledby="agenda-title">
+        <div class="section-heading">
+          <p class="kicker">Repository Work</p>
+          <h2 id="agenda-title">Repository Visit and Search Agenda</h2>
+        </div>
+        <div id="agenda-root" class="agenda-grid" aria-live="polite">
+          <p class="loading">Loading repository agenda...</p>
         </div>
       </section>
 

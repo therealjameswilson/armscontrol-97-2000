@@ -17,6 +17,7 @@ Official volume anchor:
 - Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.
 - Chapter coverage matrix comparing readiness buckets, Diary cues, and open gaps across every provisional lane with click-through filters.
 - Source request queue that turns source pools into copyable repository/pull request packets with linked leads, library targets, and risk checks.
+- Repository visit and search agenda grouping source pools, source leads, and pull-plan items into actionable workstreams by repository/institution.
 - First-pass action queue that tells the compiler the next move for each lane, including Volume VII carryover, top records, source moves, and copy-ready action notes.
 - Compiler briefing pack with copy-ready status, archive pull, selection, Daily Diary, and boundary/gap memos.
 - Copy-ready citation, diary, source-lead, pull-plan, gap, pool, and ledger notes directly from the review cards.

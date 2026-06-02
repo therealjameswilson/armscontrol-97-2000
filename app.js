@@ -84,6 +84,7 @@ const nodes = {
   sequenceRoot: document.querySelector("#sequence-root"),
   coverageRoot: document.querySelector("#coverage-root"),
   requestsRoot: document.querySelector("#requests-root"),
+  agendaRoot: document.querySelector("#agenda-root"),
   actionsRoot: document.querySelector("#actions-root"),
   briefsRoot: document.querySelector("#briefs-root"),
   documentsRoot: document.querySelector("#documents-root"),
@@ -1263,6 +1264,151 @@ function requestCard(pool) {
     actions
   );
   return card;
+}
+
+function renderRepositoryAgenda() {
+  renderList(nodes.agendaRoot, repositoryAgendaGroups(), agendaCard, "No repository agenda loaded.");
+}
+
+function repositoryAgendaGroups() {
+  const definitions = [
+    {
+      id: "clinton-library",
+      label: "On-site",
+      title: "Clinton Library / NARA Pull Day",
+      detail: "Bundle NSC office files, National Archives catalog trails, Daily Diary packets, and on-site pull-plan folders before drafting final document order.",
+      patterns: ["clinton presidential library", "national archives", "nara"],
+      includeLibraryPlan: true
+    },
+    {
+      id: "digital-library",
+      label: "MDR scan",
+      title: "Clinton Digital Library MDR Scan",
+      detail: "Run packet-level checks for South Asia, DPRK/ROK, CBW, and other released Clinton Digital Library material before requesting physical files.",
+      patterns: ["clinton digital library"]
+    },
+    {
+      id: "state-foia",
+      label: "FOIA",
+      title: "State FOIA and Strobe Talbott Search",
+      detail: "Use the Talbott release manifest and State FOIA reading room to convert folder/date clues into cables, memos, and diplomatic context.",
+      patterns: ["department of state", "foia", "strobe talbott"]
+    },
+    {
+      id: "public-treaty",
+      label: "Public record",
+      title: "Congress.gov and GovInfo Control Scan",
+      detail: "Lock treaty texts, hearings, public statements, statutes, and presidential language before pairing them with internal files.",
+      patterns: ["congress.gov", "govinfo"]
+    },
+    {
+      id: "multilateral",
+      label: "Allied record",
+      title: "NATO and OSCE Record Scan",
+      detail: "Pull allied consultation and CFE endpoint records to keep NMD, ABM, and conventional-arms material within the right volume boundary.",
+      patterns: ["nato", "osce"]
+    },
+    {
+      id: "historian-control",
+      label: "Control",
+      title: "Historian Status and Companion Controls",
+      detail: "Keep the planned-volume status, companion Volume VII handoff, and compiler network links visible as citation and boundary controls.",
+      patterns: ["office of the historian", "github pages"]
+    }
+  ];
+
+  return definitions
+    .map((definition) => {
+      const leads = sourceLeads.filter((item) => matchesAgendaDefinition(item, definition)).sort(byPriorityThenDate);
+      const pools = sourcePools
+        .filter((item) => matchesAgendaDefinition(item, definition))
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99));
+      const pulls = definition.includeLibraryPlan
+        ? [...libraryPlan].sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99))
+        : [];
+      const laneIds = uniqueSorted([...leads, ...pools, ...pulls].map((item) => item.laneId));
+      const url = pools.find((item) => item.url)?.url || leads.find((item) => item.url)?.url || "";
+      return { ...definition, leads, pools, pulls, laneIds, url };
+    })
+    .filter((agenda) => agenda.leads.length || agenda.pools.length || agenda.pulls.length);
+}
+
+function matchesAgendaDefinition(item, definition) {
+  const haystack = [item.institution, item.repository, item.collection, item.office, item.sourcePart, item.title]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return definition.patterns.some((pattern) => haystack.includes(pattern));
+}
+
+function agendaCard(agenda) {
+  const card = document.createElement("article");
+  card.className = "agenda-card";
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(agenda.label), textSpan(plural(agenda.leads.length + agenda.pools.length + agenda.pulls.length, "item")), textSpan(`${agenda.laneIds.length} lanes`));
+
+  const title = document.createElement("h3");
+  title.textContent = agenda.title;
+
+  const detail = document.createElement("p");
+  detail.textContent = agenda.detail;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid agenda-metrics";
+  addDetail(metrics, "Pools", agenda.pools.length);
+  addDetail(metrics, "Leads", agenda.leads.length);
+  addDetail(metrics, "Pulls", agenda.pulls.length);
+  addDetail(metrics, "Lanes", agenda.laneIds.map(laneNumber).join("; "));
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  if (agenda.url) actions.append(linkButton("Open", agenda.url));
+  if (agenda.pools.length) actions.append(packetActionButton("Requests", () => scrollToSection("#requests")));
+  if (agenda.leads.length) actions.append(packetActionButton("Source leads", () => scrollToSection("#sources")));
+  if (agenda.pulls.length) actions.append(packetActionButton("Library", () => scrollToSection("#library")));
+  actions.append(clipboardButton("Copy agenda", repositoryAgendaNote(agenda), "Agenda copied"));
+
+  card.append(
+    meta,
+    title,
+    detail,
+    metrics,
+    packetBlock(
+      "Open first",
+      packetList(
+        agendaOpenFirstItems(agenda),
+        (item) => item.title,
+        (item) => item.detail,
+        "No agenda items mapped yet."
+      )
+    ),
+    actions
+  );
+  return card;
+}
+
+function agendaOpenFirstItems(agenda) {
+  return [
+    ...agenda.pools.map((pool) => ({ title: pool.title, detail: `${pool.institution}: ${pool.nextUse || pool.coverage}` })),
+    ...agenda.leads.map((lead) => ({ title: lead.title, detail: `${lead.institution}: ${lead.note || lead.identifier || lead.type}` })),
+    ...agenda.pulls.map((pull) => ({ title: pull.title, detail: pull.visitGoal || pull.sourcePart || pull.whyItMatters }))
+  ].slice(0, 6);
+}
+
+function repositoryAgendaNote(agenda) {
+  return noteLines([
+    `${agenda.title} (${agenda.label})`,
+    agenda.detail,
+    `Lanes: ${agenda.laneIds.map((laneId) => `${laneNumber(laneId)} / ${laneTitle(laneId)}`).join("; ")}`,
+    agenda.pools.length ? "Source pools:" : "",
+    ...agenda.pools.map((pool, index) => `${index + 1}. ${pool.title} (${pool.institution}) - ${pool.coverage}; next use: ${pool.nextUse}${pool.url ? `; URL: ${pool.url}` : ""}`),
+    agenda.leads.length ? "Source leads:" : "",
+    ...agenda.leads.map((lead, index) => `${index + 1}. ${lead.title} (${lead.institution}) - ${lead.identifier || lead.type || "no identifier"}; ${lead.note || ""}${lead.url ? `; URL: ${lead.url}` : ""}`),
+    agenda.pulls.length ? "On-site pull targets:" : "",
+    ...agenda.pulls.map((pull, index) => `${index + 1}. ${laneNumber(pull.laneId)} / ${pull.title}: ${pull.visitGoal || pull.sourcePart || pull.whyItMatters}`)
+  ]);
 }
 
 function renderActionQueue() {
@@ -2491,6 +2637,7 @@ function renderAll() {
   renderSelectionSequence();
   renderCoverageMatrix();
   renderRequestQueue();
+  renderRepositoryAgenda();
   renderActionQueue();
   renderBriefingPack();
   renderLeads();
