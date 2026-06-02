@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=20" />
-    <script defer src="data/volume-data.js?v=20"></script>
-    <script defer src="app.js?v=20"></script>
+    <link rel="stylesheet" href="styles.css?v=21" />
+    <script defer src="data/volume-data.js?v=21"></script>
+    <script defer src="app.js?v=21"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -121,6 +121,7 @@
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
         <a href="#backtrace">Backtrace</a>
+        <a href="#annotations">Annotate</a>
         <a href="#coverage">Coverage</a>
         <a href="#qa">QA</a>
         <a href="#requests">Requests</a>
@@ -264,6 +265,19 @@
         </div>
         <div id="backtrace-root" class="backtrace-grid" aria-live="polite">
           <p class="loading">Loading public anchor backtrace...</p>
+        </div>
+      </section>
+
+      <section class="section annotation-section" id="annotations" aria-labelledby="annotations-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Document Prep</p>
+            <h2 id="annotations-title">Annotation and Citation Queue</h2>
+          </div>
+          <button id="copy-annotations" class="link-button" type="button">Copy annotation queue</button>
+        </div>
+        <div id="annotations-root" class="annotation-grid" aria-live="polite">
+          <p class="loading">Loading annotation and citation queue...</p>
         </div>
       </section>
 

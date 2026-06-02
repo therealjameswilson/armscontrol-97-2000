@@ -16,6 +16,7 @@ Official volume anchor:
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.
 - Public anchor backtrace board pairing Public Papers items with nearby internal/source records, Presidential Daily Diary cues, pull targets, source leads, and gaps.
+- Annotation and citation queue turning each provisional sequence candidate into copy-ready citation checks, people/date annotation targets, source routes, and remaining-risk notes.
 - Chapter coverage matrix comparing readiness buckets, Diary cues, and open gaps across every provisional lane with click-through filters.
 - Compiler QA checklist generated from readiness, sequence, Diary, source, handoff, people, and gap signals.
 - Source request queue that turns source pools into copyable repository/pull request packets with linked leads, library targets, and risk checks.

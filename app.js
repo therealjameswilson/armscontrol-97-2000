@@ -83,6 +83,7 @@ const nodes = {
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
   backtraceRoot: document.querySelector("#backtrace-root"),
+  annotationsRoot: document.querySelector("#annotations-root"),
   coverageRoot: document.querySelector("#coverage-root"),
   qaRoot: document.querySelector("#qa-root"),
   requestsRoot: document.querySelector("#requests-root"),
@@ -102,6 +103,7 @@ const nodes = {
   exportDocuments: document.querySelector("#export-documents"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
+  copyAnnotations: document.querySelector("#copy-annotations"),
   copyQa: document.querySelector("#copy-qa"),
   copyIndexing: document.querySelector("#copy-indexing"),
   leadsRoot: document.querySelector("#leads-root"),
@@ -1255,6 +1257,224 @@ function publicBacktraceNote(traces) {
       const { anchor, matches } = trace;
       const route = matches.internal[0]?.title || matches.pull?.title || matches.lead?.title || "needs internal pair";
       return `${index + 1}. ${formatDate(anchor.date)} / ${laneNumber(anchor.laneId)} / ${anchor.title} -> ${route}`;
+    })
+  ]);
+}
+
+function renderAnnotationQueue() {
+  renderList(nodes.annotationsRoot, annotationItems(), annotationCard, "No annotation queue candidates loaded.");
+}
+
+function annotationItems() {
+  return selectionSequenceItems().map((entry) => {
+    const checks = citationChecks(entry.item);
+    const missing = checks.filter((check) => !check.present);
+    const people = annotationPeople(entry.item);
+    const leads = sourceLeads.filter((lead) => lead.laneId === entry.item.laneId).sort(byPriorityThenDate).slice(0, 2);
+    const pull = libraryPlan
+      .filter((item) => item.laneId === entry.item.laneId)
+      .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+    const gap = gapTracker
+      .filter((item) => item.laneId === entry.item.laneId)
+      .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+    return {
+      ...entry,
+      checks,
+      missing,
+      people,
+      leads,
+      pull,
+      gap,
+      stage: annotationStage(entry.item, missing, people, entry.context, gap),
+      priority: annotationPriority(entry.item, missing, people, entry.context, gap)
+    };
+  });
+}
+
+function citationChecks(item) {
+  const checks = [
+    { label: "Repository", value: item.repository },
+    { label: "Collection", value: item.collection },
+    { label: "Identifier", value: item.identifier },
+    { label: "Pages", value: item.pages || item.pageCount },
+    { label: "Source note", value: item.sourceNote },
+    { label: "Source URL", value: item.url }
+  ];
+  if (documentReadiness(item) !== "pull-lead") checks.push({ label: "PDF/review copy", value: item.pdfUrl });
+  return checks.map((check) => ({
+    ...check,
+    present: Boolean(check.value || check.value === 0)
+  }));
+}
+
+function annotationPeople(item) {
+  const exact = persons.filter((person) => personMentioned(item, person)).sort((a, b) => a.name.localeCompare(b.name));
+  const laneMatches = persons
+    .filter((person) => (person.laneIds || []).includes(item.laneId) && !exact.includes(person))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  return [...exact, ...laneMatches].slice(0, 5);
+}
+
+function annotationStage(item, missing, people, context, gap) {
+  if (documentReadiness(item) === "pull-lead") return "Pull before annotate";
+  if (missing.length) return "Citation fix";
+  if (gap && priorityValue(gap.priority) <= 2) return "Risk review";
+  if (!people.length || (!context.diary.length && !context.publicAnchors.length)) return "Annotation check";
+  return "Draft-ready";
+}
+
+function annotationPriority(item, missing, people, context, gap) {
+  if (documentReadiness(item) === "pull-lead" || missing.length >= 2) return "High";
+  if (gap && priorityValue(gap.priority) <= 2) return gap.priority;
+  if (!people.length || (!context.diary.length && !context.publicAnchors.length)) return "Medium";
+  return "Low";
+}
+
+function annotationCard(entry) {
+  const { item, context } = entry;
+  const card = document.createElement("article");
+  card.className = `annotation-card priority-${(entry.priority || "").toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(entry.number.toString().padStart(2, "0")), textSpan(formatDate(item.date)), textSpan(laneNumber(item.laneId)), textSpan(entry.stage));
+
+  const title = document.createElement("h3");
+  title.textContent = item.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = item.summary || "Selection candidate requiring citation and annotation review.";
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid annotation-metrics";
+  addDetail(metrics, "Readiness", readinessLabel(documentReadiness(item)));
+  addDetail(metrics, "Citation", `${entry.checks.length - entry.missing.length}/${entry.checks.length}`);
+  addDetail(metrics, "People", entry.people.length);
+  addDetail(metrics, "Diary", context.diary.length);
+  addDetail(metrics, "Public", context.publicAnchors.length);
+  addDetail(metrics, "Risk", entry.gap?.priority || "None");
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  if (item.url) actions.append(linkButton("Source", item.url));
+  if (item.pdfUrl) actions.append(linkButton("PDF", item.pdfUrl));
+  actions.append(packetActionButton("Chronology", () => showLaneDocuments(item.laneId)));
+  if (context.diary.length) actions.append(packetActionButton("Diary", () => showLaneDiary(item.laneId)));
+  if (context.publicAnchors.length) actions.append(packetActionButton("Backtrace", () => scrollToSection("#backtrace")));
+  if (entry.people.length) actions.append(packetActionButton("People", () => showPersonProfile(entry.people[0].name)));
+  if (entry.pull) actions.append(packetActionButton("Library", () => showLaneLibrary(item.laneId)));
+  if (entry.gap) actions.append(packetActionButton("Gaps", () => showLaneGaps(item.laneId)));
+  actions.append(clipboardButton("Copy annotation", annotationNote(entry), "Annotation copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Citation fields",
+      packetList(
+        entry.checks,
+        (check) => `${check.present ? "OK" : "Missing"}: ${check.label}`,
+        (check) => (check.present ? check.value : "Add before final citation."),
+        "No citation fields checked."
+      )
+    ),
+    packetBlock(
+      "People and date checks",
+      packetList(
+        annotationTargetItems(entry),
+        (target) => target.title,
+        (target) => target.detail,
+        "No people, Diary, or public-anchor checks mapped yet."
+      )
+    ),
+    packetBlock(
+      "Source route",
+      packetList(
+        annotationRouteItems(entry),
+        (target) => target.title,
+        (target) => target.detail,
+        "No pull, lead, or gap route mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function annotationTargetItems(entry) {
+  return [
+    ...entry.people.map((person) => ({ title: `Person: ${person.name}`, detail: person.role })),
+    ...entry.context.diary.map((diary) => ({
+      title: `Diary: ${diary.title}`,
+      detail: `${formatDate(diary.date)} / ${diary.time || "time not listed"} / ${diary.eventType || "calendar cue"}`
+    })),
+    ...entry.context.publicAnchors.map((anchor) => ({
+      title: `Public: ${anchor.title}`,
+      detail: `${formatDate(anchor.date)} / ${anchor.repository || anchor.collection || "public record"}`
+    }))
+  ].slice(0, 8);
+}
+
+function annotationRouteItems(entry) {
+  return [
+    entry.pull
+      ? {
+          title: `Pull: ${entry.pull.title}`,
+          detail: entry.pull.visitGoal || entry.pull.sourcePart || entry.pull.whyItMatters || "Pull target mapped"
+        }
+      : null,
+    ...entry.leads.map((lead) => ({
+      title: `Lead: ${lead.title}`,
+      detail: lead.identifier || lead.note || lead.institution || "Source lead mapped"
+    })),
+    entry.gap
+      ? {
+          title: `Gap: ${entry.gap.title}`,
+          detail: entry.gap.remainingRisk || entry.gap.needed || entry.gap.problem || "Gap tracker item mapped"
+        }
+      : null
+  ].filter(Boolean);
+}
+
+function annotationNote(entry) {
+  const { item, context } = entry;
+  return noteLines([
+    `Annotation prep ${entry.number}: ${formatDate(item.date)} - ${item.title}`,
+    `Lane: ${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}`,
+    `Stage: ${entry.stage}`,
+    `Readiness: ${readinessLabel(documentReadiness(item))}`,
+    `Citation completeness: ${entry.checks.length - entry.missing.length}/${entry.checks.length}`,
+    entry.missing.length ? `Missing citation fields: ${entry.missing.map((check) => check.label).join("; ")}` : "Missing citation fields: none",
+    item.repository ? `Repository: ${item.repository}` : "",
+    item.collection ? `Collection: ${item.collection}` : "",
+    item.identifier ? `Identifier: ${item.identifier}` : "",
+    item.pages ? `Pages: ${item.pages}` : "",
+    item.sourceNote ? `Source note: ${item.sourceNote}` : "",
+    item.summary ? `Selection reason: ${item.summary}` : "",
+    entry.people.length ? `People/offices to verify: ${entry.people.map((person) => `${person.name} (${person.role})`).join("; ")}` : "",
+    context.diary.length ? `Diary cues: ${context.diary.map((diary) => `${formatDate(diary.date)} - ${diary.title}`).join("; ")}` : "",
+    context.publicAnchors.length ? `Public anchors: ${context.publicAnchors.map((anchor) => `${formatDate(anchor.date)} - ${anchor.title}`).join("; ")}` : "",
+    entry.pull ? `Pull target: ${entry.pull.title}` : "",
+    entry.leads.length ? `Source leads: ${entry.leads.map((lead) => `${lead.title}${lead.identifier ? ` / ${lead.identifier}` : ""}`).join("; ")}` : "",
+    entry.gap ? `Open risk: ${entry.gap.title} - ${entry.gap.remainingRisk || entry.gap.needed || entry.gap.problem || ""}` : "",
+    item.url ? `Source URL: ${item.url}` : "",
+    item.pdfUrl ? `PDF/review copy: ${item.pdfUrl}` : "",
+    "Compiler check: confirm citation form, classification/release status, participant names, editorial annotation hooks, and whether the record remains in sequence."
+  ]);
+}
+
+function annotationQueueNote(entries) {
+  const missingCount = entries.filter((entry) => entry.missing.length).length;
+  const pullCount = entries.filter((entry) => documentReadiness(entry.item) === "pull-lead").length;
+  return noteLines([
+    "Annotation and citation queue",
+    `${entries.length} provisional sequence candidates; ${missingCount} need citation-field fixes; ${pullCount} are pull-before-annotation leads.`,
+    ...entries.map((entry) => {
+      const missing = entry.missing.length ? `missing ${entry.missing.map((check) => check.label).join(", ")}` : "citation ready";
+      return `${entry.number}. ${formatDate(entry.item.date)} / ${laneNumber(entry.item.laneId)} / ${entry.stage} / ${entry.item.title} / ${missing}`;
     })
   ]);
 }
@@ -2835,6 +3055,7 @@ function bindEvents() {
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
+  nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
   nodes.copyQa?.addEventListener("click", () => copyText(compilerQaNote(compilerQaItems()), "QA copied"));
   nodes.copyIndexing?.addEventListener("click", () => copyText(indexingQueueNote(indexingItems()), "Index queue copied"));
 
@@ -3092,6 +3313,7 @@ function renderAll() {
   renderSelectionBoard();
   renderSelectionSequence();
   renderBacktraceBoard();
+  renderAnnotationQueue();
   renderCoverageMatrix();
   renderCompilerQa();
   renderRequestQueue();
