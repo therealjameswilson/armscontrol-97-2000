@@ -66,6 +66,15 @@ const state = {
   people: { query: "", lane: "" }
 };
 
+const documentViewParams = {
+  query: "docq",
+  lane: "doclane",
+  type: "doctype",
+  priority: "docpriority",
+  readiness: "docready",
+  sort: "docsort"
+};
+
 const nodes = {
   stats: {
     documents: document.querySelector("#stat-documents"),
@@ -112,6 +121,7 @@ const nodes = {
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
   copyDocuments: document.querySelector("#copy-documents"),
+  copyDocumentView: document.querySelector("#copy-document-view"),
   copyOutlines: document.querySelector("#copy-outlines"),
   copyCloseout: document.querySelector("#copy-closeout"),
   copyAssembly: document.querySelector("#copy-assembly"),
@@ -409,6 +419,48 @@ function documentSortLabel() {
     priority: "Priority first"
   };
   return labels[state.documents.sort] || "Chronological";
+}
+
+function applyDocumentViewFromUrl() {
+  const params = new URLSearchParams(window.location.search);
+  const query = params.get(documentViewParams.query) || "";
+  const lane = validSelectValue(nodes.documentLaneFilter, params.get(documentViewParams.lane) || "");
+  const type = validSelectValue(nodes.documentTypeFilter, params.get(documentViewParams.type) || "");
+  const priority = validSelectValue(nodes.documentPriorityFilter, params.get(documentViewParams.priority) || "");
+  const readiness = validSelectValue(nodes.documentReadinessFilter, params.get(documentViewParams.readiness) || "");
+  const sort = ["lane", "priority"].includes(params.get(documentViewParams.sort)) ? params.get(documentViewParams.sort) : "";
+
+  state.documents = { query, lane, type, priority, readiness, sort };
+  if (nodes.documentSearch) nodes.documentSearch.value = query;
+  if (nodes.documentLaneFilter) nodes.documentLaneFilter.value = lane;
+  if (nodes.documentTypeFilter) nodes.documentTypeFilter.value = type;
+  if (nodes.documentPriorityFilter) nodes.documentPriorityFilter.value = priority;
+  if (nodes.documentReadinessFilter) nodes.documentReadinessFilter.value = readiness;
+  if (nodes.documentSort) nodes.documentSort.value = sort;
+}
+
+function validSelectValue(select, value) {
+  if (!value) return "";
+  if (!select) return "";
+  return [...select.options].some((option) => option.value === value) ? value : "";
+}
+
+function documentViewUrl() {
+  const url = new URL(window.location.href);
+  for (const param of Object.values(documentViewParams)) url.searchParams.delete(param);
+  const active = {
+    [documentViewParams.query]: state.documents.query,
+    [documentViewParams.lane]: state.documents.lane,
+    [documentViewParams.type]: state.documents.type,
+    [documentViewParams.priority]: state.documents.priority,
+    [documentViewParams.readiness]: state.documents.readiness,
+    [documentViewParams.sort]: state.documents.sort
+  };
+  for (const [param, value] of Object.entries(active)) {
+    if (value) url.searchParams.set(param, value);
+  }
+  url.hash = "documents";
+  return url.toString();
 }
 
 function chronologyHandoffMoves(items) {
@@ -5093,6 +5145,7 @@ function bindEvents() {
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copyDocuments?.addEventListener("click", () => copyText(chronologyHandoffNote(filteredDocuments()), "Chronology handoff copied"));
+  nodes.copyDocumentView?.addEventListener("click", () => copyText(documentViewUrl(), "Chronology view link copied"));
   nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
   nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
   nodes.copyAssembly?.addEventListener("click", () => copyText(chapterAssemblyBoardNote(chapterAssemblyItems()), "Draft packets copied"));
@@ -5393,5 +5446,6 @@ function renderAll() {
 }
 
 setupFilters();
+applyDocumentViewFromUrl();
 bindEvents();
 renderAll();
