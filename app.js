@@ -82,6 +82,7 @@ const nodes = {
   outlinesRoot: document.querySelector("#outlines-root"),
   closeoutRoot: document.querySelector("#closeout-root"),
   assemblyRoot: document.querySelector("#assembly-root"),
+  manuscriptsRoot: document.querySelector("#manuscripts-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -109,6 +110,7 @@ const nodes = {
   copyOutlines: document.querySelector("#copy-outlines"),
   copyCloseout: document.querySelector("#copy-closeout"),
   copyAssembly: document.querySelector("#copy-assembly"),
+  copyManuscripts: document.querySelector("#copy-manuscripts"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -2097,6 +2099,226 @@ function annotationQueueNote(entries) {
   ]);
 }
 
+function renderDocumentManuscripts() {
+  renderList(nodes.manuscriptsRoot, documentManuscriptItems(), documentManuscriptCard, "No document manuscript stubs loaded.");
+}
+
+function documentManuscriptItems() {
+  return annotationItems().map((entry) => {
+    const item = entry.item;
+    const ledgers = sourceCopyLedger.filter((ledger) => ledger.laneId === item.laneId);
+    const pool = sourcePools
+      .filter((sourcePool) => sourcePool.laneId === item.laneId)
+      .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+    const readiness = documentReadiness(item);
+    const sourceReady = readiness !== "pull-lead" && !entry.missing.length;
+    const stage = sourceReady && entry.stage === "Draft-ready" ? "Manuscript-ready" : sourceReady ? "Apparatus check" : entry.stage;
+    return { ...entry, ledgers, pool, readiness, sourceReady, manuscriptStage: stage };
+  });
+}
+
+function documentManuscriptCard(entry) {
+  const { item, context } = entry;
+  const card = document.createElement("article");
+  card.className = `manuscript-card priority-${(entry.priority || "").toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(`Doc ${entry.number.toString().padStart(2, "0")}`), textSpan(formatDate(item.date)), textSpan(laneNumber(item.laneId)), textSpan(entry.manuscriptStage));
+
+  const title = document.createElement("h3");
+  title.textContent = manuscriptTitle(entry);
+
+  const summary = document.createElement("p");
+  summary.textContent = `${readinessLabel(entry.readiness)} candidate for ${laneTitle(item.laneId)}. ${item.summary || "Use this stub as the working manuscript shell pending final source verification."}`;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid manuscript-metrics";
+  addDetail(metrics, "Readiness", readinessLabel(entry.readiness));
+  addDetail(metrics, "Citation", `${entry.checks.length - entry.missing.length}/${entry.checks.length}`);
+  addDetail(metrics, "People", entry.people.length);
+  addDetail(metrics, "Diary", context.diary.length);
+  addDetail(metrics, "Public", context.publicAnchors.length);
+  addDetail(metrics, "Risk", entry.gap?.priority || "None");
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Chronology", () => showLaneDocuments(item.laneId)));
+  actions.append(packetActionButton("Sequence", () => scrollToSection("#sequence")));
+  actions.append(packetActionButton("Annotate", () => scrollToSection("#annotations")));
+  if (entry.pull) actions.append(packetActionButton("Library", () => showLaneLibrary(item.laneId)));
+  if (entry.gap) actions.append(packetActionButton("Gaps", () => showLaneGaps(item.laneId)));
+  actions.append(clipboardButton("Copy stub", documentManuscriptNote(entry), "Manuscript stub copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Manuscript head",
+      packetList(
+        manuscriptHeadItems(entry),
+        (target) => target.title,
+        (target) => target.detail,
+        "No manuscript heading fields mapped yet."
+      )
+    ),
+    packetBlock(
+      "Working source note",
+      packetList(
+        manuscriptSourceNoteItems(entry),
+        (target) => target.title,
+        (target) => target.detail,
+        "No source note fields mapped yet."
+      )
+    ),
+    packetBlock(
+      "Editorial apparatus",
+      packetList(
+        manuscriptApparatusItems(entry),
+        (target) => target.title,
+        (target) => target.detail,
+        "No editorial apparatus prompts mapped yet."
+      )
+    ),
+    packetBlock(
+      "Before circulation",
+      packetList(
+        manuscriptCautionItems(entry),
+        (target) => target.title,
+        (target) => target.detail,
+        "No pre-circulation cautions remain."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function manuscriptTitle(entry) {
+  return `Provisional Document ${entry.number}: ${entry.item.title}`;
+}
+
+function manuscriptHeadItems(entry) {
+  const item = entry.item;
+  return [
+    { title: "Document heading", detail: manuscriptTitle(entry) },
+    { title: "Date line", detail: formatDate(item.date) },
+    { title: "Chapter lane", detail: `${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}` },
+    { title: "Document type", detail: item.type || "Type pending" },
+    { title: "Selection reason", detail: item.summary || "Add selection rationale before draft circulation." }
+  ];
+}
+
+function manuscriptSourceNoteItems(entry) {
+  const item = entry.item;
+  return [
+    { title: "Working source note", detail: workingSourceNote(entry) },
+    item.repository ? { title: "Repository", detail: item.repository } : null,
+    item.collection ? { title: "Collection", detail: item.collection } : null,
+    item.identifier ? { title: "Identifier", detail: item.identifier } : null,
+    item.pages || item.pageCount ? { title: "Pages", detail: item.pages || item.pageCount } : null,
+    item.pdfUrl ? { title: "Review copy", detail: item.pdfUrl } : null,
+    entry.ledgers[0]
+      ? {
+          title: `Ledger: ${entry.ledgers[0].title}`,
+          detail: entry.ledgers[0].reviewCue || entry.ledgers[0].repositoryTrail || entry.ledgers[0].sourceClass
+        }
+      : null
+  ].filter(Boolean).slice(0, 7);
+}
+
+function manuscriptApparatusItems(entry) {
+  return [
+    ...entry.people.slice(0, 4).map((person) => ({ title: `Person/office: ${person.name}`, detail: person.role })),
+    ...entry.context.diary.slice(0, 3).map((diary) => ({
+      title: `Diary cue: ${diary.title}`,
+      detail: `${formatDate(diary.date)} / ${diary.time || "time not listed"} / ${diary.volumeConnection || diary.eventType || "calendar cue"}`
+    })),
+    ...entry.context.publicAnchors.slice(0, 2).map((anchor) => ({
+      title: `Public anchor: ${anchor.title}`,
+      detail: `${formatDate(anchor.date)} / ${anchor.repository || anchor.collection || "public record"}`
+    }))
+  ].slice(0, 8);
+}
+
+function manuscriptCautionItems(entry) {
+  return [
+    ...entry.missing.map((check) => ({ title: `Missing citation: ${check.label}`, detail: "Add before source-note circulation." })),
+    entry.readiness === "pull-lead"
+      ? {
+          title: "Pull before selection",
+          detail: entry.pull?.visitGoal || entry.pull?.whyItMatters || entry.pull?.sourcePart || "Verify item-level text before treating as a manuscript document."
+        }
+      : null,
+    entry.gap
+      ? {
+          title: `${entry.gap.priority} gap: ${entry.gap.title}`,
+          detail: entry.gap.remainingRisk || entry.gap.needed || entry.gap.problem || "Gap tracker item mapped."
+        }
+      : null,
+    entry.pool
+      ? {
+          title: `Source pool: ${entry.pool.title}`,
+          detail: entry.pool.nextUse || entry.pool.coverage || entry.pool.institution || "Source pool mapped."
+        }
+      : null
+  ].filter(Boolean).slice(0, 8);
+}
+
+function workingSourceNote(entry) {
+  const item = entry.item;
+  const fields = [
+    item.repository,
+    item.collection,
+    item.identifier,
+    item.pages ? `pp. ${item.pages}` : item.pageCount ? `${item.pageCount} pages` : "",
+    item.sourceNote
+  ].filter(Boolean);
+  if (!fields.length) return "Working source note pending item-level citation fields.";
+  return fields.join("; ");
+}
+
+function documentManuscriptNote(entry) {
+  const item = entry.item;
+  return noteLines([
+    manuscriptTitle(entry),
+    `Date: ${formatDate(item.date)}`,
+    `Chapter lane: ${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}`,
+    `Manuscript stage: ${entry.manuscriptStage}`,
+    `Readiness: ${readinessLabel(entry.readiness)}`,
+    `Working source note: ${workingSourceNote(entry)}`,
+    item.repository ? `Repository: ${item.repository}` : "",
+    item.collection ? `Collection: ${item.collection}` : "",
+    item.identifier ? `Identifier: ${item.identifier}` : "",
+    item.pages ? `Pages: ${item.pages}` : "",
+    item.pdfUrl ? `Review copy/PDF: ${item.pdfUrl}` : "",
+    item.url ? `Source URL: ${item.url}` : "",
+    item.summary ? `Selection reason: ${item.summary}` : "",
+    "Editorial apparatus:",
+    ...manuscriptApparatusItems(entry).map((target) => `- ${target.title}: ${target.detail}`),
+    entry.missing.length ? "Citation fixes:" : "Citation fixes: none",
+    ...entry.missing.map((check) => `- ${check.label}: add before source-note circulation.`),
+    manuscriptCautionItems(entry).length ? "Before circulation:" : "Before circulation: no additional caution flagged",
+    ...manuscriptCautionItems(entry).map((target) => `- ${target.title}: ${target.detail}`),
+    "Draft body placeholder: insert verified document text or prepare extract/summary only after source-copy and clearance review.",
+    "Compiler check: provisional number only; confirm official numbering, classification line, source note, participants, annotation hooks, and whether this item remains in the final FRUS sequence."
+  ]);
+}
+
+function documentManuscriptBoardNote(entries) {
+  const ready = entries.filter((entry) => entry.manuscriptStage === "Manuscript-ready").length;
+  const pulls = entries.filter((entry) => entry.readiness === "pull-lead").length;
+  const fixes = entries.filter((entry) => entry.missing.length).length;
+  return noteLines([
+    "Document manuscript builder",
+    `${entries.length} provisional manuscript stubs from the document selection sequence; ${ready} manuscript-ready, ${fixes} need citation fixes, ${pulls} require pull-before-selection.`,
+    ...entries.map((entry) => `${entry.number}. ${formatDate(entry.item.date)} / ${laneNumber(entry.item.laneId)} / ${entry.manuscriptStage} / ${entry.item.title}`)
+  ]);
+}
+
 function showReadinessDocuments(readiness) {
   resetGroup("documents", [
     nodes.documentSearch,
@@ -4024,6 +4246,7 @@ function bindEvents() {
   nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
   nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
   nodes.copyAssembly?.addEventListener("click", () => copyText(chapterAssemblyBoardNote(chapterAssemblyItems()), "Draft packets copied"));
+  nodes.copyManuscripts?.addEventListener("click", () => copyText(documentManuscriptBoardNote(documentManuscriptItems()), "Manuscript stubs copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -4285,6 +4508,7 @@ function renderAll() {
   renderChapterOutlines();
   renderCloseoutBoard();
   renderChapterAssembly();
+  renderDocumentManuscripts();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();
