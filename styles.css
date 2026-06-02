@@ -344,6 +344,7 @@ dd {
 .qa-grid,
 .stage-grid,
 .request-grid,
+.call-slip-grid,
 .agenda-grid,
 .action-grid,
 .briefing-grid,
@@ -395,6 +396,10 @@ dd {
 }
 
 .request-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.call-slip-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -454,6 +459,7 @@ dd {
 .qa-card,
 .stage-card,
 .request-card,
+.call-slip-card,
 .agenda-card,
 .action-card,
 .briefing-card,
@@ -752,6 +758,29 @@ dd {
   box-shadow: var(--shadow);
 }
 
+.call-slip-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--violet);
+}
+
+.call-slip-card.priority-critical {
+  border-left-color: var(--red);
+}
+
+.call-slip-card.priority-high {
+  border-left-color: var(--gold);
+}
+
+.call-slip-card.priority-medium {
+  border-left-color: var(--green);
+}
+
+.call-slip-card > p {
+  margin-bottom: 0;
+}
+
 .agenda-card {
   display: grid;
   gap: 12px;
@@ -799,6 +828,15 @@ dd {
 
 .detail-grid.stage-metrics div {
   grid-template-columns: 92px minmax(0, 1fr);
+}
+
+.detail-grid.call-slip-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.call-slip-metrics div {
+  grid-template-columns: 82px minmax(0, 1fr);
 }
 
 .briefing-card {
@@ -1158,6 +1196,7 @@ dd {
 .qa-card p,
 .stage-card p,
 .request-card p,
+.call-slip-card p,
 .agenda-card p,
 .action-card p,
 .briefing-card p,
@@ -1350,6 +1389,7 @@ dd {
   .qa-grid,
   .stage-grid,
   .request-grid,
+  .call-slip-grid,
   .agenda-grid,
   .action-grid,
   .briefing-grid,
@@ -1389,6 +1429,7 @@ dd {
   .qa-grid,
   .stage-grid,
   .request-grid,
+  .call-slip-grid,
   .agenda-grid,
   .action-grid,
   .briefing-grid,

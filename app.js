@@ -88,6 +88,7 @@ const nodes = {
   qaRoot: document.querySelector("#qa-root"),
   stageGatesRoot: document.querySelector("#stage-gates-root"),
   requestsRoot: document.querySelector("#requests-root"),
+  callSlipsRoot: document.querySelector("#call-slips-root"),
   agendaRoot: document.querySelector("#agenda-root"),
   actionsRoot: document.querySelector("#actions-root"),
   briefsRoot: document.querySelector("#briefs-root"),
@@ -107,6 +108,7 @@ const nodes = {
   copyAnnotations: document.querySelector("#copy-annotations"),
   copyQa: document.querySelector("#copy-qa"),
   copyStageGates: document.querySelector("#copy-stage-gates"),
+  copyCallSlips: document.querySelector("#copy-call-slips"),
   copyIndexing: document.querySelector("#copy-indexing"),
   leadsRoot: document.querySelector("#leads-root"),
   leadSummary: document.querySelector("#lead-summary"),
@@ -2003,6 +2005,167 @@ function requestCard(pool) {
   return card;
 }
 
+function renderCallSlips() {
+  renderList(nodes.callSlipsRoot, callSlipItems(), callSlipCard, "No archive call slips loaded.");
+}
+
+function callSlipItems() {
+  const slips = [];
+  for (const pull of libraryPlan) {
+    const folders = pull.targetFolders?.length ? pull.targetFolders : [pull.title];
+    folders.forEach((folder, index) => {
+      const laneDocuments = potentialDocuments.filter((item) => item.laneId === pull.laneId).sort(byPriorityThenDate);
+      const leads = sourceLeads.filter((lead) => lead.laneId === pull.laneId).sort(byPriorityThenDate);
+      const pool = sourcePools
+        .filter((item) => item.laneId === pull.laneId)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+      const gap = gapTracker
+        .filter((item) => item.laneId === pull.laneId)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+      slips.push({
+        id: `${pull.id}-${index}`,
+        pull,
+        folder,
+        laneDocuments,
+        leads,
+        pool,
+        gap,
+        priority: callSlipPriority(pull, gap)
+      });
+    });
+  }
+  return slips
+    .sort(
+      (a, b) =>
+        priorityValue(a.priority) - priorityValue(b.priority) ||
+        (laneOrder.get(a.pull.laneId) ?? 99) - (laneOrder.get(b.pull.laneId) ?? 99) ||
+        a.folder.localeCompare(b.folder)
+    )
+    .map((slip, index) => ({ ...slip, number: index + 1 }));
+}
+
+function callSlipPriority(pull, gap) {
+  if (pull.priority === "Control") return "Critical";
+  if (gap && priorityValue(gap.priority) <= 2) return gap.priority;
+  if (pull.priority === "A") return "High";
+  if (pull.priority === "B") return "Medium";
+  return "Low";
+}
+
+function callSlipCard(slip) {
+  const { pull } = slip;
+  const card = document.createElement("article");
+  card.className = `call-slip-card priority-${(slip.priority || "").toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(`#${slip.number.toString().padStart(2, "0")}`), textSpan(slip.priority), textSpan(laneNumber(pull.laneId)), textSpan(pull.sourcePart || "source part TBD"));
+
+  const title = document.createElement("h3");
+  title.textContent = slip.folder;
+
+  const office = document.createElement("p");
+  office.className = "office-line";
+  office.textContent = pull.office;
+
+  const goal = document.createElement("p");
+  goal.textContent = pull.visitGoal || pull.whyItMatters || "Pull this folder for item-level screening.";
+
+  const details = document.createElement("dl");
+  details.className = "detail-grid call-slip-metrics";
+  addDetail(details, "Lane", laneNumber(pull.laneId));
+  addDetail(details, "Office", pull.office);
+  addDetail(details, "Source", pull.sourcePart);
+  addDetail(details, "Pool", slip.pool?.institution || "Unassigned");
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Library", () => showLaneLibrary(pull.laneId)));
+  if (slip.leads.length) actions.append(packetActionButton("Leads", () => showLaneLeads(pull.laneId)));
+  if (slip.laneDocuments.length) actions.append(packetActionButton("Chronology", () => showLaneDocuments(pull.laneId)));
+  if (slip.gap) actions.append(packetActionButton("Gaps", () => showLaneGaps(pull.laneId)));
+  actions.append(clipboardButton("Copy slip", callSlipNote(slip), "Call slip copied"));
+
+  card.append(
+    meta,
+    title,
+    office,
+    goal,
+    details,
+    packetBlock(
+      "Bring with slip",
+      packetList(
+        callSlipContext(slip),
+        (item) => item.title,
+        (item) => item.detail,
+        "No context mapped yet."
+      )
+    ),
+    packetBlock(
+      "On-site handling",
+      packetList(
+        (pull.onsiteActions || []).map((action, index) => ({ title: `Step ${index + 1}`, detail: action })),
+        (item) => item.title,
+        (item) => item.detail,
+        "No on-site action mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function callSlipContext(slip) {
+  return [
+    ...slip.laneDocuments.slice(0, 2).map((item) => ({
+      title: item.title,
+      detail: `${formatDate(item.date)} / ${readinessLabel(documentReadiness(item))} / ${item.repository || item.type}`
+    })),
+    ...slip.leads.slice(0, 1).map((lead) => ({
+      title: `Lead: ${lead.title}`,
+      detail: lead.identifier || lead.note || lead.institution || "Source lead mapped"
+    })),
+    slip.gap
+      ? {
+          title: `Risk: ${slip.gap.title}`,
+          detail: slip.gap.remainingRisk || slip.gap.needed || slip.gap.problem || "Gap tracker item mapped"
+        }
+      : null
+  ].filter(Boolean);
+}
+
+function callSlipNote(slip) {
+  const { pull } = slip;
+  return noteLines([
+    `Archive call slip ${slip.number}: ${slip.folder}`,
+    `Priority: ${slip.priority}`,
+    `Lane: ${laneNumber(pull.laneId)} / ${laneTitle(pull.laneId)}`,
+    `Office/source: ${pull.office}`,
+    pull.sourcePart ? `Source part: ${pull.sourcePart}` : "",
+    slip.pool ? `Repository pool: ${slip.pool.title} (${slip.pool.institution})` : "",
+    slip.pool?.url ? `Repository URL: ${slip.pool.url}` : "",
+    `Visit goal: ${pull.visitGoal || pull.whyItMatters || "Item-level screening"}`,
+    pull.whyItMatters ? `Why it matters: ${pull.whyItMatters}` : "",
+    pull.onsiteActions?.length ? "On-site handling:" : "",
+    ...(pull.onsiteActions || []).map((action, index) => `${index + 1}. ${action}`),
+    slip.laneDocuments.length ? "Candidate records to compare:" : "",
+    ...slip.laneDocuments.slice(0, 4).map((item) => `- ${formatDate(item.date)} / ${item.title} (${readinessLabel(documentReadiness(item))})`),
+    slip.leads.length ? "Source leads:" : "",
+    ...slip.leads.slice(0, 3).map((lead) => `- ${lead.title}${lead.identifier ? ` / ${lead.identifier}` : ""}${lead.url ? ` / ${lead.url}` : ""}`),
+    slip.gap ? `Open risk: ${slip.gap.title} - ${slip.gap.remainingRisk || slip.gap.needed || slip.gap.problem || ""}` : "",
+    "Compiler check: record box/folder call number, withdrawal sheet, document date/title, classification/release status, pages, attachments, and whether copied/scanned."
+  ]);
+}
+
+function callSlipQueueNote(slips) {
+  return noteLines([
+    "Archive call slip queue",
+    `${slips.length} folder-level call slips generated from ${libraryPlan.length} pull-plan items.`,
+    ...slips.map((slip) => `${slip.number}. [${slip.priority}] ${laneNumber(slip.pull.laneId)} / ${slip.folder} / ${slip.pull.office}`)
+  ]);
+}
+
 function renderRepositoryAgenda() {
   renderList(nodes.agendaRoot, repositoryAgendaGroups(), agendaCard, "No repository agenda loaded.");
 }
@@ -3249,6 +3412,7 @@ function bindEvents() {
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
   nodes.copyQa?.addEventListener("click", () => copyText(compilerQaNote(compilerQaItems()), "QA copied"));
   nodes.copyStageGates?.addEventListener("click", () => copyText(stageGateBoardNote(stageGateItems()), "Stage gates copied"));
+  nodes.copyCallSlips?.addEventListener("click", () => copyText(callSlipQueueNote(callSlipItems()), "Call slips copied"));
   nodes.copyIndexing?.addEventListener("click", () => copyText(indexingQueueNote(indexingItems()), "Index queue copied"));
 
   bindInput(nodes.leadSearch, (value) => {
@@ -3510,6 +3674,7 @@ function renderAll() {
   renderCompilerQa();
   renderStageGates();
   renderRequestQueue();
+  renderCallSlips();
   renderRepositoryAgenda();
   renderActionQueue();
   renderBriefingPack();

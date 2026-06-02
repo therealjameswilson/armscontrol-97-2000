@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=22" />
-    <script defer src="data/volume-data.js?v=22"></script>
-    <script defer src="app.js?v=22"></script>
+    <link rel="stylesheet" href="styles.css?v=23" />
+    <script defer src="data/volume-data.js?v=23"></script>
+    <script defer src="app.js?v=23"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -126,6 +126,7 @@
         <a href="#qa">QA</a>
         <a href="#stage-gates">Stages</a>
         <a href="#requests">Requests</a>
+        <a href="#call-slips">Call Slips</a>
         <a href="#agenda">Agenda</a>
         <a href="#actions">Actions</a>
         <a href="#briefs">Briefs</a>
@@ -325,6 +326,19 @@
         </div>
         <div id="requests-root" class="request-grid" aria-live="polite">
           <p class="loading">Loading source request queue...</p>
+        </div>
+      </section>
+
+      <section class="section call-slip-section" id="call-slips" aria-labelledby="call-slips-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Repository Pulls</p>
+            <h2 id="call-slips-title">Archive Call Slip Builder</h2>
+          </div>
+          <button id="copy-call-slips" class="link-button" type="button">Copy call slips</button>
+        </div>
+        <div id="call-slips-root" class="call-slip-grid" aria-live="polite">
+          <p class="loading">Loading archive call slips...</p>
         </div>
       </section>
 
