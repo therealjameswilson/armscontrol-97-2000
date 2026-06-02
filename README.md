@@ -21,6 +21,7 @@ Official volume anchor:
 - Repository visit and search agenda grouping source pools, source leads, and pull-plan items into actionable workstreams by repository/institution.
 - First-pass action queue that tells the compiler the next move for each lane, including Volume VII carryover, top records, source moves, and copy-ready action notes.
 - Compiler briefing pack with copy-ready status, archive pull, selection, Daily Diary, and boundary/gap memos.
+- Person and office indexing queue with copy-ready index notes, related lanes, likely records, Diary cues, and source leads.
 - Copy-ready citation, diary, source-lead, pull-plan, gap, pool, and ledger notes directly from the review cards.
 - Searchable/exportable source leads, Presidential Daily Diary references, Public Papers anchors, Clinton Library pull plan, gap tracker, and people roster.
 - Volume VII handoff layer mapping every 1993-1996 arms-control chapter into its 1997-2000 continuation lane.

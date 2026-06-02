@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=18" />
-    <script defer src="data/volume-data.js?v=18"></script>
-    <script defer src="app.js?v=18"></script>
+    <link rel="stylesheet" href="styles.css?v=19" />
+    <script defer src="data/volume-data.js?v=19"></script>
+    <script defer src="app.js?v=19"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -126,6 +126,7 @@
         <a href="#agenda">Agenda</a>
         <a href="#actions">Actions</a>
         <a href="#briefs">Briefs</a>
+        <a href="#indexing">Index</a>
         <a href="#workbench">Desk</a>
         <a href="#chapters">Lanes</a>
         <a href="#handoff">Handoff</a>
@@ -312,6 +313,19 @@
         </div>
         <div id="briefs-root" class="briefing-grid" aria-live="polite">
           <p class="loading">Loading compiler briefs...</p>
+        </div>
+      </section>
+
+      <section class="section indexing-section" id="indexing" aria-labelledby="indexing-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Index Prep</p>
+            <h2 id="indexing-title">Person and Office Indexing Queue</h2>
+          </div>
+          <button id="copy-indexing" class="link-button" type="button">Copy index queue</button>
+        </div>
+        <div id="indexing-root" class="indexing-grid" aria-live="polite">
+          <p class="loading">Loading indexing queue...</p>
         </div>
       </section>
 

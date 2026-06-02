@@ -88,6 +88,7 @@ const nodes = {
   agendaRoot: document.querySelector("#agenda-root"),
   actionsRoot: document.querySelector("#actions-root"),
   briefsRoot: document.querySelector("#briefs-root"),
+  indexingRoot: document.querySelector("#indexing-root"),
   documentsRoot: document.querySelector("#documents-root"),
   documentSummary: document.querySelector("#document-summary"),
   documentSearch: document.querySelector("#document-search"),
@@ -100,6 +101,7 @@ const nodes = {
   exportDocuments: document.querySelector("#export-documents"),
   copySequence: document.querySelector("#copy-sequence"),
   copyQa: document.querySelector("#copy-qa"),
+  copyIndexing: document.querySelector("#copy-indexing"),
   leadsRoot: document.querySelector("#leads-root"),
   leadSummary: document.querySelector("#lead-summary"),
   leadSearch: document.querySelector("#lead-search"),
@@ -1922,6 +1924,133 @@ function riskBriefNote(gaps, handoffs) {
   ]);
 }
 
+function renderIndexingQueue() {
+  renderList(nodes.indexingRoot, indexingItems(), indexingCard, "No indexing queue loaded.");
+}
+
+function indexingItems() {
+  return persons
+    .map((person) => {
+      const lanesForPerson = person.laneIds || [];
+      const exactDocuments = potentialDocuments.filter((item) => personMentioned(item, person)).sort(byDateThenLane);
+      const laneDocuments = potentialDocuments.filter((item) => lanesForPerson.includes(item.laneId)).sort(byPriorityThenDate);
+      const exactDiary = diaryReferences.filter((entry) => personMentioned(entry, person)).sort(byDateThenLane);
+      const laneDiary = diaryReferences.filter((entry) => lanesForPerson.includes(entry.laneId)).sort(byDateThenLane);
+      const exactLeads = sourceLeads.filter((lead) => personMentioned(lead, person)).sort(byPriorityThenDate);
+      const laneLeads = sourceLeads.filter((lead) => lanesForPerson.includes(lead.laneId)).sort(byPriorityThenDate);
+      return { person, lanesForPerson, exactDocuments, laneDocuments, exactDiary, laneDiary, exactLeads, laneLeads };
+    })
+    .sort(
+      (a, b) =>
+        b.exactDocuments.length + b.exactDiary.length + b.exactLeads.length - (a.exactDocuments.length + a.exactDiary.length + a.exactLeads.length) ||
+        a.person.name.localeCompare(b.person.name)
+    );
+}
+
+function personMentioned(item, person) {
+  const haystack = textForSearch(item);
+  return personNeedles(person).some((needle) => haystack.includes(needle));
+}
+
+function personNeedles(person) {
+  const full = person.name.toLowerCase();
+  const parts = full.split(/\s+/).map((part) => part.replace(/[^a-z0-9-]/g, "")).filter(Boolean);
+  const last = parts.at(-1) || full;
+  return [full, last].filter((value, index, values) => value && values.indexOf(value) === index);
+}
+
+function indexingCard(item) {
+  const { person } = item;
+  const exactCount = item.exactDocuments.length + item.exactDiary.length + item.exactLeads.length;
+  const card = document.createElement("article");
+  card.className = "indexing-card";
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(plural(item.lanesForPerson.length, "lane")), textSpan(`${exactCount} direct hits`));
+
+  const title = document.createElement("h3");
+  title.textContent = person.name;
+
+  const role = document.createElement("p");
+  role.className = "office-line";
+  role.textContent = person.role;
+
+  const note = document.createElement("p");
+  note.textContent = person.note;
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  actions.append(packetActionButton("People", () => showPersonProfile(person.name)));
+  if (item.lanesForPerson[0]) actions.append(packetActionButton("Chronology", () => showLaneDocuments(item.lanesForPerson[0])));
+  actions.append(clipboardButton("Copy index", indexNote(item), "Index note copied"));
+
+  card.append(
+    meta,
+    title,
+    role,
+    note,
+    tagList(item.lanesForPerson.map(laneTitle)),
+    packetBlock(
+      "Check records",
+      packetList(
+        (item.exactDocuments.length ? item.exactDocuments : item.laneDocuments).slice(0, 3),
+        (record) => record.title,
+        (record) => `${formatDate(record.date)} / ${laneNumber(record.laneId)} / ${readinessLabel(documentReadiness(record))}`,
+        "No record context mapped yet."
+      )
+    ),
+    packetBlock(
+      "Diary and source cues",
+      packetList(
+        [
+          ...(item.exactDiary.length ? item.exactDiary : item.laneDiary).slice(0, 2),
+          ...(item.exactLeads.length ? item.exactLeads : item.laneLeads).slice(0, 1)
+        ],
+        (cue) => cue.title,
+        (cue) => cue.time || cue.institution || cue.note || cue.identifier || laneNumber(cue.laneId),
+        "No Diary or source cue mapped yet."
+      )
+    ),
+    actions
+  );
+  return card;
+}
+
+function showPersonProfile(name) {
+  resetGroup("people", [nodes.personSearch, nodes.personLaneFilter]);
+  state.people.query = name;
+  if (nodes.personSearch) nodes.personSearch.value = name;
+  renderPeople();
+  scrollToSection("#people");
+}
+
+function indexNote(item) {
+  const { person } = item;
+  return noteLines([
+    `${person.name} - ${person.role}`,
+    `Lanes: ${item.lanesForPerson.map((laneId) => `${laneNumber(laneId)} / ${laneTitle(laneId)}`).join("; ")}`,
+    person.note ? `Index note: ${person.note}` : "",
+    item.exactDocuments.length ? "Direct document mentions:" : "",
+    ...item.exactDocuments.slice(0, 5).map((record) => `- ${formatDate(record.date)} / ${record.title}`),
+    item.exactDiary.length ? "Direct Diary cues:" : "",
+    ...item.exactDiary.slice(0, 5).map((entry) => `- ${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${entry.title}`),
+    item.exactLeads.length ? "Direct source leads:" : "",
+    ...item.exactLeads.slice(0, 5).map((lead) => `- ${lead.title} (${lead.institution})`),
+    !item.exactDocuments.length && item.laneDocuments.length ? "Lane record context:" : "",
+    ...(!item.exactDocuments.length ? item.laneDocuments.slice(0, 5).map((record) => `- ${formatDate(record.date)} / ${record.title}`) : []),
+    "Compiler check: confirm spelling, title, office, participant role, and whether this person belongs in the final index or source annotation."
+  ]);
+}
+
+function indexingQueueNote(items) {
+  return noteLines([
+    "Person and office indexing queue",
+    `${items.length} people/offices mapped to Volume VIII lanes.`,
+    ...items.map((item, index) => `${index + 1}. ${item.person.name} - ${item.person.role}; lanes: ${item.lanesForPerson.map(laneNumber).join(", ")}; direct hits: ${item.exactDocuments.length + item.exactDiary.length + item.exactLeads.length}`)
+  ]);
+}
+
 function renderConcordance() {
   renderList(
     nodes.concordanceRoot,
@@ -2543,6 +2672,7 @@ function bindEvents() {
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyQa?.addEventListener("click", () => copyText(compilerQaNote(compilerQaItems()), "QA copied"));
+  nodes.copyIndexing?.addEventListener("click", () => copyText(indexingQueueNote(indexingItems()), "Index queue copied"));
 
   bindInput(nodes.leadSearch, (value) => {
     state.leads.query = value;
@@ -2803,6 +2933,7 @@ function renderAll() {
   renderRepositoryAgenda();
   renderActionQueue();
   renderBriefingPack();
+  renderIndexingQueue();
   renderLeads();
   renderDiaryReferences();
   renderPublic();

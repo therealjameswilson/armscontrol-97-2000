@@ -342,6 +342,7 @@ dd {
 .agenda-grid,
 .action-grid,
 .briefing-grid,
+.indexing-grid,
 .lane-grid,
 .handoff-grid,
 .lead-grid,
@@ -400,6 +401,10 @@ dd {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.indexing-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .handoff-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
@@ -432,6 +437,7 @@ dd {
 .agenda-card,
 .action-card,
 .briefing-card,
+.indexing-card,
 .lane-card,
 .handoff-card,
 .record-card,
@@ -710,6 +716,13 @@ dd {
 
 .briefing-card > p {
   margin-bottom: 0;
+}
+
+.indexing-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--violet);
 }
 
 .coverage-root {
@@ -1033,6 +1046,7 @@ dd {
 .agenda-card p,
 .action-card p,
 .briefing-card p,
+.indexing-card p,
 .lead-card p,
 .diary-card p,
 .compact-card p,
@@ -1221,6 +1235,7 @@ dd {
   .agenda-grid,
   .action-grid,
   .briefing-grid,
+  .indexing-grid,
   .lane-grid,
   .handoff-grid,
   .diary-grid,
@@ -1256,6 +1271,7 @@ dd {
   .agenda-grid,
   .action-grid,
   .briefing-grid,
+  .indexing-grid,
   .lane-grid,
   .handoff-grid,
   .lead-grid,
