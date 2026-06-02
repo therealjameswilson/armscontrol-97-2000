@@ -14,6 +14,7 @@ Official volume anchor:
 - Chapter packet cards that crosswalk each Volume VIII lane to its top chronology candidates, Presidential Daily Diary cues, pull targets, and remaining gap.
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
+- Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.
 - Chapter coverage matrix comparing readiness buckets, Diary cues, and open gaps across every provisional lane with click-through filters.
 - Source request queue that turns source pools into copyable repository/pull request packets with linked leads, library targets, and risk checks.
 - First-pass action queue that tells the compiler the next move for each lane, including Volume VII carryover, top records, source moves, and copy-ready action notes.

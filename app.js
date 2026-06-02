@@ -81,6 +81,7 @@ const nodes = {
   packetsRoot: document.querySelector("#packets-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
+  sequenceRoot: document.querySelector("#sequence-root"),
   coverageRoot: document.querySelector("#coverage-root"),
   requestsRoot: document.querySelector("#requests-root"),
   actionsRoot: document.querySelector("#actions-root"),
@@ -95,6 +96,7 @@ const nodes = {
   documentSort: document.querySelector("#document-sort"),
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
+  copySequence: document.querySelector("#copy-sequence"),
   leadsRoot: document.querySelector("#leads-root"),
   leadSummary: document.querySelector("#lead-summary"),
   leadSearch: document.querySelector("#lead-search"),
@@ -896,6 +898,158 @@ function selectionNote(bucket, items) {
       (item) =>
         `- ${formatDate(item.date)} | ${laneNumber(item.laneId)} | ${item.priority} | ${item.type} | ${item.title} | ${item.repository || ""} ${item.identifier || ""}`.trim()
     )
+  ]);
+}
+
+function renderSelectionSequence() {
+  if (!nodes.sequenceRoot) return;
+  const entries = selectionSequenceItems();
+  const wrapper = document.createElement("div");
+  wrapper.className = "sequence-table-wrap";
+  const table = document.createElement("table");
+  table.className = "sequence-table";
+
+  const thead = document.createElement("thead");
+  const headerRow = document.createElement("tr");
+  for (const label of ["No.", "Date", "Lane", "Readiness", "Candidate", "Context", "Copy"]) {
+    const th = document.createElement("th");
+    th.scope = "col";
+    th.textContent = label;
+    headerRow.append(th);
+  }
+  thead.append(headerRow);
+
+  const tbody = document.createElement("tbody");
+  for (const entry of entries) tbody.append(sequenceRow(entry));
+
+  table.append(thead, tbody);
+  wrapper.append(table);
+  nodes.sequenceRoot.replaceChildren(wrapper);
+}
+
+function selectionSequenceItems() {
+  return potentialDocuments
+    .filter((item) => ["review-copy", "formal-record", "pull-lead"].includes(documentReadiness(item)))
+    .sort(byDateThenLane)
+    .map((item, index) => ({
+      number: index + 1,
+      item,
+      context: selectionSequenceContext(item)
+    }));
+}
+
+function selectionSequenceContext(item) {
+  const publicAnchors = publicRecords
+    .filter((anchor) => anchor.laneId === item.laneId && dayDistance(anchor.date, item.date) <= 21)
+    .sort((a, b) => dayDistance(a.date, item.date) - dayDistance(b.date, item.date) || byPriorityThenDate(a, b))
+    .slice(0, 2);
+  const diary = diaryReferences
+    .filter((entry) => entry.laneId === item.laneId && dayDistance(entry.date, item.date) <= 21)
+    .sort((a, b) => dayDistance(a.date, item.date) - dayDistance(b.date, item.date) || byPriorityThenDate(a, b))
+    .slice(0, 2);
+  const pull = libraryPlan
+    .filter((target) => target.laneId === item.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+  const gap = gapTracker
+    .filter((risk) => risk.laneId === item.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+  return { publicAnchors, diary, pull, gap };
+}
+
+function sequenceRow(entry) {
+  const { item, context } = entry;
+  const row = document.createElement("tr");
+
+  const number = document.createElement("th");
+  number.scope = "row";
+  number.className = "sequence-number";
+  number.textContent = entry.number.toString().padStart(2, "0");
+  row.append(number);
+
+  row.append(sequenceCell(formatDate(item.date)));
+  row.append(sequenceCell(laneNumber(item.laneId)));
+  row.append(sequenceCell(readinessLabel(documentReadiness(item))));
+
+  const candidate = document.createElement("td");
+  candidate.className = "sequence-candidate";
+  const title = document.createElement("strong");
+  title.textContent = item.title;
+  const meta = document.createElement("span");
+  meta.textContent = `${item.type} / ${item.repository || item.collection || item.level || "source mapped"}`;
+  candidate.append(title, meta);
+  row.append(candidate);
+
+  const contextCell = document.createElement("td");
+  contextCell.append(sequenceContextList(entry));
+  row.append(contextCell);
+
+  const copy = document.createElement("td");
+  copy.append(clipboardButton("Copy", sequenceCandidateNote(entry), "Sequence row copied"));
+  row.append(copy);
+
+  return row;
+}
+
+function sequenceCell(value) {
+  const cell = document.createElement("td");
+  cell.textContent = value || "";
+  return cell;
+}
+
+function sequenceContextList(entry) {
+  const { context } = entry;
+  const lines = [
+    context.publicAnchors.length ? `Public: ${context.publicAnchors.map((item) => item.title).join("; ")}` : "",
+    context.diary.length ? `Diary: ${context.diary.map((item) => `${formatDate(item.date)} ${item.title}`).join("; ")}` : "",
+    context.pull ? `Pull: ${context.pull.title}` : "",
+    context.gap ? `Risk: ${context.gap.title}` : ""
+  ].filter(Boolean);
+
+  if (!lines.length) {
+    const empty = document.createElement("p");
+    empty.className = "packet-empty";
+    empty.textContent = "No nearby context mapped.";
+    return empty;
+  }
+
+  const list = document.createElement("ul");
+  list.className = "sequence-context-list";
+  for (const line of lines) {
+    const item = document.createElement("li");
+    item.textContent = line;
+    list.append(item);
+  }
+  return list;
+}
+
+function sequenceCandidateNote(entry) {
+  const { item, context } = entry;
+  return noteLines([
+    `Provisional sequence ${entry.number}: ${formatDate(item.date)} - ${item.title}`,
+    `Lane: ${laneNumber(item.laneId)} / ${laneTitle(item.laneId)}`,
+    `Readiness: ${readinessLabel(documentReadiness(item))}`,
+    `Type: ${item.type}`,
+    item.repository ? `Repository: ${item.repository}` : "",
+    item.collection ? `Collection: ${item.collection}` : "",
+    item.identifier ? `Identifier: ${item.identifier}` : "",
+    item.summary ? `Selection reason: ${item.summary}` : "",
+    context.publicAnchors.length ? `Nearby public anchors: ${context.publicAnchors.map((anchor) => `${formatDate(anchor.date)} - ${anchor.title}`).join("; ")}` : "",
+    context.diary.length ? `Nearby diary cues: ${context.diary.map((entryItem) => `${formatDate(entryItem.date)} - ${entryItem.title}`).join("; ")}` : "",
+    context.pull ? `Pull target: ${context.pull.title}` : "",
+    context.gap ? `Open risk: ${context.gap.title}` : "",
+    item.url ? `Source URL: ${item.url}` : "",
+    item.pdfUrl ? `Review PDF: ${item.pdfUrl}` : ""
+  ]);
+}
+
+function selectionSequenceNote(entries) {
+  return noteLines([
+    "Provisional document selection sequence",
+    `${entries.length} review-copy, formal-record, and pull-lead candidates are ordered chronologically for first-pass editorial review.`,
+    ...entries.map((entry) => {
+      const { item } = entry;
+      return `${entry.number}. ${formatDate(item.date)} / ${laneNumber(item.laneId)} / ${readinessLabel(documentReadiness(item))} / ${item.title}`;
+    })
   ]);
 }
 
@@ -2080,6 +2234,7 @@ function bindEvents() {
     renderDocuments();
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
+  nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
 
   bindInput(nodes.leadSearch, (value) => {
     state.leads.query = value;
@@ -2333,6 +2488,7 @@ function renderAll() {
   renderPackets();
   renderConcordance();
   renderSelectionBoard();
+  renderSelectionSequence();
   renderCoverageMatrix();
   renderRequestQueue();
   renderActionQueue();
