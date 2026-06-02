@@ -80,6 +80,7 @@ const nodes = {
   handoffRoot: document.querySelector("#handoff-root"),
   packetsRoot: document.querySelector("#packets-root"),
   outlinesRoot: document.querySelector("#outlines-root"),
+  closeoutRoot: document.querySelector("#closeout-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -105,6 +106,7 @@ const nodes = {
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
   copyOutlines: document.querySelector("#copy-outlines"),
+  copyCloseout: document.querySelector("#copy-closeout"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -956,6 +958,232 @@ function chapterOutlinesNote(outlines) {
     "Chapter drafting outlines",
     `${outlines.length} substantive chapter outlines tie Volume VII handoff questions to Volume VIII chronology, Diary cues, source pulls, people, and risks.`,
     ...outlines.map((outline) => `${outline.lane.number}. ${outline.lane.title}: ${chapterThesis(outline)}`)
+  ]);
+}
+
+function renderCloseoutBoard() {
+  renderList(nodes.closeoutRoot, closeoutItems(), closeoutCard, "No chapter closeout checks loaded.");
+}
+
+function closeoutItems() {
+  const sequence = selectionSequenceItems();
+  const annotations = annotationItems();
+  const slips = callSlipItems();
+  const statusRank = new Map([
+    ["Not draft-ready", 1],
+    ["Needs polish", 2],
+    ["Draft-ready", 3]
+  ]);
+
+  return lanes
+    .filter((lane) => lane.id !== "volume-control")
+    .map((lane) => {
+      const documents = potentialDocuments.filter((item) => item.laneId === lane.id).sort(byDateThenLane);
+      const counts = readinessCounts(documents);
+      const laneSequence = sequence.filter((entry) => entry.item.laneId === lane.id);
+      const laneAnnotations = annotations.filter((entry) => entry.item.laneId === lane.id);
+      const citationFixes = laneAnnotations.filter((entry) => entry.missing.length);
+      const diary = diaryReferences.filter((entry) => entry.laneId === lane.id).sort(byDateThenLane);
+      const handoffs = handoffsForLane(lane.id);
+      const peopleForLane = persons.filter((person) => (person.laneIds || []).includes(lane.id)).sort((a, b) => a.name.localeCompare(b.name));
+      const pulls = libraryPlan
+        .filter((item) => item.laneId === lane.id)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+      const leads = sourceLeads.filter((lead) => lead.laneId === lane.id).sort(byPriorityThenDate);
+      const laneSlips = slips.filter((slip) => slip.pull.laneId === lane.id);
+      const gaps = gapTracker
+        .filter((gap) => gap.laneId === lane.id)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+      const highGaps = gaps.filter((gap) => priorityValue(gap.priority) <= 2);
+      const publicAnchors = documents.filter((item) => documentReadiness(item) === "public-anchor");
+      const checks = [
+        closeoutCheck("Chronology candidates", documents.length > 0, `${plural(documents.length, "candidate")} mapped to the chapter lane.`),
+        closeoutCheck("Provisional sequence", laneSequence.length > 0, laneSequence.length ? `${plural(laneSequence.length, "sequence row")} ready for ordering.` : "Promote at least one record into the provisional selection sequence."),
+        closeoutCheck("Review-copy text", counts["review-copy"] > 0, counts["review-copy"] ? `${plural(counts["review-copy"], "review-copy record")} available.` : "Pull or identify released internal text before final selection."),
+        closeoutCheck("Citation fields", laneSequence.length > 0 && citationFixes.length === 0, citationFixes.length ? `${plural(citationFixes.length, "candidate")} still need citation fixes.` : laneSequence.length ? "No citation fixes flagged on sequence candidates." : "Sequence candidates must exist before citation closeout."),
+        closeoutCheck("Diary cue", diary.length > 0, diary.length ? `${plural(diary.length, "Presidential Daily Diary cue")} mapped.` : "Add or rule out pertinent calls and meetings."),
+        closeoutCheck("Volume VII handoff", handoffs.length > 0, handoffs.length ? `${plural(handoffs.length, "1993-1996 carryover")} mapped.` : "Confirm the prior-volume chapter boundary."),
+        closeoutCheck("People/offices", peopleForLane.length > 0, peopleForLane.length ? `${plural(peopleForLane.length, "person/office", "people/offices")} indexed.` : "Map decisionmakers, offices, and recurring participants."),
+        closeoutCheck("Source route", pulls.length + leads.length + laneSlips.length > 0, `${plural(pulls.length, "pull plan")}, ${plural(leads.length, "source lead")}, ${plural(laneSlips.length, "call slip")} mapped.`),
+        closeoutCheck("Call-slip coverage", !pulls.length || laneSlips.length >= pulls.length, pulls.length ? `${laneSlips.length}/${pulls.length} pull-plan items have generated slips.` : "No folder-level pull plan requires a slip yet."),
+        closeoutCheck("Public backtrace", !publicAnchors.length || counts["review-copy"] > 0 || pulls.length > 0 || leads.length > 0, publicAnchors.length ? `${plural(publicAnchors.length, "public anchor")} paired with ${plural(counts["review-copy"], "review copy")} and ${plural(pulls.length + leads.length, "source route")}.` : "No public anchors need backtrace."),
+        closeoutCheck("High-risk gaps", highGaps.length === 0, highGaps.length ? `${plural(highGaps.length, "critical/high gap")} remains open.` : "No critical/high gaps mapped.")
+      ];
+      const remaining = checks.filter((check) => !check.done);
+      const status = remaining.length ? (remaining.length <= 2 ? "Needs polish" : "Not draft-ready") : "Draft-ready";
+      return { lane, documents, counts, sequence: laneSequence, annotations: laneAnnotations, citationFixes, diary, handoffs, peopleForLane, pulls, leads, slips: laneSlips, gaps, highGaps, checks, remaining, status };
+    })
+    .sort(
+      (a, b) =>
+        (statusRank.get(a.status) ?? 99) - (statusRank.get(b.status) ?? 99) ||
+        b.remaining.length - a.remaining.length ||
+        (laneOrder.get(a.lane.id) ?? 99) - (laneOrder.get(b.lane.id) ?? 99)
+    );
+}
+
+function closeoutCheck(label, done, detail) {
+  return { label, done, detail };
+}
+
+function closeoutCard(item) {
+  const card = document.createElement("article");
+  card.className = `closeout-card status-${closeoutStatusClass(item.status)}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(item.lane.number), textSpan(item.status), textSpan(plural(item.remaining.length, "open check")));
+
+  const title = document.createElement("h3");
+  title.textContent = item.lane.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = `${item.checks.length - item.remaining.length}/${item.checks.length} closeout checks pass. ${closeoutNextMove(item)}`;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid closeout-metrics";
+  addDetail(metrics, "Closed", `${item.checks.length - item.remaining.length}/${item.checks.length}`);
+  addDetail(metrics, "Review", item.counts["review-copy"] || 0);
+  addDetail(metrics, "Sequence", item.sequence.length);
+  addDetail(metrics, "Diary", item.diary.length);
+  addDetail(metrics, "Slips", item.slips.length);
+  addDetail(metrics, "High gaps", item.highGaps.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Outline", () => scrollToSection("#outlines")));
+  if (item.documents.length) actions.append(packetActionButton("Chronology", () => showLaneDocuments(item.lane.id)));
+  if (item.annotations.length) actions.append(packetActionButton("Annotate", () => scrollToSection("#annotations")));
+  if (item.slips.length) actions.append(packetActionButton("Call slips", () => scrollToSection("#call-slips")));
+  if (item.gaps.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(item.lane.id)));
+  actions.append(clipboardButton("Copy closeout", closeoutNote(item), "Closeout copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Remaining work",
+      packetList(
+        item.remaining,
+        (check) => check.label,
+        (check) => check.detail,
+        "All closeout checks pass."
+      )
+    ),
+    packetBlock(
+      "Passed checks",
+      packetList(
+        item.checks.filter((check) => check.done).slice(0, 6),
+        (check) => check.label,
+        (check) => check.detail,
+        "No closeout checks have passed yet."
+      )
+    ),
+    packetBlock(
+      "Closeout route",
+      packetList(
+        closeoutRouteItems(item),
+        (route) => route.title,
+        (route) => route.detail,
+        "No route items mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function closeoutStatusClass(status) {
+  return status.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
+
+function closeoutNextMove(item) {
+  if (!item.remaining.length) return "Ready for first-pass chapter drafting after final source verification.";
+  const first = item.remaining[0];
+  return `Next closeout move: ${first.label.toLowerCase()} - ${first.detail}`;
+}
+
+function closeoutRouteItems(item) {
+  return [
+    item.highGaps[0]
+      ? {
+          title: `Resolve ${item.highGaps[0].priority} gap: ${item.highGaps[0].title}`,
+          detail: item.highGaps[0].remainingRisk || item.highGaps[0].needed || item.highGaps[0].problem || "Gap tracker item mapped."
+        }
+      : null,
+    item.citationFixes[0]
+      ? {
+          title: `Fix citation: ${item.citationFixes[0].item.title}`,
+          detail: `${item.citationFixes[0].missing.map((check) => check.label).join(", ")} missing.`
+        }
+      : null,
+    item.slips[0]
+      ? {
+          title: `Call slip ${item.slips[0].number}: ${item.slips[0].folder}`,
+          detail: item.slips[0].pull.visitGoal || item.slips[0].pull.whyItMatters || item.slips[0].pull.sourcePart || "Folder-level pull target."
+        }
+      : null,
+    item.pulls[0]
+      ? {
+          title: `Pull: ${item.pulls[0].title}`,
+          detail: item.pulls[0].visitGoal || item.pulls[0].whyItMatters || item.pulls[0].sourcePart || "Archive pull target."
+        }
+      : null,
+    item.sequence[0]
+      ? {
+          title: `Sequence start: ${item.sequence[0].item.title}`,
+          detail: `${formatDate(item.sequence[0].item.date)} / ${readinessLabel(documentReadiness(item.sequence[0].item))}.`
+        }
+      : null,
+    item.diary[0]
+      ? {
+          title: `Diary check: ${item.diary[0].title}`,
+          detail: `${formatDate(item.diary[0].date)} / ${item.diary[0].time || "time not listed"} / ${item.diary[0].eventType || "calendar cue"}.`
+        }
+      : null
+  ].filter(Boolean).slice(0, 5);
+}
+
+function closeoutNote(item) {
+  return noteLines([
+    `${item.lane.number} / ${item.lane.title} chapter closeout`,
+    `Status: ${item.status}`,
+    `Checks closed: ${item.checks.length - item.remaining.length}/${item.checks.length}`,
+    `Next move: ${item.remaining[0]?.label || "Final source verification"}${item.remaining[0] ? ` - ${item.remaining[0].detail}` : ""}`,
+    item.remaining.length ? "Remaining checks:" : "Remaining checks: none",
+    ...item.remaining.map((check) => `- ${check.label}: ${check.detail}`),
+    "Passed checks:",
+    ...item.checks.filter((check) => check.done).map((check) => `- ${check.label}: ${check.detail}`),
+    item.sequence.length ? "Provisional sequence:" : "",
+    ...item.sequence.slice(0, 6).map((entry) => `- ${entry.number}. ${formatDate(entry.item.date)} / ${readinessLabel(documentReadiness(entry.item))} / ${entry.item.title}`),
+    item.citationFixes.length ? "Citation fixes:" : "",
+    ...item.citationFixes.map((entry) => `- ${entry.item.title}: missing ${entry.missing.map((check) => check.label).join(", ")}`),
+    item.highGaps.length ? "Critical/high gaps:" : "",
+    ...item.highGaps.map((gap) => `- [${gap.priority}] ${gap.title}: ${gap.remainingRisk || gap.needed || gap.problem}`),
+    item.diary.length ? "Presidential Daily Diary cues:" : "",
+    ...item.diary.slice(0, 5).map((entry) => `- ${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${entry.title}: ${entry.volumeConnection}`),
+    item.handoffs.length ? "Volume VII carryover:" : "",
+    ...item.handoffs.map((handoff) => `- ${handoff.priorChapter}: ${handoff.newQuestion}`),
+    item.pulls.length || item.slips.length ? "Source and call-slip route:" : "",
+    ...item.pulls.slice(0, 4).map((pull) => `- Pull: ${pull.title}: ${pull.visitGoal || pull.whyItMatters || pull.sourcePart}`),
+    ...item.slips.slice(0, 4).map((slip) => `- Slip ${slip.number}: ${slip.folder} (${slip.priority})`),
+    item.peopleForLane.length ? "People/offices:" : "",
+    ...item.peopleForLane.slice(0, 8).map((person) => `- ${person.name}: ${person.role}`),
+    "Compiler check: do not mark this chapter draft-ready until sequence, source text, citation, Diary, handoff, people, and high-risk gap checks all pass."
+  ]);
+}
+
+function closeoutBoardNote(items) {
+  const draftReady = items.filter((item) => item.status === "Draft-ready").length;
+  const needsPolish = items.filter((item) => item.status === "Needs polish").length;
+  const notReady = items.filter((item) => item.status === "Not draft-ready").length;
+  return noteLines([
+    "Chapter closeout board",
+    `${items.length} substantive chapters scored from chronology, sequence, annotation, Daily Diary, Volume VII handoff, source-route, call-slip, people, and gap signals.`,
+    `Status counts: ${draftReady} draft-ready; ${needsPolish} needs polish; ${notReady} not draft-ready.`,
+    ...items.map((item) => `${item.lane.number}. ${item.lane.title}: ${item.status}; ${item.checks.length - item.remaining.length}/${item.checks.length} checks closed; remaining: ${item.remaining.map((check) => check.label).join(", ") || "none"}`)
   ]);
 }
 
@@ -3583,6 +3811,7 @@ function bindEvents() {
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
+  nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -3842,6 +4071,7 @@ function renderAll() {
   renderDocuments();
   renderPackets();
   renderChapterOutlines();
+  renderCloseoutBoard();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();

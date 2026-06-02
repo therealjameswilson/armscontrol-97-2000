@@ -13,6 +13,7 @@ Official volume anchor:
 - Searchable/exportable declassified-document chronology, now placed first on the page with chronological, lane-grouped, and priority sort modes.
 - Chapter packet cards that crosswalk each Volume VIII lane to its top chronology candidates, Presidential Daily Diary cues, pull targets, remaining gap, and copy-ready chapter dossier.
 - Chapter drafting outlines tying Volume VII handoff questions to Volume VIII chronology, Diary cues, source pulls, people, and drafting risks.
+- Chapter closeout board scoring each substantive chapter against sequence, review-copy, citation, Daily Diary, Volume VII handoff, people, source-route, call-slip, public-backtrace, and high-gap checks.
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.

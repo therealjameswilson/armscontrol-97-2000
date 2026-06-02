@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=24" />
-    <script defer src="data/volume-data.js?v=24"></script>
-    <script defer src="app.js?v=24"></script>
+    <link rel="stylesheet" href="styles.css?v=25" />
+    <script defer src="data/volume-data.js?v=25"></script>
+    <script defer src="app.js?v=25"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -118,6 +118,7 @@
         <a href="#documents">Documents</a>
         <a href="#packets">Packets</a>
         <a href="#outlines">Outlines</a>
+        <a href="#closeout">Closeout</a>
         <a href="#concordance">Concordance</a>
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
@@ -235,6 +236,19 @@
         </div>
         <div id="outlines-root" class="outline-grid" aria-live="polite">
           <p class="loading">Loading chapter drafting outlines...</p>
+        </div>
+      </section>
+
+      <section class="section closeout-section" id="closeout" aria-labelledby="closeout-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Draft Readiness</p>
+            <h2 id="closeout-title">Chapter Closeout Board</h2>
+          </div>
+          <button id="copy-closeout" class="link-button" type="button">Copy closeout</button>
+        </div>
+        <div id="closeout-root" class="closeout-grid" aria-live="polite">
+          <p class="loading">Loading chapter closeout checks...</p>
         </div>
       </section>
 
