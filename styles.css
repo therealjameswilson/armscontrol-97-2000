@@ -340,6 +340,7 @@ dd {
 .closeout-grid,
 .assembly-grid,
 .manuscript-grid,
+.clearance-grid,
 .concordance-grid,
 .selection-grid,
 .sequence-root,
@@ -392,6 +393,10 @@ dd {
 }
 
 .manuscript-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.clearance-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -476,6 +481,7 @@ dd {
 .closeout-card,
 .assembly-card,
 .manuscript-card,
+.clearance-card,
 .concordance-card,
 .selection-card,
 .backtrace-card,
@@ -615,6 +621,33 @@ dd {
   margin-bottom: 0;
 }
 
+.clearance-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--blue);
+}
+
+.clearance-card.status-hold-for-pull {
+  border-left-color: var(--red);
+}
+
+.clearance-card.status-route-with-cautions {
+  border-left-color: var(--gold);
+}
+
+.clearance-card.status-ready-for-equity-review {
+  border-left-color: var(--green);
+}
+
+.clearance-card.status-apparatus-check {
+  border-left-color: var(--violet);
+}
+
+.clearance-card > p {
+  margin-bottom: 0;
+}
+
 .backtrace-card {
   display: grid;
   gap: 12px;
@@ -692,6 +725,15 @@ dd {
 
 .detail-grid.manuscript-metrics div {
   grid-template-columns: 82px minmax(0, 1fr);
+}
+
+.detail-grid.clearance-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.clearance-metrics div {
+  grid-template-columns: 86px minmax(0, 1fr);
 }
 
 .packet-block {
@@ -1346,6 +1388,7 @@ dd {
 .closeout-card p,
 .assembly-card p,
 .manuscript-card p,
+.clearance-card p,
 .concordance-card p,
 .selection-card p,
 .backtrace-card p,
@@ -1543,6 +1586,7 @@ dd {
   .closeout-grid,
   .assembly-grid,
   .manuscript-grid,
+  .clearance-grid,
   .concordance-grid,
   .selection-grid,
   .backtrace-grid,
@@ -1587,6 +1631,7 @@ dd {
   .closeout-grid,
   .assembly-grid,
   .manuscript-grid,
+  .clearance-grid,
   .concordance-grid,
   .selection-grid,
   .backtrace-grid,

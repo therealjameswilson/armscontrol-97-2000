@@ -16,6 +16,7 @@ Official volume anchor:
 - Chapter closeout board scoring each substantive chapter against sequence, review-copy, citation, Daily Diary, Volume VII handoff, people, source-route, call-slip, public-backtrace, and high-gap checks.
 - Draft packet builder bundling each chapter's outline, closeout status, document run, Daily Diary anchors, source-note base, call slips, citation fixes, people/offices, and copy-ready assembly note.
 - Document manuscript builder turning provisional sequence candidates into copy-ready FRUS-style working stubs with source-note fields, editorial apparatus prompts, Diary/public anchors, pull warnings, and pre-circulation cautions.
+- Clearance routing matrix deriving likely equity offices, source-handling cues, citation blockers, pull holds, and copy-ready routing notes for each provisional manuscript stub.
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.

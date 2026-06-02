@@ -83,6 +83,7 @@ const nodes = {
   closeoutRoot: document.querySelector("#closeout-root"),
   assemblyRoot: document.querySelector("#assembly-root"),
   manuscriptsRoot: document.querySelector("#manuscripts-root"),
+  clearanceRoot: document.querySelector("#clearance-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -111,6 +112,7 @@ const nodes = {
   copyCloseout: document.querySelector("#copy-closeout"),
   copyAssembly: document.querySelector("#copy-assembly"),
   copyManuscripts: document.querySelector("#copy-manuscripts"),
+  copyClearance: document.querySelector("#copy-clearance"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -2319,6 +2321,230 @@ function documentManuscriptBoardNote(entries) {
   ]);
 }
 
+function renderClearanceRouter() {
+  renderList(nodes.clearanceRoot, clearanceItems(), clearanceCard, "No clearance routing items loaded.");
+}
+
+function clearanceItems() {
+  return documentManuscriptItems().map((entry) => {
+    const routes = clearanceRoutes(entry);
+    const blockers = clearanceBlockers(entry);
+    const sourceHandling = clearanceSourceHandling(entry);
+    const status = clearanceStatus(entry, blockers);
+    return { ...entry, routes, blockers, sourceHandling, clearanceStatus: status };
+  });
+}
+
+function clearanceRoutes(entry) {
+  const common = [
+    {
+      title: "Office of the Historian",
+      detail: "Final FRUS selection, source-note form, annotation readiness, and volume-boundary control."
+    },
+    {
+      title: "Clinton Library/NARA",
+      detail: "Source-copy trail, release packet, folder pull, withdrawal-sheet, and page-span verification."
+    }
+  ];
+  const byLane = {
+    "strategic-stability": [
+      { title: "NSC Defense Policy and Arms Control", detail: "START, ABM, early-warning, and summit-prep equities." },
+      { title: "Department of State EUR/Talbott channel", detail: "Russia diplomacy, leader-meeting memoranda, and Strobe Talbott source trails." },
+      { title: "Defense/Joint Staff", detail: "Strategic-force, missile-defense, and military-planning equities." }
+    ],
+    ctbt: [
+      { title: "State/ACDA arms-control offices", detail: "CTBT negotiation, ratification, and treaty-policy equities." },
+      { title: "Department of Energy/Nuclear weapons complex", detail: "Stockpile stewardship, testing, and verification equities." },
+      { title: "Congressional/Senate record check", detail: "Ratification record, public statements, and Senate action anchors." }
+    ],
+    "abm-nmd": [
+      { title: "NSC Defense Policy", detail: "ABM/NMD policy, allied consultation, and presidential decision equities." },
+      { title: "Defense/Missile defense offices", detail: "NMD program, deployment, and technical-policy equities." },
+      { title: "Department of State EUR and PM", detail: "Russia, NATO, and arms-control consultation equities." }
+    ],
+    "fissile-ctr": [
+      { title: "Department of Energy", detail: "Plutonium disposition, HEU/CTR, and nuclear-material security equities." },
+      { title: "NSC Nonproliferation", detail: "Fissile-material, CTR, and Russia/F.S.U. policy coordination." },
+      { title: "Department of Defense/CTR", detail: "Cooperative Threat Reduction implementation and program equities." }
+    ],
+    "nonproliferation-regimes": [
+      { title: "NSC Nonproliferation", detail: "NPT, MTCR, export-control, and multilateral regime policy coordination." },
+      { title: "State Nonproliferation/ACDA", detail: "Treaty-regime, export-control, and diplomatic implementation equities." },
+      { title: "Commerce/Justice check if export controls appear", detail: "Export-control enforcement and statutory-record cross-check." }
+    ],
+    "regional-proliferation": [
+      { title: "State regional bureaus", detail: "South Asia, DPRK, Iran, Iraq, China, and regional diplomatic equities." },
+      { title: "NSC Nonproliferation and regional directorates", detail: "Regional crisis coordination, missile diplomacy, and proliferation response." },
+      { title: "Intelligence community review prompt", detail: "Use only as an equity flag where cables, assessments, or source-sensitive references appear." }
+    ],
+    cbw: [
+      { title: "State/ACDA CBW offices", detail: "CWC/BWC implementation, verification, and treaty-policy equities." },
+      { title: "NSC Nonproliferation", detail: "CBW terrorism, treaty implementation, and interagency coordination." },
+      { title: "Defense/Health agencies if implementation details appear", detail: "Use as a routing prompt for operational, destruction, or preparedness material." }
+    ],
+    "conventional-cfe": [
+      { title: "State EUR/PM", detail: "CFE adaptation, NATO/Russia, arms transfers, and conventional-force equities." },
+      { title: "Defense/Joint Staff", detail: "Conventional-force, NATO, and military posture equities." },
+      { title: "NATO/OSCE public-record check", detail: "Public treaty endpoints and allied consultation anchors." }
+    ]
+  };
+  return [...common, ...(byLane[entry.item.laneId] || [])];
+}
+
+function clearanceBlockers(entry) {
+  return [
+    entry.readiness === "pull-lead"
+      ? {
+          title: "Do not circulate as manuscript yet",
+          detail: "This is a pull-before-selection lead; first verify item-level text, source copy, pages, and release status."
+        }
+      : null,
+    ...entry.missing.map((check) => ({
+      title: `Citation blocker: ${check.label}`,
+      detail: "Resolve before routing a source note."
+    })),
+    entry.gap && priorityValue(entry.gap.priority) <= 2
+      ? {
+          title: `${entry.gap.priority} gap: ${entry.gap.title}`,
+          detail: entry.gap.remainingRisk || entry.gap.needed || entry.gap.problem || "High-priority gap mapped."
+        }
+      : null,
+    documentReadiness(entry.item) === "public-anchor"
+      ? {
+          title: "Public anchor only",
+          detail: "Backtrace to internal records before treating as a private-document manuscript."
+        }
+      : null
+  ].filter(Boolean);
+}
+
+function clearanceSourceHandling(entry) {
+  return [
+    { title: "Readiness", detail: readinessLabel(entry.readiness) },
+    { title: "Working source note", detail: workingSourceNote(entry) },
+    entry.item.pdfUrl ? { title: "Review copy/PDF", detail: entry.item.pdfUrl } : null,
+    entry.item.sourceNote ? { title: "Source note cue", detail: entry.item.sourceNote } : null,
+    entry.ledgers[0]
+      ? {
+          title: `Ledger: ${entry.ledgers[0].title}`,
+          detail: entry.ledgers[0].reviewCue || entry.ledgers[0].repositoryTrail || entry.ledgers[0].sourceClass
+        }
+      : null,
+    entry.pull
+      ? {
+          title: `Pull target: ${entry.pull.title}`,
+          detail: entry.pull.visitGoal || entry.pull.whyItMatters || entry.pull.sourcePart || "Pull target mapped."
+        }
+      : null
+  ].filter(Boolean).slice(0, 6);
+}
+
+function clearanceStatus(entry, blockers) {
+  if (entry.readiness === "pull-lead") return "Hold for pull";
+  if (blockers.length) return "Route with cautions";
+  if (entry.manuscriptStage === "Manuscript-ready") return "Ready for equity review";
+  return "Apparatus check";
+}
+
+function clearanceCard(entry) {
+  const card = document.createElement("article");
+  card.className = `clearance-card status-${closeoutStatusClass(entry.clearanceStatus)}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(`Doc ${entry.number.toString().padStart(2, "0")}`), textSpan(entry.clearanceStatus), textSpan(laneNumber(entry.item.laneId)));
+
+  const title = document.createElement("h3");
+  title.textContent = entry.item.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = `${entry.routes.length} likely equity routes and ${plural(entry.blockers.length, "blocker")} for this provisional manuscript.`;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid clearance-metrics";
+  addDetail(metrics, "Routes", entry.routes.length);
+  addDetail(metrics, "Blockers", entry.blockers.length);
+  addDetail(metrics, "Citation", `${entry.checks.length - entry.missing.length}/${entry.checks.length}`);
+  addDetail(metrics, "Diary", entry.context.diary.length);
+  addDetail(metrics, "Risk", entry.gap?.priority || "None");
+  addDetail(metrics, "Readiness", readinessLabel(entry.readiness));
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Manuscript", () => scrollToSection("#manuscripts")));
+  actions.append(packetActionButton("Annotate", () => scrollToSection("#annotations")));
+  if (entry.pull) actions.append(packetActionButton("Library", () => showLaneLibrary(entry.item.laneId)));
+  if (entry.gap) actions.append(packetActionButton("Gaps", () => showLaneGaps(entry.item.laneId)));
+  actions.append(clipboardButton("Copy routing", clearanceNote(entry), "Routing copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Likely equities",
+      packetList(
+        entry.routes,
+        (route) => route.title,
+        (route) => route.detail,
+        "No equity routes mapped yet."
+      )
+    ),
+    packetBlock(
+      "Source handling",
+      packetList(
+        entry.sourceHandling,
+        (item) => item.title,
+        (item) => item.detail,
+        "No source handling cues mapped yet."
+      )
+    ),
+    packetBlock(
+      "Blockers",
+      packetList(
+        entry.blockers,
+        (blocker) => blocker.title,
+        (blocker) => blocker.detail,
+        "No routing blockers flagged."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function clearanceNote(entry) {
+  return noteLines([
+    `Clearance routing - provisional document ${entry.number}: ${entry.item.title}`,
+    `Date: ${formatDate(entry.item.date)}`,
+    `Lane: ${laneNumber(entry.item.laneId)} / ${laneTitle(entry.item.laneId)}`,
+    `Status: ${entry.clearanceStatus}`,
+    `Readiness: ${readinessLabel(entry.readiness)}`,
+    "Likely equities:",
+    ...entry.routes.map((route) => `- ${route.title}: ${route.detail}`),
+    "Source handling:",
+    ...entry.sourceHandling.map((item) => `- ${item.title}: ${item.detail}`),
+    entry.blockers.length ? "Blockers before circulation:" : "Blockers before circulation: none flagged",
+    ...entry.blockers.map((blocker) => `- ${blocker.title}: ${blocker.detail}`),
+    entry.context.diary.length ? "Diary cues:" : "",
+    ...entry.context.diary.slice(0, 4).map((diary) => `- ${formatDate(diary.date)} / ${diary.time || "time not listed"} / ${diary.title}`),
+    "Compiler check: this is a routing prompt, not an official clearance determination; confirm final equity routing with the Office of the Historian process."
+  ]);
+}
+
+function clearanceBoardNote(items) {
+  const hold = items.filter((item) => item.clearanceStatus === "Hold for pull").length;
+  const caution = items.filter((item) => item.clearanceStatus === "Route with cautions").length;
+  const ready = items.filter((item) => item.clearanceStatus === "Ready for equity review").length;
+  return noteLines([
+    "Clearance routing matrix",
+    `${items.length} provisional manuscript records; ${ready} ready for equity review, ${caution} route with cautions, ${hold} hold for pull.`,
+    ...items.map((item) => `${item.number}. ${formatDate(item.item.date)} / ${laneNumber(item.item.laneId)} / ${item.clearanceStatus} / routes: ${item.routes.map((route) => route.title).join("; ")}`)
+  ]);
+}
+
 function showReadinessDocuments(readiness) {
   resetGroup("documents", [
     nodes.documentSearch,
@@ -4247,6 +4473,7 @@ function bindEvents() {
   nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
   nodes.copyAssembly?.addEventListener("click", () => copyText(chapterAssemblyBoardNote(chapterAssemblyItems()), "Draft packets copied"));
   nodes.copyManuscripts?.addEventListener("click", () => copyText(documentManuscriptBoardNote(documentManuscriptItems()), "Manuscript stubs copied"));
+  nodes.copyClearance?.addEventListener("click", () => copyText(clearanceBoardNote(clearanceItems()), "Clearance routing copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -4509,6 +4736,7 @@ function renderAll() {
   renderCloseoutBoard();
   renderChapterAssembly();
   renderDocumentManuscripts();
+  renderClearanceRouter();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();
