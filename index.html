@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=21" />
-    <script defer src="data/volume-data.js?v=21"></script>
-    <script defer src="app.js?v=21"></script>
+    <link rel="stylesheet" href="styles.css?v=22" />
+    <script defer src="data/volume-data.js?v=22"></script>
+    <script defer src="app.js?v=22"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -124,6 +124,7 @@
         <a href="#annotations">Annotate</a>
         <a href="#coverage">Coverage</a>
         <a href="#qa">QA</a>
+        <a href="#stage-gates">Stages</a>
         <a href="#requests">Requests</a>
         <a href="#agenda">Agenda</a>
         <a href="#actions">Actions</a>
@@ -301,6 +302,19 @@
         </div>
         <div id="qa-root" class="qa-grid" aria-live="polite">
           <p class="loading">Loading compiler QA checklist...</p>
+        </div>
+      </section>
+
+      <section class="section stage-section" id="stage-gates" aria-labelledby="stage-gates-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">FRUS Production Gates</p>
+            <h2 id="stage-gates-title">Planning, Research, Clearance, Publication</h2>
+          </div>
+          <button id="copy-stage-gates" class="link-button" type="button">Copy stage gates</button>
+        </div>
+        <div id="stage-gates-root" class="stage-grid" aria-live="polite">
+          <p class="loading">Loading FRUS production stage gates...</p>
         </div>
       </section>
 

@@ -264,10 +264,12 @@ h3 {
 }
 
 dt {
+  min-width: 0;
   color: var(--muted);
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 dd {
@@ -340,6 +342,7 @@ dd {
 .backtrace-grid,
 .annotation-grid,
 .qa-grid,
+.stage-grid,
 .request-grid,
 .agenda-grid,
 .action-grid,
@@ -399,6 +402,10 @@ dd {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
+.stage-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .agenda-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -445,6 +452,7 @@ dd {
 .backtrace-card,
 .annotation-card,
 .qa-card,
+.stage-card,
 .request-card,
 .agenda-card,
 .action-card,
@@ -701,6 +709,33 @@ dd {
   border-left-color: var(--green);
 }
 
+.stage-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-top: 5px solid var(--blue);
+}
+
+.stage-card.stage-active {
+  border-top-color: var(--violet);
+}
+
+.stage-card.stage-ready {
+  border-top-color: var(--green);
+}
+
+.stage-card.stage-blocked {
+  border-top-color: var(--red);
+}
+
+.stage-card.stage-locked {
+  border-top-color: var(--gold);
+}
+
+.stage-card > p {
+  margin-bottom: 0;
+}
+
 .request-card {
   display: grid;
   gap: 12px;
@@ -755,6 +790,15 @@ dd {
 
 .detail-grid.action-metrics div {
   grid-template-columns: 72px minmax(0, 1fr);
+}
+
+.detail-grid.stage-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.stage-metrics div {
+  grid-template-columns: 92px minmax(0, 1fr);
 }
 
 .briefing-card {
@@ -1112,6 +1156,7 @@ dd {
 .backtrace-card p,
 .annotation-card p,
 .qa-card p,
+.stage-card p,
 .request-card p,
 .agenda-card p,
 .action-card p,
@@ -1303,6 +1348,7 @@ dd {
   .backtrace-grid,
   .annotation-grid,
   .qa-grid,
+  .stage-grid,
   .request-grid,
   .agenda-grid,
   .action-grid,
@@ -1341,6 +1387,7 @@ dd {
   .backtrace-grid,
   .annotation-grid,
   .qa-grid,
+  .stage-grid,
   .request-grid,
   .agenda-grid,
   .action-grid,

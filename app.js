@@ -86,6 +86,7 @@ const nodes = {
   annotationsRoot: document.querySelector("#annotations-root"),
   coverageRoot: document.querySelector("#coverage-root"),
   qaRoot: document.querySelector("#qa-root"),
+  stageGatesRoot: document.querySelector("#stage-gates-root"),
   requestsRoot: document.querySelector("#requests-root"),
   agendaRoot: document.querySelector("#agenda-root"),
   actionsRoot: document.querySelector("#actions-root"),
@@ -105,6 +106,7 @@ const nodes = {
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
   copyQa: document.querySelector("#copy-qa"),
+  copyStageGates: document.querySelector("#copy-stage-gates"),
   copyIndexing: document.querySelector("#copy-indexing"),
   leadsRoot: document.querySelector("#leads-root"),
   leadSummary: document.querySelector("#lead-summary"),
@@ -1726,6 +1728,195 @@ function compilerQaNote(items) {
   ]);
 }
 
+function renderStageGates() {
+  renderList(nodes.stageGatesRoot, stageGateItems(), stageGateCard, "No FRUS production stage gates loaded.");
+}
+
+function stageGateItems() {
+  const sequence = selectionSequenceItems();
+  const annotations = annotationItems();
+  const qaItems = compilerQaItems();
+  const highGaps = gapTracker.filter((gap) => priorityValue(gap.priority) <= 2);
+  const missingAnnotations = annotations.filter((entry) => entry.missing.length);
+  const pullAnnotations = annotations.filter((entry) => documentReadiness(entry.item) === "pull-lead");
+  const officialVolumeUrl = "https://history.state.gov/historicaldocuments/frus1993-00v08";
+  const statusUrl = "https://history.state.gov/historicaldocuments/status-of-the-series";
+
+  return [
+    {
+      id: "planning",
+      stage: "Planning",
+      state: "Current official status",
+      stateKey: "active",
+      detail:
+        "The Office of the Historian still lists Volume VIII as planned. This assister should expose source trails and candidate controls, not official document numbers.",
+      next: "Keep the official-status warning visible and preserve candidate/source-lead labels until the volume moves beyond planned status.",
+      metrics: [
+        ["Official", data.meta?.status || "Planned"],
+        ["Lanes", lanes.length],
+        ["Handoffs", volumeHandoff.length],
+        ["Checked", "Jun 2, 2026"]
+      ],
+      items: [
+        { title: "Official volume page", detail: "Status note says the volume is Planned." },
+        { title: "Status list", detail: "Volume VIII appears under Planned on the Status of the Series page." },
+        { title: "Boundary", detail: `${volumeHandoff.length} Volume VII handoffs keep 1993-1996 continuity explicit.` }
+      ],
+      actions: [
+        { label: "Official", href: officialVolumeUrl },
+        { label: "Status", href: statusUrl },
+        { label: "Handoff", target: "#handoff" }
+      ]
+    },
+    {
+      id: "research",
+      stage: "Research",
+      state: "Workbench-ready",
+      stateKey: "ready",
+      detail:
+        "The research desk has enough mapped chronology, Diary, source, and annotation material to support archival pulling and first-pass selection work.",
+      next: "Use the chronology, selection sequence, annotation queue, and source requests as the daily research workbench.",
+      metrics: [
+        ["Candidates", potentialDocuments.length],
+        ["Sequence", sequence.length],
+        ["Diary", diaryReferences.length],
+        ["Leads", sourceLeads.length]
+      ],
+      items: [
+        { title: "Chronology", detail: `${potentialDocuments.length} candidate/source-mapped records are searchable and exportable.` },
+        { title: "Selection", detail: `${sequence.length} provisional rows have sequence, backtrace, and annotation context.` },
+        { title: "Diary/source", detail: `${diaryReferences.length} Diary cues and ${sourceLeads.length} source leads are mapped into lanes.` }
+      ],
+      actions: [
+        { label: "Chronology", target: "#documents" },
+        { label: "Sequence", target: "#sequence" },
+        { label: "Annotate", target: "#annotations" }
+      ]
+    },
+    {
+      id: "clearance",
+      stage: "Clearance",
+      state: "Not ready",
+      stateKey: "blocked",
+      detail:
+        "The volume should not be treated as clearance-ready while high-priority gaps, pull-before-annotation leads, and citation-field fixes remain open.",
+      next: "Close critical/high gaps, pull source-path leads, and resolve missing citation fields before any clearance-ready representation.",
+      metrics: [
+        ["High gaps", highGaps.length],
+        ["Cite fixes", missingAnnotations.length],
+        ["Pull leads", pullAnnotations.length],
+        ["QA items", qaItems.length]
+      ],
+      items: [
+        { title: "Critical/high gaps", detail: `${highGaps.length} critical/high gap controls still drive source acquisition.` },
+        { title: "Citation fixes", detail: `${missingAnnotations.length} sequence candidates need citation-field completion.` },
+        { title: "Pull leads", detail: `${pullAnnotations.length} sequence candidates remain pull-before-annotation leads.` }
+      ],
+      actions: [
+        { label: "QA", target: "#qa" },
+        { label: "Gaps", target: "#gaps" },
+        { label: "Requests", target: "#requests" }
+      ]
+    },
+    {
+      id: "publication",
+      stage: "Publication",
+      state: "Locked by official release",
+      stateKey: "locked",
+      detail:
+        "Publication work depends on an official FRUS release. The assister can prepare reconciliation notes, but it cannot create official document numbers or final chapter structure.",
+      next: "When the official volume publishes, reconcile the candidate chronology against the official table of contents and replace provisional labels.",
+      metrics: [
+        ["Doc nums", "None"],
+        ["Official TOC", "None"],
+        ["Public anchors", publicRecords.length],
+        ["Ledger", sourceCopyLedger.length]
+      ],
+      items: [
+        { title: "No document numbers", detail: "Do not add official document numbers until the Office of the Historian publishes them." },
+        { title: "Reconciliation path", detail: "Use the source-copy ledger and chronology exports to compare candidate rows with the official volume." },
+        { title: "Public anchors", detail: `${publicRecords.length} Public Papers anchors remain chronology supports, not final FRUS selections.` }
+      ],
+      actions: [
+        { label: "Ledger", target: "#ledger" },
+        { label: "Public", target: "#public" },
+        { label: "Official", href: officialVolumeUrl }
+      ]
+    }
+  ];
+}
+
+function stageGateCard(gate) {
+  const card = document.createElement("article");
+  card.className = `stage-card stage-${gate.stateKey}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(gate.stage), textSpan(gate.state));
+
+  const title = document.createElement("h3");
+  title.textContent = `${gate.stage} Gate`;
+
+  const detail = document.createElement("p");
+  detail.textContent = gate.detail;
+
+  const next = document.createElement("p");
+  next.className = "source-note";
+  next.textContent = gate.next;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid stage-metrics";
+  for (const [label, value] of gate.metrics) addDetail(metrics, label, value);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  for (const action of gate.actions) {
+    if (action.href) actions.append(linkButton(action.label, action.href));
+    if (action.target) actions.append(packetActionButton(action.label, () => scrollToSection(action.target)));
+  }
+  actions.append(clipboardButton("Copy gate", stageGateNote(gate), "Stage gate copied"));
+
+  card.append(
+    meta,
+    title,
+    detail,
+    next,
+    metrics,
+    packetBlock(
+      "Evidence",
+      packetList(
+        gate.items,
+        (item) => item.title,
+        (item) => item.detail,
+        "No stage evidence mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function stageGateNote(gate) {
+  return noteLines([
+    `${gate.stage} gate - ${gate.state}`,
+    gate.detail,
+    `Next step: ${gate.next}`,
+    gate.metrics.length ? "Metrics:" : "",
+    ...gate.metrics.map(([label, value]) => `- ${label}: ${value}`),
+    gate.items.length ? "Evidence:" : "",
+    ...gate.items.map((item) => `- ${item.title}: ${item.detail}`)
+  ]);
+}
+
+function stageGateBoardNote(gates) {
+  return noteLines([
+    "FRUS production stage gates",
+    "Official status checked Jun 2, 2026: Volume VIII remains planned.",
+    ...gates.map((gate, index) => `${index + 1}. ${gate.stage}: ${gate.state} - ${gate.next}`)
+  ]);
+}
+
 function renderRequestQueue() {
   const pools = [...sourcePools].sort(
     (a, b) => priorityValue(a.priority) - priorityValue(b.priority) || (laneOrder.get(a.laneId) ?? 99) - (laneOrder.get(b.laneId) ?? 99)
@@ -3057,6 +3248,7 @@ function bindEvents() {
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
   nodes.copyQa?.addEventListener("click", () => copyText(compilerQaNote(compilerQaItems()), "QA copied"));
+  nodes.copyStageGates?.addEventListener("click", () => copyText(stageGateBoardNote(stageGateItems()), "Stage gates copied"));
   nodes.copyIndexing?.addEventListener("click", () => copyText(indexingQueueNote(indexingItems()), "Index queue copied"));
 
   bindInput(nodes.leadSearch, (value) => {
@@ -3316,6 +3508,7 @@ function renderAll() {
   renderAnnotationQueue();
   renderCoverageMatrix();
   renderCompilerQa();
+  renderStageGates();
   renderRequestQueue();
   renderRepositoryAgenda();
   renderActionQueue();

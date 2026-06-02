@@ -19,6 +19,7 @@ Official volume anchor:
 - Annotation and citation queue turning each provisional sequence candidate into copy-ready citation checks, people/date annotation targets, source routes, and remaining-risk notes.
 - Chapter coverage matrix comparing readiness buckets, Diary cues, and open gaps across every provisional lane with click-through filters.
 - Compiler QA checklist generated from readiness, sequence, Diary, source, handoff, people, and gap signals.
+- FRUS production stage-gate board mapping the planned official status into planning, research, clearance, and publication guardrails.
 - Source request queue that turns source pools into copyable repository/pull request packets with linked leads, library targets, and risk checks.
 - Repository visit and search agenda grouping source pools, source leads, and pull-plan items into actionable workstreams by repository/institution.
 - First-pass action queue that tells the compiler the next move for each lane, including Volume VII carryover, top records, source moves, and copy-ready action notes.
