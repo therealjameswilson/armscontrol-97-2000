@@ -85,6 +85,7 @@ const nodes = {
   manuscriptsRoot: document.querySelector("#manuscripts-root"),
   clearanceRoot: document.querySelector("#clearance-root"),
   circulationRoot: document.querySelector("#circulation-root"),
+  decisionsRoot: document.querySelector("#decisions-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -115,6 +116,7 @@ const nodes = {
   copyManuscripts: document.querySelector("#copy-manuscripts"),
   copyClearance: document.querySelector("#copy-clearance"),
   copyCirculation: document.querySelector("#copy-circulation"),
+  copyDecisions: document.querySelector("#copy-decisions"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -2709,6 +2711,176 @@ function circulationBoardNote(batches) {
   ]);
 }
 
+function renderDecisionLedger() {
+  renderList(nodes.decisionsRoot, decisionItems(), decisionCard, "No document decisions loaded.");
+}
+
+function decisionItems() {
+  return clearanceItems().map((entry) => {
+    const decision = decisionStatus(entry);
+    const rationale = decisionRationale(entry, decision);
+    const replacement = decisionReplacement(entry, decision);
+    const proof = decisionProofItems(entry);
+    return { ...entry, decision, rationale, replacement, proof };
+  });
+}
+
+function decisionStatus(entry) {
+  if (entry.readiness === "pull-lead") return "Hold for pull";
+  if (entry.readiness === "formal-record") return entry.blockers.length ? "Formal anchor with cautions" : "Formal anchor";
+  if (entry.clearanceStatus === "Ready for equity review") return "Select provisionally";
+  if (entry.missing.length) return "Source-note fix before select";
+  if (entry.blockers.length) return "Select with cautions";
+  return "Select provisionally";
+}
+
+function decisionRationale(entry, decision) {
+  const item = entry.item;
+  if (decision === "Hold for pull") return entry.pull?.visitGoal || item.summary || "Folder/source path is useful, but item-level text must be verified before selection.";
+  if (decision === "Formal anchor" || decision === "Formal anchor with cautions") return item.summary || "Useful formal/public record for chronology and treaty context; pair with internal records where possible.";
+  if (decision === "Source-note fix before select") return `Substantive candidate, but source-note fields are incomplete: ${entry.missing.map((check) => check.label).join(", ")}.`;
+  if (decision === "Select with cautions") return entry.blockers[0]?.detail || item.summary || "Substantive candidate with clearance or source caution still attached.";
+  return item.summary || "Substantive candidate with review-copy or formal source path mapped into the provisional sequence.";
+}
+
+function decisionReplacement(entry, decision) {
+  if (decision === "Hold for pull") return entry.pull?.title ? `Pull and itemize ${entry.pull.title}; replace this lead with verified document text if available.` : "Replace with verified item-level text after source pull.";
+  if (entry.blockers.length) return "Resolve blockers or replace with a nearby review-copy/internal source from the same lane.";
+  if (entry.context.publicAnchors.length) return `Use nearby public anchor only as chronology support: ${entry.context.publicAnchors[0].title}.`;
+  if (entry.context.diary.length) return `Diary can support date/participant annotation: ${entry.context.diary[0].title}.`;
+  return "No replacement trigger flagged; keep under review as sequence balance changes.";
+}
+
+function decisionProofItems(entry) {
+  return [
+    { title: "Sequence position", detail: `Provisional document ${entry.number}` },
+    { title: "Readiness", detail: readinessLabel(entry.readiness) },
+    { title: "Source note", detail: workingSourceNote(entry) },
+    entry.item.pdfUrl ? { title: "Review copy", detail: entry.item.pdfUrl } : null,
+    entry.context.diary[0]
+      ? {
+          title: `Diary cue: ${entry.context.diary[0].title}`,
+          detail: `${formatDate(entry.context.diary[0].date)} / ${entry.context.diary[0].time || "time not listed"}`
+        }
+      : null,
+    entry.context.publicAnchors[0]
+      ? {
+          title: `Public anchor: ${entry.context.publicAnchors[0].title}`,
+          detail: formatDate(entry.context.publicAnchors[0].date)
+        }
+      : null
+  ].filter(Boolean).slice(0, 6);
+}
+
+function decisionCard(entry) {
+  const card = document.createElement("article");
+  card.className = `decision-card status-${closeoutStatusClass(entry.decision)}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(`Doc ${entry.number.toString().padStart(2, "0")}`), textSpan(entry.decision), textSpan(laneNumber(entry.item.laneId)));
+
+  const title = document.createElement("h3");
+  title.textContent = entry.item.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = entry.rationale;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid decision-metrics";
+  addDetail(metrics, "Readiness", readinessLabel(entry.readiness));
+  addDetail(metrics, "Citation", `${entry.checks.length - entry.missing.length}/${entry.checks.length}`);
+  addDetail(metrics, "Blockers", entry.blockers.length);
+  addDetail(metrics, "Diary", entry.context.diary.length);
+  addDetail(metrics, "Public", entry.context.publicAnchors.length);
+  addDetail(metrics, "Routes", entry.routes.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Sequence", () => scrollToSection("#sequence")));
+  actions.append(packetActionButton("Manuscript", () => scrollToSection("#manuscripts")));
+  actions.append(packetActionButton("Clearance", () => scrollToSection("#clearance")));
+  if (entry.pull) actions.append(packetActionButton("Library", () => showLaneLibrary(entry.item.laneId)));
+  if (entry.gap) actions.append(packetActionButton("Gaps", () => showLaneGaps(entry.item.laneId)));
+  actions.append(clipboardButton("Copy decision", decisionNote(entry), "Decision copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Decision basis",
+      packetList(
+        decisionBasisItems(entry),
+        (item) => item.title,
+        (item) => item.detail,
+        "No decision basis mapped yet."
+      )
+    ),
+    packetBlock(
+      "Proof trail",
+      packetList(
+        entry.proof,
+        (item) => item.title,
+        (item) => item.detail,
+        "No proof trail mapped yet."
+      )
+    ),
+    packetBlock(
+      "Replacement trigger",
+      packetList(
+        [{ title: entry.decision, detail: entry.replacement }],
+        (item) => item.title,
+        (item) => item.detail,
+        "No replacement trigger mapped."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function decisionBasisItems(entry) {
+  return [
+    { title: "Selection rationale", detail: entry.rationale },
+    { title: "Decision", detail: entry.decision },
+    { title: "Chapter lane", detail: `${laneNumber(entry.item.laneId)} / ${laneTitle(entry.item.laneId)}` },
+    { title: "Clearance status", detail: entry.clearanceStatus },
+    entry.blockers.length ? { title: "Open blocker", detail: `${entry.blockers[0].title}: ${entry.blockers[0].detail}` } : null
+  ].filter(Boolean);
+}
+
+function decisionNote(entry) {
+  return noteLines([
+    `Selection decision - provisional document ${entry.number}: ${entry.item.title}`,
+    `Date: ${formatDate(entry.item.date)}`,
+    `Lane: ${laneNumber(entry.item.laneId)} / ${laneTitle(entry.item.laneId)}`,
+    `Decision: ${entry.decision}`,
+    `Rationale: ${entry.rationale}`,
+    `Readiness: ${readinessLabel(entry.readiness)}`,
+    `Clearance status: ${entry.clearanceStatus}`,
+    `Working source note: ${workingSourceNote(entry)}`,
+    entry.blockers.length ? "Blockers:" : "Blockers: none flagged",
+    ...entry.blockers.map((blocker) => `- ${blocker.title}: ${blocker.detail}`),
+    "Proof trail:",
+    ...entry.proof.map((item) => `- ${item.title}: ${item.detail}`),
+    `Replacement trigger: ${entry.replacement}`,
+    "Compiler check: keep this rationale provisional until final source pull, document balance, clearance, and Office of the Historian selection review are complete."
+  ]);
+}
+
+function decisionBoardNote(entries) {
+  const counts = uniqueSorted(entries.map((entry) => entry.decision)).map((decision) => `${decision}: ${entries.filter((entry) => entry.decision === decision).length}`);
+  return noteLines([
+    "Document decision ledger",
+    `${entries.length} provisional document decisions from the selection sequence.`,
+    `Decision counts: ${counts.join("; ")}`,
+    ...entries.map((entry) => `${entry.number}. ${formatDate(entry.item.date)} / ${laneNumber(entry.item.laneId)} / ${entry.decision} / ${entry.item.title}`)
+  ]);
+}
+
 function showReadinessDocuments(readiness) {
   resetGroup("documents", [
     nodes.documentSearch,
@@ -4639,6 +4811,7 @@ function bindEvents() {
   nodes.copyManuscripts?.addEventListener("click", () => copyText(documentManuscriptBoardNote(documentManuscriptItems()), "Manuscript stubs copied"));
   nodes.copyClearance?.addEventListener("click", () => copyText(clearanceBoardNote(clearanceItems()), "Clearance routing copied"));
   nodes.copyCirculation?.addEventListener("click", () => copyText(circulationBoardNote(circulationBatchItems()), "Circulation batches copied"));
+  nodes.copyDecisions?.addEventListener("click", () => copyText(decisionBoardNote(decisionItems()), "Decisions copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -4903,6 +5076,7 @@ function renderAll() {
   renderDocumentManuscripts();
   renderClearanceRouter();
   renderCirculationBatches();
+  renderDecisionLedger();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();
