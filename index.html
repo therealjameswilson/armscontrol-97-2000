@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=28" />
-    <script defer src="data/volume-data.js?v=28"></script>
-    <script defer src="app.js?v=28"></script>
+    <link rel="stylesheet" href="styles.css?v=29" />
+    <script defer src="data/volume-data.js?v=29"></script>
+    <script defer src="app.js?v=29"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -122,6 +122,7 @@
         <a href="#assembly">Assembly</a>
         <a href="#manuscripts">Manuscripts</a>
         <a href="#clearance">Clearance</a>
+        <a href="#circulation">Batches</a>
         <a href="#concordance">Concordance</a>
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
@@ -291,6 +292,19 @@
         </div>
         <div id="clearance-root" class="clearance-grid" aria-live="polite">
           <p class="loading">Loading clearance routing matrix...</p>
+        </div>
+      </section>
+
+      <section class="section circulation-section" id="circulation" aria-labelledby="circulation-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Circulation Planning</p>
+            <h2 id="circulation-title">Circulation Batch Planner</h2>
+          </div>
+          <button id="copy-circulation" class="link-button" type="button">Copy batches</button>
+        </div>
+        <div id="circulation-root" class="circulation-grid" aria-live="polite">
+          <p class="loading">Loading circulation batches...</p>
         </div>
       </section>
 

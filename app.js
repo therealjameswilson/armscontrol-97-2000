@@ -84,6 +84,7 @@ const nodes = {
   assemblyRoot: document.querySelector("#assembly-root"),
   manuscriptsRoot: document.querySelector("#manuscripts-root"),
   clearanceRoot: document.querySelector("#clearance-root"),
+  circulationRoot: document.querySelector("#circulation-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -113,6 +114,7 @@ const nodes = {
   copyAssembly: document.querySelector("#copy-assembly"),
   copyManuscripts: document.querySelector("#copy-manuscripts"),
   copyClearance: document.querySelector("#copy-clearance"),
+  copyCirculation: document.querySelector("#copy-circulation"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -2545,6 +2547,168 @@ function clearanceBoardNote(items) {
   ]);
 }
 
+function renderCirculationBatches() {
+  renderList(nodes.circulationRoot, circulationBatchItems(), circulationBatchCard, "No circulation batches loaded.");
+}
+
+function circulationBatchItems() {
+  const routed = clearanceItems();
+  return lanes
+    .filter((lane) => lane.id !== "volume-control")
+    .map((lane) => {
+      const items = routed.filter((entry) => entry.item.laneId === lane.id);
+      const ready = items.filter((entry) => entry.clearanceStatus === "Ready for equity review");
+      const caution = items.filter((entry) => entry.clearanceStatus === "Route with cautions" || entry.clearanceStatus === "Apparatus check");
+      const hold = items.filter((entry) => entry.clearanceStatus === "Hold for pull");
+      const blockers = items.flatMap((entry) => entry.blockers.map((blocker) => ({ ...blocker, entry })));
+      const routes = uniqueRouteItems(items.flatMap((entry) => entry.routes));
+      const status = circulationBatchStatus(items, ready, caution, hold);
+      return { lane, items, ready, caution, hold, blockers, routes, status };
+    });
+}
+
+function circulationBatchStatus(items, ready, caution, hold) {
+  if (!items.length) return "No packet";
+  if (ready.length && (caution.length || hold.length)) return "Ready subset";
+  if (ready.length === items.length) return "Ready to circulate";
+  if (hold.length === items.length) return "Hold for pulls";
+  if (caution.length) return "Route with cautions";
+  return "Apparatus check";
+}
+
+function uniqueRouteItems(routes) {
+  const seen = new Map();
+  for (const route of routes) {
+    if (!seen.has(route.title)) seen.set(route.title, route);
+  }
+  return [...seen.values()];
+}
+
+function circulationBatchCard(batch) {
+  const card = document.createElement("article");
+  card.className = `circulation-card status-${closeoutStatusClass(batch.status)}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(batch.lane.number), textSpan(batch.status), textSpan(plural(batch.items.length, "document")));
+
+  const title = document.createElement("h3");
+  title.textContent = batch.lane.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = circulationBatchSummary(batch);
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid circulation-metrics";
+  addDetail(metrics, "Docs", batch.items.length);
+  addDetail(metrics, "Ready", batch.ready.length);
+  addDetail(metrics, "Cautions", batch.caution.length);
+  addDetail(metrics, "Holds", batch.hold.length);
+  addDetail(metrics, "Routes", batch.routes.length);
+  addDetail(metrics, "Blockers", batch.blockers.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Clearance", () => scrollToSection("#clearance")));
+  actions.append(packetActionButton("Manuscripts", () => scrollToSection("#manuscripts")));
+  if (batch.items.length) actions.append(packetActionButton("Sequence", () => scrollToSection("#sequence")));
+  if (batch.blockers.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(batch.lane.id)));
+  actions.append(clipboardButton("Copy batch", circulationBatchNote(batch), "Batch copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Cover memo frame",
+      packetList(
+        circulationCoverItems(batch),
+        (item) => item.title,
+        (item) => item.detail,
+        "No cover memo fields mapped yet."
+      )
+    ),
+    packetBlock(
+      "Documents in packet",
+      packetList(
+        batch.items.slice(0, 8),
+        (entry) => `Doc ${entry.number}: ${entry.item.title}`,
+        (entry) => `${formatDate(entry.item.date)} / ${entry.clearanceStatus} / ${readinessLabel(entry.readiness)}`,
+        "No provisional manuscript documents mapped for this chapter."
+      )
+    ),
+    packetBlock(
+      "Likely equity routes",
+      packetList(
+        batch.routes.slice(0, 8),
+        (route) => route.title,
+        (route) => route.detail,
+        "No equity routes mapped yet."
+      )
+    ),
+    packetBlock(
+      "Blockers before circulation",
+      packetList(
+        batch.blockers.slice(0, 8),
+        (blocker) => `Doc ${blocker.entry.number}: ${blocker.title}`,
+        (blocker) => blocker.detail,
+        "No batch blockers flagged."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function circulationBatchSummary(batch) {
+  if (!batch.items.length) return "No provisional manuscript records are ready for this chapter lane yet; use the sequence, source requests, and closeout boards before drafting a circulation packet.";
+  if (batch.status === "Ready to circulate") return "All provisional manuscript records in this lane have no routing blockers flagged and can be reviewed as one circulation packet.";
+  if (batch.status === "Ready subset") return `${plural(batch.ready.length, "document")} can circulate as a ready subset while ${plural(batch.caution.length + batch.hold.length, "document")} remain held or caution-marked.`;
+  if (batch.status === "Hold for pulls") return "Every mapped manuscript record in this lane is still a pull-before-selection item; keep this out of circulation until source text is verified.";
+  return `${plural(batch.items.length, "document")} are mapped, but caution or apparatus checks remain before the batch should be represented as ready.`;
+}
+
+function circulationCoverItems(batch) {
+  return [
+    { title: "Subject", detail: `${batch.lane.title} circulation packet` },
+    { title: "Scope", detail: batch.items.length ? `${plural(batch.items.length, "provisional document")} from ${batch.items[0] ? formatDate(batch.items[0].item.date) : "opening date"} through ${batch.items.at(-1) ? formatDate(batch.items.at(-1).item.date) : "closing date"}.` : "No provisional documents selected yet." },
+    { title: "Status line", detail: batch.status },
+    { title: "Ready subset", detail: batch.ready.length ? batch.ready.map((entry) => `Doc ${entry.number}`).join(", ") : "No ready subset yet." },
+    { title: "Held/caution records", detail: batch.caution.length || batch.hold.length ? [...batch.caution, ...batch.hold].map((entry) => `Doc ${entry.number} (${entry.clearanceStatus})`).join(", ") : "None flagged." },
+    { title: "Compiler instruction", detail: "Attach manuscript stubs, source-note base, routing notes, and unresolved blocker list before circulation." }
+  ];
+}
+
+function circulationBatchNote(batch) {
+  return noteLines([
+    `${batch.lane.number} / ${batch.lane.title} circulation batch`,
+    `Batch status: ${batch.status}`,
+    `Documents: ${batch.items.length}; ready: ${batch.ready.length}; cautions: ${batch.caution.length}; holds: ${batch.hold.length}; blockers: ${batch.blockers.length}`,
+    "Cover memo frame:",
+    ...circulationCoverItems(batch).map((item) => `- ${item.title}: ${item.detail}`),
+    batch.items.length ? "Documents in packet:" : "Documents in packet: none",
+    ...batch.items.map((entry) => `- Doc ${entry.number}: ${formatDate(entry.item.date)} / ${entry.clearanceStatus} / ${entry.item.title}`),
+    batch.routes.length ? "Likely equity routes:" : "",
+    ...batch.routes.map((route) => `- ${route.title}: ${route.detail}`),
+    batch.blockers.length ? "Blockers before circulation:" : "Blockers before circulation: none flagged",
+    ...batch.blockers.map((blocker) => `- Doc ${blocker.entry.number} / ${blocker.title}: ${blocker.detail}`),
+    "Compiler check: circulate only after source-copy verification, source-note review, and Office of the Historian confirmation of the appropriate equity route."
+  ]);
+}
+
+function circulationBoardNote(batches) {
+  const ready = batches.filter((batch) => batch.status === "Ready to circulate").length;
+  const subset = batches.filter((batch) => batch.status === "Ready subset").length;
+  const empty = batches.filter((batch) => batch.status === "No packet").length;
+  return noteLines([
+    "Circulation batch planner",
+    `${batches.length} chapter lanes; ${ready} ready to circulate, ${subset} ready subset, ${empty} no packet yet.`,
+    ...batches.map((batch) => `${batch.lane.number}. ${batch.lane.title}: ${batch.status}; docs ${batch.items.length}; ready ${batch.ready.length}; blockers ${batch.blockers.length}`)
+  ]);
+}
+
 function showReadinessDocuments(readiness) {
   resetGroup("documents", [
     nodes.documentSearch,
@@ -4474,6 +4638,7 @@ function bindEvents() {
   nodes.copyAssembly?.addEventListener("click", () => copyText(chapterAssemblyBoardNote(chapterAssemblyItems()), "Draft packets copied"));
   nodes.copyManuscripts?.addEventListener("click", () => copyText(documentManuscriptBoardNote(documentManuscriptItems()), "Manuscript stubs copied"));
   nodes.copyClearance?.addEventListener("click", () => copyText(clearanceBoardNote(clearanceItems()), "Clearance routing copied"));
+  nodes.copyCirculation?.addEventListener("click", () => copyText(circulationBoardNote(circulationBatchItems()), "Circulation batches copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -4737,6 +4902,7 @@ function renderAll() {
   renderChapterAssembly();
   renderDocumentManuscripts();
   renderClearanceRouter();
+  renderCirculationBatches();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();
