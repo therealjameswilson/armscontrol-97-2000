@@ -686,6 +686,7 @@ function packetCard(lane) {
   if (diary.length) actions.append(packetActionButton("Diary", () => showLaneDiary(lane.id)));
   if (pulls.length) actions.append(packetActionButton("Library", () => showLaneLibrary(lane.id)));
   if (gaps.length) actions.append(packetActionButton("Gaps", () => showLaneGaps(lane.id)));
+  actions.append(clipboardButton("Copy dossier", chapterDossierNote(lane, documents, diary, leads, pulls, gaps), "Dossier copied"));
 
   card.append(
     meta,
@@ -732,6 +733,43 @@ function packetCard(lane) {
   );
 
   return card;
+}
+
+function chapterDossierNote(lane, documents, diary, leads, pulls, gaps) {
+  const handoffs = handoffsForLane(lane.id);
+  const sequence = selectionSequenceItems().filter((entry) => entry.item.laneId === lane.id);
+  const pools = sourcePools
+    .filter((pool) => pool.laneId === lane.id)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+  const people = persons
+    .filter((person) => (person.laneIds || []).includes(lane.id))
+    .sort((a, b) => a.name.localeCompare(b.name));
+  const counts = readinessCounts(documents);
+
+  return noteLines([
+    `${lane.number} / ${lane.title}`,
+    `Status: ${lane.status}`,
+    `Summary: ${lane.summary}`,
+    `Readiness: ${counts["review-copy"]} review-copy; ${counts["public-anchor"]} public-anchor; ${counts["formal-record"]} formal-record; ${counts["pull-lead"]} pull-lead`,
+    handoffs.length ? "Volume VII carryover:" : "",
+    ...handoffs.map((handoff) => `- ${handoff.priorChapter}: ${handoff.newQuestion} Source action: ${handoff.sourceAction}`),
+    sequence.length ? "Selection sequence:" : "",
+    ...sequence.slice(0, 8).map((entry) => `- ${entry.number}. ${formatDate(entry.item.date)} / ${readinessLabel(documentReadiness(entry.item))} / ${entry.item.title}`),
+    documents.length ? "Top chronology candidates:" : "",
+    ...documents.slice(0, 8).map((item) => `- ${formatDate(item.date)} / ${readinessLabel(documentReadiness(item))} / ${item.title} / ${item.repository || item.collection || item.type}`),
+    diary.length ? "Presidential Daily Diary cues:" : "",
+    ...diary.slice(0, 6).map((entry) => `- ${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${entry.title}: ${entry.volumeConnection}`),
+    pulls.length ? "Library pull targets:" : "",
+    ...pulls.slice(0, 6).map((pull) => `- ${pull.title}: ${pull.visitGoal || pull.sourcePart || pull.whyItMatters}`),
+    leads.length ? "Source leads:" : "",
+    ...leads.slice(0, 8).map((lead) => `- ${lead.title} (${lead.institution}): ${lead.note || lead.identifier || lead.type}${lead.url ? ` URL: ${lead.url}` : ""}`),
+    pools.length ? "Request pools:" : "",
+    ...pools.map((pool) => `- ${pool.title} (${pool.institution}): ${pool.coverage}; next use: ${pool.nextUse}${pool.url ? ` URL: ${pool.url}` : ""}`),
+    gaps.length ? "Open risks and next actions:" : "",
+    ...gaps.map((gap) => `- [${gap.priority}] ${gap.title}: ${gap.remainingRisk || gap.needed || gap.problem} Next: ${(gap.nextActions || []).join("; ")}`),
+    people.length ? "People and offices:" : "",
+    ...people.slice(0, 10).map((person) => `- ${person.name}: ${person.role}. ${person.note}`)
+  ]);
 }
 
 function packetBlock(title, content) {
