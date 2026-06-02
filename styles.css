@@ -337,6 +337,7 @@ dd {
 .concordance-grid,
 .selection-grid,
 .sequence-root,
+.backtrace-grid,
 .qa-grid,
 .request-grid,
 .agenda-grid,
@@ -379,6 +380,10 @@ dd {
 
 .sequence-root {
   min-width: 0;
+}
+
+.backtrace-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .request-grid {
@@ -432,6 +437,7 @@ dd {
 .packet-card,
 .concordance-card,
 .selection-card,
+.backtrace-card,
 .qa-card,
 .request-card,
 .agenda-card,
@@ -469,6 +475,17 @@ dd {
 }
 
 .packet-card > p {
+  margin-bottom: 0;
+}
+
+.backtrace-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--violet);
+}
+
+.backtrace-card > p {
   margin-bottom: 0;
 }
 
@@ -823,6 +840,15 @@ dd {
   grid-template-columns: 88px minmax(0, 1fr);
 }
 
+.detail-grid.backtrace-metrics {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.backtrace-metrics div {
+  grid-template-columns: 90px minmax(0, 1fr);
+}
+
 .concordance-route {
   display: grid;
   gap: 8px;
@@ -1041,6 +1067,7 @@ dd {
 .packet-card p,
 .concordance-card p,
 .selection-card p,
+.backtrace-card p,
 .qa-card p,
 .request-card p,
 .agenda-card p,
@@ -1230,6 +1257,7 @@ dd {
   .packet-grid,
   .concordance-grid,
   .selection-grid,
+  .backtrace-grid,
   .qa-grid,
   .request-grid,
   .agenda-grid,
@@ -1266,6 +1294,7 @@ dd {
   .packet-grid,
   .concordance-grid,
   .selection-grid,
+  .backtrace-grid,
   .qa-grid,
   .request-grid,
   .agenda-grid,

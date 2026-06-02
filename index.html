@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=19" />
-    <script defer src="data/volume-data.js?v=19"></script>
-    <script defer src="app.js?v=19"></script>
+    <link rel="stylesheet" href="styles.css?v=20" />
+    <script defer src="data/volume-data.js?v=20"></script>
+    <script defer src="app.js?v=20"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -120,6 +120,7 @@
         <a href="#concordance">Concordance</a>
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
+        <a href="#backtrace">Backtrace</a>
         <a href="#coverage">Coverage</a>
         <a href="#qa">QA</a>
         <a href="#requests">Requests</a>
@@ -250,6 +251,19 @@
         </div>
         <div id="sequence-root" class="sequence-root" aria-live="polite">
           <p class="loading">Loading document selection sequence...</p>
+        </div>
+      </section>
+
+      <section class="section backtrace-section" id="backtrace" aria-labelledby="backtrace-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Public Anchors</p>
+            <h2 id="backtrace-title">Public Anchor Backtrace Board</h2>
+          </div>
+          <button id="copy-backtrace" class="link-button" type="button">Copy backtrace</button>
+        </div>
+        <div id="backtrace-root" class="backtrace-grid" aria-live="polite">
+          <p class="loading">Loading public anchor backtrace...</p>
         </div>
       </section>
 

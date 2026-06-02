@@ -82,6 +82,7 @@ const nodes = {
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
+  backtraceRoot: document.querySelector("#backtrace-root"),
   coverageRoot: document.querySelector("#coverage-root"),
   qaRoot: document.querySelector("#qa-root"),
   requestsRoot: document.querySelector("#requests-root"),
@@ -100,6 +101,7 @@ const nodes = {
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
   copySequence: document.querySelector("#copy-sequence"),
+  copyBacktrace: document.querySelector("#copy-backtrace"),
   copyQa: document.querySelector("#copy-qa"),
   copyIndexing: document.querySelector("#copy-indexing"),
   leadsRoot: document.querySelector("#leads-root"),
@@ -1092,6 +1094,167 @@ function selectionSequenceNote(entries) {
     ...entries.map((entry) => {
       const { item } = entry;
       return `${entry.number}. ${formatDate(item.date)} / ${laneNumber(item.laneId)} / ${readinessLabel(documentReadiness(item))} / ${item.title}`;
+    })
+  ]);
+}
+
+function renderBacktraceBoard() {
+  renderList(nodes.backtraceRoot, publicBacktraceItems(), backtraceCard, "No public anchors loaded.");
+}
+
+function publicBacktraceItems() {
+  return [...publicRecords].sort(byDateThenLane).map((anchor) => ({
+    anchor,
+    matches: publicBacktraceMatches(anchor)
+  }));
+}
+
+function publicBacktraceMatches(anchor) {
+  const internal = potentialDocuments
+    .filter(
+      (item) =>
+        item.id !== anchor.id &&
+        item.laneId === anchor.laneId &&
+        documentReadiness(item) !== "public-anchor" &&
+        dayDistance(item.date, anchor.date) <= 45
+    )
+    .sort((a, b) => dayDistance(a.date, anchor.date) - dayDistance(b.date, anchor.date) || byPriorityThenDate(a, b))
+    .slice(0, 3);
+  const diary = diaryReferences
+    .filter((entry) => entry.laneId === anchor.laneId && dayDistance(entry.date, anchor.date) <= 30)
+    .sort((a, b) => dayDistance(a.date, anchor.date) - dayDistance(b.date, anchor.date) || byPriorityThenDate(a, b))
+    .slice(0, 2);
+  const pull = libraryPlan
+    .filter((item) => item.laneId === anchor.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+  const lead = sourceLeads
+    .filter((item) => item.laneId === anchor.laneId)
+    .sort(byPriorityThenDate)[0];
+  const gap = gapTracker
+    .filter((item) => item.laneId === anchor.laneId)
+    .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0];
+  return { internal, diary, pull, lead, gap };
+}
+
+function backtraceCard(trace) {
+  const { anchor, matches } = trace;
+  const card = document.createElement("article");
+  card.className = "backtrace-card";
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(formatDate(anchor.date)), textSpan(laneNumber(anchor.laneId)), textSpan(anchor.priority || readinessLabel(documentReadiness(anchor))));
+
+  const title = document.createElement("h3");
+  title.textContent = anchor.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = anchor.summary || anchor.sourceNote || "Public statement anchor requiring an internal source pair.";
+
+  const details = document.createElement("dl");
+  details.className = "detail-grid backtrace-metrics";
+  addDetail(details, "Type", readinessLabel(documentReadiness(anchor)));
+  addDetail(details, "Source", anchor.repository || anchor.collection || "GovInfo");
+  addDetail(details, "Pages", anchor.pages || anchor.pageCount || "Open");
+  addDetail(details, "Score", anchor.score || "Review");
+
+  const routeItems = [
+    ...matches.diary.map((entry) => ({
+      title: `Diary: ${entry.title}`,
+      detail: `${formatDate(entry.date)} / ${entry.eventType || "calendar cue"} / ${entry.time || "time not listed"}`
+    })),
+    matches.pull
+      ? {
+          title: `Pull: ${matches.pull.title}`,
+          detail: matches.pull.visitGoal || matches.pull.sourcePart || matches.pull.whyItMatters || "Pull target mapped"
+        }
+      : null,
+    matches.lead
+      ? {
+          title: `Lead: ${matches.lead.title}`,
+          detail: matches.lead.identifier || matches.lead.note || matches.lead.institution || "Source lead mapped"
+        }
+      : null,
+    matches.gap
+      ? {
+          title: `Risk: ${matches.gap.title}`,
+          detail: matches.gap.remainingRisk || matches.gap.needed || matches.gap.problem || "Gap tracker item mapped"
+        }
+      : null
+  ].filter(Boolean);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  if (anchor.url) actions.append(linkButton("Source", anchor.url));
+  if (anchor.pdfUrl) actions.append(linkButton("PDF", anchor.pdfUrl));
+  actions.append(packetActionButton("Chronology", () => showLaneDocuments(anchor.laneId)));
+  if (matches.pull) actions.append(packetActionButton("Library", () => showLaneLibrary(anchor.laneId)));
+  if (matches.gap) actions.append(packetActionButton("Gaps", () => showLaneGaps(anchor.laneId)));
+  actions.append(clipboardButton("Copy trace", publicTraceNote(trace), "Trace copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    details,
+    packetBlock(
+      "Internal/source pairs",
+      packetList(
+        matches.internal,
+        (item) => item.title,
+        (item) => `${formatDate(item.date)} / ${readinessLabel(documentReadiness(item))} / ${item.repository || item.collection || item.type}`,
+        "No nearby internal or formal source pair mapped yet."
+      )
+    ),
+    packetBlock(
+      "Calendar/source route",
+      packetList(
+        routeItems,
+        (item) => item.title,
+        (item) => item.detail,
+        "No Diary, pull, lead, or gap route mapped yet."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function publicTraceNote(trace) {
+  const { anchor, matches } = trace;
+  return noteLines([
+    `Public anchor: ${formatDate(anchor.date)} - ${anchor.title}`,
+    `Lane: ${laneNumber(anchor.laneId)} / ${laneTitle(anchor.laneId)}`,
+    `Type: ${anchor.type}`,
+    anchor.repository ? `Repository: ${anchor.repository}` : "",
+    anchor.collection ? `Collection: ${anchor.collection}` : "",
+    anchor.identifier ? `Identifier: ${anchor.identifier}` : "",
+    anchor.pages ? `Pages: ${anchor.pages}` : "",
+    anchor.summary ? `Summary: ${anchor.summary}` : "",
+    anchor.sourceNote ? `Source note: ${anchor.sourceNote}` : "",
+    matches.internal.length
+      ? `Internal/source pairs: ${matches.internal.map((item) => `${formatDate(item.date)} - ${item.title} (${readinessLabel(documentReadiness(item))})`).join("; ")}`
+      : "Internal/source pairs: needs internal pair",
+    matches.diary.length
+      ? `Diary cues: ${matches.diary.map((entry) => `${formatDate(entry.date)} - ${entry.title}`).join("; ")}`
+      : "",
+    matches.pull ? `Pull target: ${matches.pull.title}` : "",
+    matches.lead ? `Source lead: ${matches.lead.title}${matches.lead.identifier ? ` / ${matches.lead.identifier}` : ""}` : "",
+    matches.gap ? `Open risk: ${matches.gap.title} - ${matches.gap.remainingRisk || matches.gap.needed || matches.gap.problem || ""}` : "",
+    anchor.url ? `Source URL: ${anchor.url}` : "",
+    anchor.pdfUrl ? `PDF: ${anchor.pdfUrl}` : ""
+  ]);
+}
+
+function publicBacktraceNote(traces) {
+  return noteLines([
+    "Public anchor backtrace board",
+    `${traces.length} Public Papers anchors mapped to internal/source routes.`,
+    ...traces.map((trace, index) => {
+      const { anchor, matches } = trace;
+      const route = matches.internal[0]?.title || matches.pull?.title || matches.lead?.title || "needs internal pair";
+      return `${index + 1}. ${formatDate(anchor.date)} / ${laneNumber(anchor.laneId)} / ${anchor.title} -> ${route}`;
     })
   ]);
 }
@@ -2671,6 +2834,7 @@ function bindEvents() {
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
+  nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyQa?.addEventListener("click", () => copyText(compilerQaNote(compilerQaItems()), "QA copied"));
   nodes.copyIndexing?.addEventListener("click", () => copyText(indexingQueueNote(indexingItems()), "Index queue copied"));
 
@@ -2927,6 +3091,7 @@ function renderAll() {
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();
+  renderBacktraceBoard();
   renderCoverageMatrix();
   renderCompilerQa();
   renderRequestQueue();
