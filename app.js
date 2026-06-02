@@ -111,6 +111,7 @@ const nodes = {
   documentSort: document.querySelector("#document-sort"),
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
+  copyDocuments: document.querySelector("#copy-documents"),
   copyOutlines: document.querySelector("#copy-outlines"),
   copyCloseout: document.querySelector("#copy-closeout"),
   copyAssembly: document.querySelector("#copy-assembly"),
@@ -364,6 +365,78 @@ function documentNote(item) {
     item.url ? `Source URL: ${item.url}` : "",
     item.pdfUrl ? `Review PDF: ${item.pdfUrl}` : ""
   ]);
+}
+
+function chronologyHandoffNote(items) {
+  const readinessSummary = readinessBuckets
+    .map((bucket) => `${bucket.label}: ${items.filter((item) => documentReadiness(item) === bucket.id).length}`)
+    .join("; ");
+  const laneSummary = lanes
+    .map((lane) => {
+      const count = items.filter((item) => item.laneId === lane.id).length;
+      return count ? `${lane.number} ${lane.title}: ${count}` : "";
+    })
+    .filter(Boolean)
+    .join("; ");
+  return noteLines([
+    "Chronology of Declassified Documents - compiler handoff",
+    `Visible records: ${items.length} of ${potentialDocuments.length}`,
+    `Active filters: ${documentFilterSummary()}`,
+    `Sort: ${documentSortLabel()}`,
+    `Readiness: ${readinessSummary}`,
+    laneSummary ? `Lanes: ${laneSummary}` : "Lanes: none visible",
+    "Compiler moves:",
+    ...chronologyHandoffMoves(items).map((move) => `- ${move}`),
+    items.length ? "Visible chronology:" : "Visible chronology: no records match the current filters",
+    ...items.map((item, index) => chronologyHandoffRecord(index + 1, item)),
+    "Compiler check: use this as a working chronology handoff only; final FRUS selection still requires source-copy verification, citation review, clearance, and Office of the Historian reconciliation."
+  ]);
+}
+
+function documentFilterSummary() {
+  return [
+    state.documents.query ? `search "${state.documents.query}"` : null,
+    state.documents.lane ? `${laneNumber(state.documents.lane)} / ${laneTitle(state.documents.lane)}` : null,
+    state.documents.type ? `type ${state.documents.type}` : null,
+    state.documents.priority ? `priority ${state.documents.priority}` : null,
+    state.documents.readiness ? `readiness ${readinessLabel(state.documents.readiness)}` : null
+  ].filter(Boolean).join("; ") || "none";
+}
+
+function documentSortLabel() {
+  const labels = {
+    lane: "Lane grouped",
+    priority: "Priority first"
+  };
+  return labels[state.documents.sort] || "Chronological";
+}
+
+function chronologyHandoffMoves(items) {
+  const counts = readinessCounts(items);
+  return [
+    counts["review-copy"] ? `${plural(counts["review-copy"], "review-copy record")} can be compared against source notes and provisional sequence decisions.` : "",
+    counts["public-anchor"] ? `${plural(counts["public-anchor"], "public anchor")} should be backtraced to internal memoranda, briefing papers, cables, or Diary cues before final selection.` : "",
+    counts["formal-record"] ? `${plural(counts["formal-record"], "formal record")} can anchor treaty, hearing, NATO, OSCE, or statutory chronology while internal records are pulled.` : "",
+    counts["pull-lead"] ? `${plural(counts["pull-lead"], "pull lead")} still require item-level source text, page spans, and release-status verification.` : "",
+    items.some((item) => diaryReferences.some((entry) => entry.laneId === item.laneId && dayDistance(entry.date, item.date) <= 21))
+      ? "Use the Diary-to-Document Concordance for same-day and nearby Presidential Daily Diary calls/meetings."
+      : "",
+    items.some((item) => handoffsForLane(item.laneId).length)
+      ? "Check Volume VII carry-forward notes before treating any 1997-2000 record as a new standalone chapter problem."
+      : ""
+  ].filter(Boolean);
+}
+
+function chronologyHandoffRecord(number, item) {
+  const source = [item.repository, item.collection, item.identifier].filter(Boolean).join("; ") || item.level || item.sourceNote || "source path pending";
+  const pages = item.pages || item.pageCount ? ` / ${item.pages || item.pageCount} pages` : "";
+  const urls = [item.url ? `source ${item.url}` : "", item.pdfUrl ? `PDF ${item.pdfUrl}` : ""].filter(Boolean).join(" / ");
+  return [
+    `${number}. ${formatDate(item.date)} / ${laneNumber(item.laneId)} / ${readinessLabel(documentReadiness(item))} / ${item.priority || "priority pending"} / ${item.title}`,
+    `   Source: ${source}${pages}`,
+    item.summary ? `   Use: ${item.summary}` : "",
+    urls ? `   Links: ${urls}` : ""
+  ].filter(Boolean).join("\n");
 }
 
 function leadNote(lead) {
@@ -5019,6 +5092,7 @@ function bindEvents() {
     renderDocuments();
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
+  nodes.copyDocuments?.addEventListener("click", () => copyText(chronologyHandoffNote(filteredDocuments()), "Chronology handoff copied"));
   nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
   nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
   nodes.copyAssembly?.addEventListener("click", () => copyText(chapterAssemblyBoardNote(chapterAssemblyItems()), "Draft packets copied"));

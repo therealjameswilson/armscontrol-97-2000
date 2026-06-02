@@ -10,7 +10,7 @@ Official volume anchor:
 ## What It Includes
 
 - Provisional compiler lanes for START/strategic stability, CTBT, ABM/NMD, fissile materials, nonproliferation regimes, regional proliferation, CBW, and CFE/conventional arms.
-- Searchable/exportable declassified-document chronology, now placed first on the page with chronological, lane-grouped, and priority sort modes.
+- Searchable/exportable declassified-document chronology, now placed first on the page with chronological, lane-grouped, and priority sort modes plus a copy-ready filtered chronology handoff.
 - Chapter packet cards that crosswalk each Volume VIII lane to its top chronology candidates, Presidential Daily Diary cues, pull targets, remaining gap, and copy-ready chapter dossier.
 - Chapter drafting outlines tying Volume VII handoff questions to Volume VIII chronology, Diary cues, source pulls, people, and drafting risks.
 - Chapter closeout board scoring each substantive chapter against sequence, review-copy, citation, Daily Diary, Volume VII handoff, people, source-route, call-slip, public-backtrace, and high-gap checks.

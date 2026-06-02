@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=31" />
-    <script defer src="data/volume-data.js?v=31"></script>
-    <script defer src="app.js?v=31"></script>
+    <link rel="stylesheet" href="styles.css?v=32" />
+    <script defer src="data/volume-data.js?v=32"></script>
+    <script defer src="app.js?v=32"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -215,6 +215,7 @@
           <label><span>Sort</span><select id="document-sort"><option value="">Chronological</option><option value="lane">Lane grouped</option><option value="priority">Priority first</option></select></label>
           <button id="clear-document-filters" type="button">Reset</button>
           <button id="export-documents" type="button">CSV</button>
+          <button id="copy-documents" type="button">Copy handoff</button>
           <p id="document-summary" class="summary">Loading declassified chronology...</p>
         </div>
         <div id="documents-root" class="records-root" aria-live="polite">
