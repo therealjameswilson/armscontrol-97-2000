@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=25" />
-    <script defer src="data/volume-data.js?v=25"></script>
-    <script defer src="app.js?v=25"></script>
+    <link rel="stylesheet" href="styles.css?v=26" />
+    <script defer src="data/volume-data.js?v=26"></script>
+    <script defer src="app.js?v=26"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -119,6 +119,7 @@
         <a href="#packets">Packets</a>
         <a href="#outlines">Outlines</a>
         <a href="#closeout">Closeout</a>
+        <a href="#assembly">Assembly</a>
         <a href="#concordance">Concordance</a>
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
@@ -249,6 +250,19 @@
         </div>
         <div id="closeout-root" class="closeout-grid" aria-live="polite">
           <p class="loading">Loading chapter closeout checks...</p>
+        </div>
+      </section>
+
+      <section class="section assembly-section" id="assembly" aria-labelledby="assembly-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Chapter Assembly</p>
+            <h2 id="assembly-title">Draft Packet Builder</h2>
+          </div>
+          <button id="copy-assembly" class="link-button" type="button">Copy packets</button>
+        </div>
+        <div id="assembly-root" class="assembly-grid" aria-live="polite">
+          <p class="loading">Loading chapter assembly packets...</p>
         </div>
       </section>
 

@@ -81,6 +81,7 @@ const nodes = {
   packetsRoot: document.querySelector("#packets-root"),
   outlinesRoot: document.querySelector("#outlines-root"),
   closeoutRoot: document.querySelector("#closeout-root"),
+  assemblyRoot: document.querySelector("#assembly-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -107,6 +108,7 @@ const nodes = {
   exportDocuments: document.querySelector("#export-documents"),
   copyOutlines: document.querySelector("#copy-outlines"),
   copyCloseout: document.querySelector("#copy-closeout"),
+  copyAssembly: document.querySelector("#copy-assembly"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -1184,6 +1186,215 @@ function closeoutBoardNote(items) {
     `${items.length} substantive chapters scored from chronology, sequence, annotation, Daily Diary, Volume VII handoff, source-route, call-slip, people, and gap signals.`,
     `Status counts: ${draftReady} draft-ready; ${needsPolish} needs polish; ${notReady} not draft-ready.`,
     ...items.map((item) => `${item.lane.number}. ${item.lane.title}: ${item.status}; ${item.checks.length - item.remaining.length}/${item.checks.length} checks closed; remaining: ${item.remaining.map((check) => check.label).join(", ") || "none"}`)
+  ]);
+}
+
+function renderChapterAssembly() {
+  renderList(nodes.assemblyRoot, chapterAssemblyItems(), chapterAssemblyCard, "No chapter assembly packets loaded.");
+}
+
+function chapterAssemblyItems() {
+  const outlinesByLane = new Map(chapterOutlineItems().map((outline) => [outline.lane.id, outline]));
+  return closeoutItems()
+    .map((closeout) => {
+      const laneId = closeout.lane.id;
+      const outline = outlinesByLane.get(laneId);
+      const ledgers = sourceCopyLedger.filter((entry) => entry.laneId === laneId);
+      const pools = sourcePools
+        .filter((pool) => pool.laneId === laneId)
+        .sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title));
+      const run = closeout.sequence.length
+        ? closeout.sequence
+        : closeout.documents.slice(0, 6).map((item, index) => ({ number: index + 1, item, context: selectionSequenceContext(item) }));
+      return {
+        ...closeout,
+        outline,
+        ledgers,
+        pools,
+        run,
+        assemblyStatus: chapterAssemblyStatus(closeout)
+      };
+    })
+    .sort((a, b) => (laneOrder.get(a.lane.id) ?? 99) - (laneOrder.get(b.lane.id) ?? 99));
+}
+
+function chapterAssemblyStatus(item) {
+  if (item.status === "Draft-ready") return "Ready to draft";
+  if (item.status === "Needs polish") return "Assemble with cautions";
+  return "Research before draft";
+}
+
+function chapterAssemblyCard(packet) {
+  const card = document.createElement("article");
+  card.className = `assembly-card status-${closeoutStatusClass(packet.status)}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(packet.lane.number), textSpan(packet.assemblyStatus), textSpan(plural(packet.run.length, "run item")));
+
+  const title = document.createElement("h3");
+  title.textContent = packet.lane.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = `${chapterThesis(packet.outline || packet)} ${packet.remaining.length ? `${plural(packet.remaining.length, "closeout check")} still need attention before final drafting.` : "The packet is ready for first-pass chapter drafting and source-note review."}`;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid assembly-metrics";
+  addDetail(metrics, "Run", packet.run.length);
+  addDetail(metrics, "Review", packet.counts["review-copy"] || 0);
+  addDetail(metrics, "Diary", packet.diary.length);
+  addDetail(metrics, "Slips", packet.slips.length);
+  addDetail(metrics, "Sources", packet.pulls.length + packet.leads.length + packet.pools.length);
+  addDetail(metrics, "Fixes", packet.citationFixes.length + packet.highGaps.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Outline", () => scrollToSection("#outlines")));
+  actions.append(packetActionButton("Closeout", () => scrollToSection("#closeout")));
+  if (packet.run.length) actions.append(packetActionButton("Sequence", () => scrollToSection("#sequence")));
+  if (packet.citationFixes.length || packet.annotations.length) actions.append(packetActionButton("Annotate", () => scrollToSection("#annotations")));
+  if (packet.pulls.length || packet.leads.length || packet.pools.length) actions.append(packetActionButton("Sources", () => showLaneLeads(packet.lane.id)));
+  actions.append(clipboardButton("Copy packet", chapterAssemblyNote(packet), "Draft packet copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Chapter spine",
+      packetList(
+        chapterAssemblySpine(packet),
+        (item) => item.title,
+        (item) => item.detail,
+        "No chapter spine mapped yet."
+      )
+    ),
+    packetBlock(
+      "Source note base",
+      packetList(
+        chapterAssemblySourceItems(packet),
+        (item) => item.title,
+        (item) => item.detail,
+        "No source-note base mapped yet."
+      )
+    ),
+    packetBlock(
+      "Annotation watch",
+      packetList(
+        chapterAssemblyAnnotationItems(packet),
+        (item) => item.title,
+        (item) => item.detail,
+        "No annotation watch items mapped yet."
+      )
+    ),
+    packetBlock(
+      "Closeout cautions",
+      packetList(
+        packet.remaining.slice(0, 6),
+        (check) => check.label,
+        (check) => check.detail,
+        "No closeout cautions remain."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function chapterAssemblySpine(packet) {
+  return [
+    packet.handoffs[0]
+      ? {
+          title: `Volume VII bridge: ${packet.handoffs[0].priorChapter}`,
+          detail: packet.handoffs[0].newQuestion || packet.handoffs[0].continuity
+        }
+      : null,
+    ...packet.run.slice(0, 5).map((entry) => ({
+      title: `${entry.number}. ${entry.item.title}`,
+      detail: `${formatDate(entry.item.date)} / ${readinessLabel(documentReadiness(entry.item))} / ${entry.item.repository || entry.item.collection || entry.item.type}`
+    })),
+    packet.diary[0]
+      ? {
+          title: `Calendar anchor: ${packet.diary[0].title}`,
+          detail: `${formatDate(packet.diary[0].date)} / ${packet.diary[0].time || "time not listed"} / ${packet.diary[0].volumeConnection}`
+        }
+      : null
+  ].filter(Boolean).slice(0, 7);
+}
+
+function chapterAssemblySourceItems(packet) {
+  return [
+    ...packet.ledgers.slice(0, 2).map((entry) => ({
+      title: `Ledger: ${entry.title}`,
+      detail: `${entry.status} / ${entry.sourceClass}. ${entry.reviewCue || entry.repositoryTrail || ""}`
+    })),
+    ...packet.pulls.slice(0, 2).map((pull) => ({
+      title: `Pull: ${pull.title}`,
+      detail: pull.visitGoal || pull.whyItMatters || pull.sourcePart || "Archive pull target."
+    })),
+    ...packet.slips.slice(0, 2).map((slip) => ({
+      title: `Call slip ${slip.number}: ${slip.folder}`,
+      detail: `${slip.priority} / ${slip.pull.office || slip.pull.sourcePart || "repository slip"}`
+    })),
+    ...packet.leads.slice(0, 2).map((lead) => ({
+      title: `Lead: ${lead.title}`,
+      detail: lead.identifier || lead.note || lead.institution || "Source lead mapped."
+    })),
+    ...packet.pools.slice(0, 1).map((pool) => ({
+      title: `Pool: ${pool.title}`,
+      detail: pool.nextUse || pool.coverage || pool.institution || "Source pool mapped."
+    }))
+  ].slice(0, 7);
+}
+
+function chapterAssemblyAnnotationItems(packet) {
+  return [
+    ...packet.citationFixes.slice(0, 3).map((entry) => ({
+      title: `Citation fix: ${entry.item.title}`,
+      detail: `Missing ${entry.missing.map((check) => check.label).join(", ")}.`
+    })),
+    ...packet.peopleForLane.slice(0, 4).map((person) => ({
+      title: `Person/office: ${person.name}`,
+      detail: person.role
+    })),
+    ...packet.highGaps.slice(0, 3).map((gap) => ({
+      title: `${gap.priority} gap: ${gap.title}`,
+      detail: gap.remainingRisk || gap.needed || gap.problem || "Gap tracker item mapped."
+    }))
+  ].slice(0, 8);
+}
+
+function chapterAssemblyNote(packet) {
+  return noteLines([
+    `${packet.lane.number} / ${packet.lane.title} draft packet`,
+    `Assembly status: ${packet.assemblyStatus}`,
+    `Closeout status: ${packet.status} (${packet.checks.length - packet.remaining.length}/${packet.checks.length} checks closed)`,
+    `Thesis: ${chapterThesis(packet.outline || packet)}`,
+    packet.handoffs.length ? "Volume VII bridge:" : "",
+    ...packet.handoffs.map((handoff) => `- ${handoff.priorChapter}: ${handoff.newQuestion}`),
+    packet.run.length ? "Chapter document run:" : "",
+    ...packet.run.map((entry) => `- ${entry.number}. ${formatDate(entry.item.date)} / ${readinessLabel(documentReadiness(entry.item))} / ${entry.item.title} / ${entry.item.repository || entry.item.collection || entry.item.type}`),
+    packet.diary.length ? "Presidential Daily Diary anchors:" : "",
+    ...packet.diary.slice(0, 6).map((entry) => `- ${formatDate(entry.date)} / ${entry.time || "time not listed"} / ${entry.title}: ${entry.volumeConnection}`),
+    "Source note base:",
+    ...chapterAssemblySourceItems(packet).map((item) => `- ${item.title}: ${item.detail}`),
+    packet.citationFixes.length ? "Citation fixes before draft circulation:" : "",
+    ...packet.citationFixes.map((entry) => `- ${entry.item.title}: missing ${entry.missing.map((check) => check.label).join(", ")}`),
+    packet.peopleForLane.length ? "People/offices to annotate:" : "",
+    ...packet.peopleForLane.slice(0, 10).map((person) => `- ${person.name}: ${person.role}`),
+    packet.remaining.length ? "Closeout cautions:" : "Closeout cautions: none",
+    ...packet.remaining.map((check) => `- ${check.label}: ${check.detail}`),
+    "Compiler use: paste this packet into the chapter working file, then replace public/source-path anchors with verified internal records as the archive pull closes."
+  ]);
+}
+
+function chapterAssemblyBoardNote(items) {
+  return noteLines([
+    "Chapter draft packet builder",
+    `${items.length} chapter packets bundle outlines, closeout status, document runs, Daily Diary anchors, source-note base, call slips, citation fixes, people, and remaining cautions.`,
+    ...items.map((item) => `${item.lane.number}. ${item.lane.title}: ${item.assemblyStatus}; run ${item.run.length}; review ${item.counts["review-copy"] || 0}; Diary ${item.diary.length}; slips ${item.slips.length}; cautions ${item.remaining.length}`)
   ]);
 }
 
@@ -3812,6 +4023,7 @@ function bindEvents() {
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
   nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
+  nodes.copyAssembly?.addEventListener("click", () => copyText(chapterAssemblyBoardNote(chapterAssemblyItems()), "Draft packets copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -4072,6 +4284,7 @@ function renderAll() {
   renderPackets();
   renderChapterOutlines();
   renderCloseoutBoard();
+  renderChapterAssembly();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();

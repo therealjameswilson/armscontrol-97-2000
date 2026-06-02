@@ -14,6 +14,7 @@ Official volume anchor:
 - Chapter packet cards that crosswalk each Volume VIII lane to its top chronology candidates, Presidential Daily Diary cues, pull targets, remaining gap, and copy-ready chapter dossier.
 - Chapter drafting outlines tying Volume VII handoff questions to Volume VIII chronology, Diary cues, source pulls, people, and drafting risks.
 - Chapter closeout board scoring each substantive chapter against sequence, review-copy, citation, Daily Diary, Volume VII handoff, people, source-route, call-slip, public-backtrace, and high-gap checks.
+- Draft packet builder bundling each chapter's outline, closeout status, document run, Daily Diary anchors, source-note base, call slips, citation fixes, people/offices, and copy-ready assembly note.
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.
