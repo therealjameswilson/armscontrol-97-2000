@@ -83,6 +83,7 @@ const nodes = {
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
   coverageRoot: document.querySelector("#coverage-root"),
+  qaRoot: document.querySelector("#qa-root"),
   requestsRoot: document.querySelector("#requests-root"),
   agendaRoot: document.querySelector("#agenda-root"),
   actionsRoot: document.querySelector("#actions-root"),
@@ -98,6 +99,7 @@ const nodes = {
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
   copySequence: document.querySelector("#copy-sequence"),
+  copyQa: document.querySelector("#copy-qa"),
   leadsRoot: document.querySelector("#leads-root"),
   leadSummary: document.querySelector("#lead-summary"),
   leadSearch: document.querySelector("#lead-search"),
@@ -1215,6 +1217,127 @@ function coverageNote(lane, documents, diary, gaps, counts) {
     `Open gaps: ${gaps.length}`,
     documents.length ? `Top records: ${documents.sort(byPriorityThenDate).slice(0, 5).map((item) => item.title).join("; ")}` : "",
     gaps.length ? `First gap: ${gaps.sort((a, b) => priorityValue(a.priority) - priorityValue(b.priority) || a.title.localeCompare(b.title))[0].title}` : ""
+  ]);
+}
+
+function renderCompilerQa() {
+  renderList(nodes.qaRoot, compilerQaItems(), qaCard, "No compiler QA items loaded.");
+}
+
+function compilerQaItems() {
+  const items = [];
+  for (const lane of lanes) {
+    const documents = potentialDocuments.filter((item) => item.laneId === lane.id);
+    const counts = readinessCounts(documents);
+    const sequence = selectionSequenceItems().filter((entry) => entry.item.laneId === lane.id);
+    const diary = diaryReferences.filter((entry) => entry.laneId === lane.id);
+    const leads = sourceLeads.filter((lead) => lead.laneId === lane.id);
+    const pulls = libraryPlan.filter((pull) => pull.laneId === lane.id);
+    const pools = sourcePools.filter((pool) => pool.laneId === lane.id);
+    const gaps = gapTracker.filter((gap) => gap.laneId === lane.id);
+    const handoffs = handoffsForLane(lane.id);
+    const peopleForLane = persons.filter((person) => (person.laneIds || []).includes(lane.id));
+
+    if (lane.id === "volume-control") {
+      items.push(qaItem(lane, "Critical", "Guard official status", "Keep the planned-volume warning visible and avoid document numbers until the official volume is published.", "Official page is planned; public anchors and released items are not a FRUS document list.", ["briefs", "gaps"]));
+    } else {
+      if (counts["review-copy"] === 0) {
+        items.push(qaItem(lane, "Critical", "No review-copy record yet", "Pull internal text before treating the chapter sequence as document-ready.", `${documents.length} mapped records, but none are released memcon or State FOIA review-copy text.`, ["library", "sources", "requests"]));
+      }
+      if (!sequence.length) {
+        items.push(qaItem(lane, "High", "No provisional sequence row", "Promote at least one review-copy, formal-record, or pull-lead candidate into the selection sequence.", `${counts["public-anchor"]} public anchors and ${documents.length} mapped records need an internal or formal candidate.`, ["documents", "selection", "sequence"]));
+      }
+      if (!diary.length) {
+        items.push(qaItem(lane, "Medium", "No Presidential Daily Diary cue", "Run a Daily Diary name/date pass for participant and calendar confirmation.", "No mapped call or meeting cue currently anchors this lane.", ["diary", "concordance"]));
+      }
+      if (!pulls.length && !leads.length && !pools.length) {
+        items.push(qaItem(lane, "High", "No source acquisition path", "Add at least one source lead, repository pool, or on-site pull target before final selection.", "The lane has no mapped lead/pool/pull item to guide file acquisition.", ["agenda", "sources", "library"]));
+      }
+      if (!handoffs.length) {
+        items.push(qaItem(lane, "Medium", "No Volume VII carryover", "Confirm whether the 1993-1996 volume has a predecessor chapter or boundary note for this lane.", "No explicit Volume VII handoff record is mapped.", ["handoff"]));
+      }
+      if (!peopleForLane.length) {
+        items.push(qaItem(lane, "Low", "No people/offices mapped", "Add principal offices and staff names to support indexing, source requests, and participant checks.", "No roster entries are currently assigned to this lane.", ["people"]));
+      }
+      if (!gaps.length) {
+        items.push(qaItem(lane, "Low", "No explicit gap control", "Confirm there is no remaining editorial risk before closing the chapter packet.", "The gap tracker has no open or closed control item for this lane.", ["gaps"]));
+      }
+    }
+
+    if (counts["public-anchor"] > counts["review-copy"] && counts["review-copy"] < 2) {
+      items.push(qaItem(lane, "Medium", "Public anchors outweigh internal text", "Backtrace public statements to internal memoranda, briefing papers, or cables.", `${counts["public-anchor"]} public anchors vs. ${counts["review-copy"]} review-copy records.`, ["documents", "library", "requests"]));
+    }
+  }
+
+  return items.sort((a, b) => priorityValue(a.severity) - priorityValue(b.severity) || (laneOrder.get(a.lane.id) ?? 99) - (laneOrder.get(b.lane.id) ?? 99) || a.title.localeCompare(b.title));
+}
+
+function qaItem(lane, severity, title, action, evidence, targets) {
+  return { id: `${lane.id}-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}`, lane, severity, title, action, evidence, targets };
+}
+
+function qaCard(item) {
+  const card = document.createElement("article");
+  card.className = `qa-card priority-${item.severity.toLowerCase()}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(item.severity), textSpan(item.lane.number));
+
+  const title = document.createElement("h3");
+  title.textContent = item.title;
+
+  const evidence = document.createElement("p");
+  evidence.textContent = item.evidence;
+
+  const action = document.createElement("p");
+  action.className = "source-note";
+  action.textContent = item.action;
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions";
+  for (const target of item.targets) {
+    actions.append(packetActionButton(qaTargetLabel(target), () => scrollToSection(`#${target}`)));
+  }
+  actions.append(clipboardButton("Copy QA", qaIssueNote(item), "QA item copied"));
+
+  card.append(meta, title, evidence, action, actions);
+  return card;
+}
+
+function qaTargetLabel(target) {
+  const labels = {
+    agenda: "Agenda",
+    briefs: "Briefs",
+    concordance: "Concordance",
+    diary: "Diary",
+    documents: "Chronology",
+    gaps: "Gaps",
+    handoff: "Handoff",
+    library: "Library",
+    people: "People",
+    requests: "Requests",
+    selection: "Selection",
+    sequence: "Sequence",
+    sources: "Source leads"
+  };
+  return labels[target] || target;
+}
+
+function qaIssueNote(item) {
+  return noteLines([
+    `[${item.severity}] ${item.lane.number} / ${item.lane.title}: ${item.title}`,
+    `Evidence: ${item.evidence}`,
+    `Action: ${item.action}`,
+    `Open: ${item.targets.map(qaTargetLabel).join("; ")}`
+  ]);
+}
+
+function compilerQaNote(items) {
+  return noteLines([
+    "Compiler QA checklist",
+    `${items.length} generated QA items from readiness, sequence, Diary, source, handoff, people, and gap signals.`,
+    ...items.map((item, index) => `${index + 1}. [${item.severity}] ${item.lane.number} / ${item.title}: ${item.action}`)
   ]);
 }
 
@@ -2419,6 +2542,7 @@ function bindEvents() {
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
+  nodes.copyQa?.addEventListener("click", () => copyText(compilerQaNote(compilerQaItems()), "QA copied"));
 
   bindInput(nodes.leadSearch, (value) => {
     state.leads.query = value;
@@ -2674,6 +2798,7 @@ function renderAll() {
   renderSelectionBoard();
   renderSelectionSequence();
   renderCoverageMatrix();
+  renderCompilerQa();
   renderRequestQueue();
   renderRepositoryAgenda();
   renderActionQueue();

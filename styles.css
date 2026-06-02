@@ -337,6 +337,7 @@ dd {
 .concordance-grid,
 .selection-grid,
 .sequence-root,
+.qa-grid,
 .request-grid,
 .agenda-grid,
 .action-grid,
@@ -383,6 +384,10 @@ dd {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.qa-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .agenda-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
@@ -422,6 +427,7 @@ dd {
 .packet-card,
 .concordance-card,
 .selection-card,
+.qa-card,
 .request-card,
 .agenda-card,
 .action-card,
@@ -618,6 +624,25 @@ dd {
   color: #3b4853;
   font-size: 0.88rem;
   line-height: 1.45;
+}
+
+.qa-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--blue);
+}
+
+.qa-card.priority-critical {
+  border-left-color: var(--red);
+}
+
+.qa-card.priority-high {
+  border-left-color: var(--gold);
+}
+
+.qa-card.priority-medium {
+  border-left-color: var(--green);
 }
 
 .request-card {
@@ -1003,6 +1028,7 @@ dd {
 .packet-card p,
 .concordance-card p,
 .selection-card p,
+.qa-card p,
 .request-card p,
 .agenda-card p,
 .action-card p,
@@ -1190,6 +1216,7 @@ dd {
   .packet-grid,
   .concordance-grid,
   .selection-grid,
+  .qa-grid,
   .request-grid,
   .agenda-grid,
   .action-grid,
@@ -1224,6 +1251,7 @@ dd {
   .packet-grid,
   .concordance-grid,
   .selection-grid,
+  .qa-grid,
   .request-grid,
   .agenda-grid,
   .action-grid,

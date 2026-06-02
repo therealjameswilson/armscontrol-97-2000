@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=17" />
-    <script defer src="data/volume-data.js?v=17"></script>
-    <script defer src="app.js?v=17"></script>
+    <link rel="stylesheet" href="styles.css?v=18" />
+    <script defer src="data/volume-data.js?v=18"></script>
+    <script defer src="app.js?v=18"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -121,6 +121,7 @@
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
         <a href="#coverage">Coverage</a>
+        <a href="#qa">QA</a>
         <a href="#requests">Requests</a>
         <a href="#agenda">Agenda</a>
         <a href="#actions">Actions</a>
@@ -258,6 +259,19 @@
         </div>
         <div id="coverage-root" class="coverage-root" aria-live="polite">
           <p class="loading">Loading chapter coverage matrix...</p>
+        </div>
+      </section>
+
+      <section class="section qa-section" id="qa" aria-labelledby="qa-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Editorial QA</p>
+            <h2 id="qa-title">Compiler QA Checklist</h2>
+          </div>
+          <button id="copy-qa" class="link-button" type="button">Copy QA</button>
+        </div>
+        <div id="qa-root" class="qa-grid" aria-live="polite">
+          <p class="loading">Loading compiler QA checklist...</p>
         </div>
       </section>
 
