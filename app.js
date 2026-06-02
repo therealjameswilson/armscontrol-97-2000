@@ -86,6 +86,7 @@ const nodes = {
   clearanceRoot: document.querySelector("#clearance-root"),
   circulationRoot: document.querySelector("#circulation-root"),
   decisionsRoot: document.querySelector("#decisions-root"),
+  apparatusRoot: document.querySelector("#apparatus-root"),
   concordanceRoot: document.querySelector("#concordance-root"),
   selectionRoot: document.querySelector("#selection-root"),
   sequenceRoot: document.querySelector("#sequence-root"),
@@ -117,6 +118,7 @@ const nodes = {
   copyClearance: document.querySelector("#copy-clearance"),
   copyCirculation: document.querySelector("#copy-circulation"),
   copyDecisions: document.querySelector("#copy-decisions"),
+  copyApparatus: document.querySelector("#copy-apparatus"),
   copySequence: document.querySelector("#copy-sequence"),
   copyBacktrace: document.querySelector("#copy-backtrace"),
   copyAnnotations: document.querySelector("#copy-annotations"),
@@ -2881,6 +2883,218 @@ function decisionBoardNote(entries) {
   ]);
 }
 
+function renderApparatusPack() {
+  renderList(nodes.apparatusRoot, apparatusItems(), apparatusCard, "No editorial apparatus packs loaded.");
+}
+
+function apparatusItems() {
+  return decisionItems().map((entry) => {
+    const hooks = apparatusHookItems(entry);
+    const sourceChecks = apparatusSourceCheckItems(entry);
+    const indexTerms = apparatusIndexTerms(entry);
+    const cautions = apparatusCautionItems(entry, hooks);
+    const status = apparatusStatus(entry, hooks, cautions);
+    return { ...entry, hooks, sourceChecks, indexTerms, cautions, apparatusStatus: status };
+  });
+}
+
+function apparatusStatus(entry, hooks, cautions) {
+  const decision = (entry.decision || "").toLowerCase();
+  if (entry.decision === "Hold for pull" || entry.readiness === "pull-lead") return "Hold for source text";
+  if (entry.missing.length) return "Source-note fix";
+  if (entry.blockers.length || decision.includes("caution") || !hooks.length) return "Annotation caution";
+  return "Ready for apparatus";
+}
+
+function apparatusHookItems(entry) {
+  const handoffs = handoffsForLane(entry.item.laneId).slice(0, 2);
+  return [
+    ...entry.people.slice(0, 4).map((person) => ({ title: `Person/office: ${person.name}`, detail: person.role })),
+    ...entry.context.diary.slice(0, 3).map((diary) => ({
+      title: `Presidential Daily Diary: ${diary.title}`,
+      detail: `${formatDate(diary.date)} / ${diary.time || "time not listed"} / ${diary.volumeConnection || diary.eventType || "calendar cue"}`
+    })),
+    ...entry.context.publicAnchors.slice(0, 2).map((anchor) => ({
+      title: `Public chronology: ${anchor.title}`,
+      detail: `${formatDate(anchor.date)} / ${anchor.repository || anchor.collection || "public record"}`
+    })),
+    ...handoffs.map((handoff) => ({
+      title: `Volume VII carry-forward: ${handoff.priorChapter}`,
+      detail: handoff.newQuestion || handoff.continuity || handoff.sourceAction
+    })),
+    entry.routes[0] ? { title: `Equity route: ${entry.routes[0].title}`, detail: entry.routes[0].detail } : null
+  ].filter(Boolean).slice(0, 10);
+}
+
+function apparatusSourceCheckItems(entry) {
+  return [
+    { title: "Working source note", detail: workingSourceNote(entry) },
+    { title: "Citation completeness", detail: `${entry.checks.length - entry.missing.length}/${entry.checks.length} fields present` },
+    entry.missing.length ? { title: "Missing citation fields", detail: entry.missing.map((check) => check.label).join("; ") } : { title: "Missing citation fields", detail: "None flagged." },
+    entry.item.pdfUrl ? { title: "Review copy/PDF", detail: entry.item.pdfUrl } : null,
+    entry.item.url ? { title: "Source URL", detail: entry.item.url } : null,
+    entry.ledgers[0]
+      ? {
+          title: `Source-copy ledger: ${entry.ledgers[0].title}`,
+          detail: entry.ledgers[0].reviewCue || entry.ledgers[0].repositoryTrail || entry.ledgers[0].sourceClass || "Ledger item mapped."
+        }
+      : null,
+    entry.sourceHandling?.[0] ? { title: entry.sourceHandling[0].title, detail: entry.sourceHandling[0].detail } : null,
+    entry.pull
+      ? {
+          title: `Pull target: ${entry.pull.title}`,
+          detail: entry.pull.visitGoal || entry.pull.whyItMatters || entry.pull.sourcePart || "Verify item-level text before selection."
+        }
+      : null
+  ].filter(Boolean).slice(0, 8);
+}
+
+function apparatusIndexTerms(entry) {
+  const lane = laneById.get(entry.item.laneId);
+  return uniqueSorted([
+    ...entry.people.map((person) => person.name),
+    laneTitle(entry.item.laneId),
+    ...(lane?.topics || []),
+    ...(entry.item.tags || []),
+    ...(handoffsForLane(entry.item.laneId).flatMap((handoff) => handoff.tags || []))
+  ]).slice(0, 12);
+}
+
+function apparatusCautionItems(entry, hooks) {
+  return [
+    ...entry.blockers.map((blocker) => ({ title: blocker.title, detail: blocker.detail })),
+    ...entry.missing.map((check) => ({ title: `Source-note fix: ${check.label}`, detail: "Add before apparatus or circulation review." })),
+    entry.readiness === "pull-lead"
+      ? {
+          title: "Pull before apparatus",
+          detail: entry.pull?.visitGoal || entry.pull?.whyItMatters || entry.pull?.sourcePart || "Verify item-level text before drafting annotation apparatus."
+        }
+      : null,
+    !hooks.length
+      ? {
+          title: "Annotation hook gap",
+          detail: "Add at least one people, Diary, public chronology, or Volume VII carry-forward hook before treating this as apparatus-ready."
+        }
+      : null,
+    entry.gap
+      ? {
+          title: `${entry.gap.priority} gap: ${entry.gap.title}`,
+          detail: entry.gap.remainingRisk || entry.gap.needed || entry.gap.problem || "Gap tracker item mapped."
+        }
+      : null,
+    { title: "Replacement trigger", detail: entry.replacement }
+  ].filter(Boolean).slice(0, 8);
+}
+
+function apparatusCard(entry) {
+  const card = document.createElement("article");
+  card.className = `apparatus-card status-${closeoutStatusClass(entry.apparatusStatus)}`;
+
+  const meta = document.createElement("div");
+  meta.className = "record-meta";
+  meta.append(textSpan(`Doc ${entry.number.toString().padStart(2, "0")}`), textSpan(entry.apparatusStatus), textSpan(laneNumber(entry.item.laneId)));
+
+  const title = document.createElement("h3");
+  title.textContent = entry.item.title;
+
+  const summary = document.createElement("p");
+  summary.textContent = `${plural(entry.hooks.length, "annotation hook")} and ${plural(entry.indexTerms.length, "index term")} bundled for a ${entry.decision.toLowerCase()} decision.`;
+
+  const metrics = document.createElement("dl");
+  metrics.className = "detail-grid apparatus-metrics";
+  addDetail(metrics, "Hooks", entry.hooks.length);
+  addDetail(metrics, "Index", entry.indexTerms.length);
+  addDetail(metrics, "Citation", `${entry.checks.length - entry.missing.length}/${entry.checks.length}`);
+  addDetail(metrics, "Diary", entry.context.diary.length);
+  addDetail(metrics, "Public", entry.context.publicAnchors.length);
+  addDetail(metrics, "Cautions", entry.cautions.length);
+
+  const actions = document.createElement("div");
+  actions.className = "card-actions packet-actions";
+  actions.append(packetActionButton("Sequence", () => scrollToSection("#sequence")));
+  actions.append(packetActionButton("Manuscript", () => scrollToSection("#manuscripts")));
+  actions.append(packetActionButton("Decisions", () => scrollToSection("#decisions")));
+  if (entry.people.length) actions.append(packetActionButton("People", () => showPersonProfile(entry.people[0].name)));
+  if (entry.context.diary.length) actions.append(packetActionButton("Diary", () => showLaneDiary(entry.item.laneId)));
+  actions.append(clipboardButton("Copy apparatus", apparatusNote(entry), "Apparatus copied"));
+
+  card.append(
+    meta,
+    title,
+    summary,
+    metrics,
+    packetBlock(
+      "Annotation hooks",
+      packetList(
+        entry.hooks,
+        (item) => item.title,
+        (item) => item.detail,
+        "No annotation hooks mapped yet."
+      )
+    ),
+    packetBlock(
+      "Source-note checks",
+      packetList(
+        entry.sourceChecks,
+        (item) => item.title,
+        (item) => item.detail,
+        "No source-note checks mapped yet."
+      )
+    ),
+    packetBlock(
+      "Index terms",
+      packetList(
+        entry.indexTerms.map((term) => ({ title: term, detail: "Candidate index/subject heading." })),
+        (item) => item.title,
+        (item) => item.detail,
+        "No candidate index terms mapped yet."
+      )
+    ),
+    packetBlock(
+      "Cautions",
+      packetList(
+        entry.cautions,
+        (item) => item.title,
+        (item) => item.detail,
+        "No apparatus cautions flagged."
+      )
+    ),
+    actions
+  );
+
+  return card;
+}
+
+function apparatusNote(entry) {
+  return noteLines([
+    `Document apparatus pack ${entry.number}: ${entry.item.title}`,
+    `Date: ${formatDate(entry.item.date)}`,
+    `Lane: ${laneNumber(entry.item.laneId)} / ${laneTitle(entry.item.laneId)}`,
+    `Selection decision: ${entry.decision}`,
+    `Apparatus status: ${entry.apparatusStatus}`,
+    `Working source note: ${workingSourceNote(entry)}`,
+    "Annotation hooks:",
+    ...entry.hooks.map((hook) => `- ${hook.title}: ${hook.detail}`),
+    "Source-note checks:",
+    ...entry.sourceChecks.map((check) => `- ${check.title}: ${check.detail}`),
+    entry.indexTerms.length ? `Index terms: ${entry.indexTerms.join("; ")}` : "Index terms: none mapped",
+    entry.cautions.length ? "Cautions:" : "Cautions: none flagged",
+    ...entry.cautions.map((caution) => `- ${caution.title}: ${caution.detail}`),
+    "Apparatus handoff: attach this note to the manuscript stub so people/offices, Daily Diary cues, Volume VII carry-forward themes, public chronology, source-note checks, and index terms travel together.",
+    "Compiler check: verify final citation form, official FRUS numbering, annotation scope, clearance route, and whether the record remains selected."
+  ]);
+}
+
+function apparatusBoardNote(entries) {
+  const counts = uniqueSorted(entries.map((entry) => entry.apparatusStatus)).map((status) => `${status}: ${entries.filter((entry) => entry.apparatusStatus === status).length}`);
+  return noteLines([
+    "Editorial apparatus pack",
+    `${entries.length} provisional document apparatus packs generated from the decision ledger.`,
+    `Status counts: ${counts.join("; ")}`,
+    ...entries.map((entry) => `${entry.number}. ${formatDate(entry.item.date)} / ${laneNumber(entry.item.laneId)} / ${entry.apparatusStatus} / hooks ${entry.hooks.length} / cautions ${entry.cautions.length} / ${entry.item.title}`)
+  ]);
+}
+
 function showReadinessDocuments(readiness) {
   resetGroup("documents", [
     nodes.documentSearch,
@@ -4812,6 +5026,7 @@ function bindEvents() {
   nodes.copyClearance?.addEventListener("click", () => copyText(clearanceBoardNote(clearanceItems()), "Clearance routing copied"));
   nodes.copyCirculation?.addEventListener("click", () => copyText(circulationBoardNote(circulationBatchItems()), "Circulation batches copied"));
   nodes.copyDecisions?.addEventListener("click", () => copyText(decisionBoardNote(decisionItems()), "Decisions copied"));
+  nodes.copyApparatus?.addEventListener("click", () => copyText(apparatusBoardNote(apparatusItems()), "Apparatus copied"));
   nodes.copySequence?.addEventListener("click", () => copyText(selectionSequenceNote(selectionSequenceItems()), "Sequence copied"));
   nodes.copyBacktrace?.addEventListener("click", () => copyText(publicBacktraceNote(publicBacktraceItems()), "Backtrace copied"));
   nodes.copyAnnotations?.addEventListener("click", () => copyText(annotationQueueNote(annotationItems()), "Annotation queue copied"));
@@ -5077,6 +5292,7 @@ function renderAll() {
   renderClearanceRouter();
   renderCirculationBatches();
   renderDecisionLedger();
+  renderApparatusPack();
   renderConcordance();
   renderSelectionBoard();
   renderSelectionSequence();

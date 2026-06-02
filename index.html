@@ -8,9 +8,9 @@
       name="description"
       content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=30" />
-    <script defer src="data/volume-data.js?v=30"></script>
-    <script defer src="app.js?v=30"></script>
+    <link rel="stylesheet" href="styles.css?v=31" />
+    <script defer src="data/volume-data.js?v=31"></script>
+    <script defer src="app.js?v=31"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -124,6 +124,7 @@
         <a href="#clearance">Clearance</a>
         <a href="#circulation">Batches</a>
         <a href="#decisions">Decisions</a>
+        <a href="#apparatus">Apparatus</a>
         <a href="#concordance">Concordance</a>
         <a href="#selection">Selection</a>
         <a href="#sequence">Sequence</a>
@@ -319,6 +320,19 @@
         </div>
         <div id="decisions-root" class="decision-grid" aria-live="polite">
           <p class="loading">Loading document decision ledger...</p>
+        </div>
+      </section>
+
+      <section class="section apparatus-section" id="apparatus" aria-labelledby="apparatus-title">
+        <div class="section-heading with-link">
+          <div>
+            <p class="kicker">Editorial Apparatus</p>
+            <h2 id="apparatus-title">Editorial Apparatus Pack</h2>
+          </div>
+          <button id="copy-apparatus" class="link-button" type="button">Copy apparatus</button>
+        </div>
+        <div id="apparatus-root" class="apparatus-grid" aria-live="polite">
+          <p class="loading">Loading editorial apparatus packs...</p>
         </div>
       </section>
 

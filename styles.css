@@ -343,6 +343,7 @@ dd {
 .clearance-grid,
 .circulation-grid,
 .decision-grid,
+.apparatus-grid,
 .concordance-grid,
 .selection-grid,
 .sequence-root,
@@ -407,6 +408,10 @@ dd {
 }
 
 .decision-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.apparatus-grid {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
@@ -494,6 +499,7 @@ dd {
 .clearance-card,
 .circulation-card,
 .decision-card,
+.apparatus-card,
 .concordance-card,
 .selection-card,
 .backtrace-card,
@@ -715,6 +721,30 @@ dd {
   margin-bottom: 0;
 }
 
+.apparatus-card {
+  display: grid;
+  gap: 12px;
+  padding: 20px;
+  border-left: 5px solid var(--blue);
+}
+
+.apparatus-card.status-hold-for-source-text,
+.apparatus-card.status-source-note-fix {
+  border-left-color: var(--red);
+}
+
+.apparatus-card.status-annotation-caution {
+  border-left-color: var(--gold);
+}
+
+.apparatus-card.status-ready-for-apparatus {
+  border-left-color: var(--green);
+}
+
+.apparatus-card > p {
+  margin-bottom: 0;
+}
+
 .backtrace-card {
   display: grid;
   gap: 12px;
@@ -818,6 +848,15 @@ dd {
 }
 
 .detail-grid.decision-metrics div {
+  grid-template-columns: 86px minmax(0, 1fr);
+}
+
+.detail-grid.apparatus-metrics {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+}
+
+.detail-grid.apparatus-metrics div {
   grid-template-columns: 86px minmax(0, 1fr);
 }
 
@@ -1676,6 +1715,7 @@ dd {
   .clearance-grid,
   .circulation-grid,
   .decision-grid,
+  .apparatus-grid,
   .concordance-grid,
   .selection-grid,
   .backtrace-grid,
@@ -1723,6 +1763,7 @@ dd {
   .clearance-grid,
   .circulation-grid,
   .decision-grid,
+  .apparatus-grid,
   .concordance-grid,
   .selection-grid,
   .backtrace-grid,

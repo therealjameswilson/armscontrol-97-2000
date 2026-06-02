@@ -19,6 +19,7 @@ Official volume anchor:
 - Clearance routing matrix deriving likely equity offices, source-handling cues, citation blockers, pull holds, and copy-ready routing notes for each provisional manuscript stub.
 - Circulation batch planner grouping routed manuscript stubs into chapter-lane packets with cover-memo frames, ready subsets, held records, likely equities, blockers, and copy-ready circulation notes.
 - Document decision ledger recording provisional select/hold/formal-anchor judgments, rationale, proof trail, replacement triggers, and copy-ready selection notes for every sequence candidate.
+- Editorial apparatus pack bundling annotation hooks, source-note checks, index terms, Daily Diary/public context, Volume VII carry-forward themes, blockers, and copy-ready apparatus handoff notes for every provisional document.
 - Diary-to-document concordance linking Presidential Daily Diary calls and meetings to exact-day records, nearby public/source anchors, pull targets, and open risks.
 - Document readiness board and chronology filter separating review copies, public anchors, formal public records, and pull-before-selection leads.
 - Provisional document selection sequence ordering review-copy, formal-record, and pull-lead candidates with nearby public, Diary, pull, and gap context.
