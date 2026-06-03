@@ -6,11 +6,11 @@
     <title>FRUS 1993-2000 Volume VIII Assist</title>
     <meta
       name="description"
-      content="A compiler-facing FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
+      content="A source-first, audit-friendly FRUS Assist page for Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000."
     />
-    <link rel="stylesheet" href="styles.css?v=33" />
-    <script defer src="data/volume-data.js?v=33"></script>
-    <script defer src="app.js?v=33"></script>
+    <link rel="stylesheet" href="styles.css?v=34" />
+    <script defer src="data/volume-data.js?v=34"></script>
+    <script defer src="app.js?v=34"></script>
     <style id="compiler-network-style">
       .compiler-network {
         border-bottom: 1px solid rgba(31, 41, 51, 0.14);
@@ -160,7 +160,8 @@
           <p class="kicker">FRUS 1993-2000, Volume VIII</p>
           <h1 id="hero-title">Arms Control and Nonproliferation, 1997-2000</h1>
           <p class="lede">
-            A source-first compiler desk for the planned second Clinton arms-control volume:
+            A source-first compiler desk for the planned second Clinton arms-control volume.
+            It keeps evidence trails, caveats, and human review gates visible across
             strategic stability, CTBT ratification, ABM/NMD, fissile materials, regional
             proliferation, CBW, CFE, and source-boundary controls.
           </p>
@@ -197,6 +198,10 @@
               <dt>Boundary</dt>
               <dd>Volume VII covers 1993-1996</dd>
             </div>
+            <div>
+              <dt>Review Posture</dt>
+              <dd>Source trails before synthesis</dd>
+            </div>
           </dl>
         </aside>
       </section>
@@ -216,6 +221,7 @@
           <button id="clear-document-filters" type="button">Reset</button>
           <button id="export-documents" type="button">CSV</button>
           <button id="copy-documents" type="button">Copy handoff</button>
+          <button id="download-documents" type="button">TXT</button>
           <button id="copy-document-view" type="button">Copy view</button>
           <p id="document-summary" class="summary">Loading declassified chronology...</p>
         </div>

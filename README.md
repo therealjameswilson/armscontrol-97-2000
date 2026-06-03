@@ -1,6 +1,6 @@
 # FRUS 1993-2000, Volume VIII Assist
 
-Static compiler-facing assister page for the planned FRUS volume:
+Static source-first, audit-friendly compiler assister page for the planned FRUS volume:
 
 **Foreign Relations of the United States, 1993-2000, Volume VIII, Arms Control and Nonproliferation, 1997-2000**
 
@@ -10,7 +10,7 @@ Official volume anchor:
 ## What It Includes
 
 - Provisional compiler lanes for START/strategic stability, CTBT, ABM/NMD, fissile materials, nonproliferation regimes, regional proliferation, CBW, and CFE/conventional arms.
-- Searchable/exportable declassified-document chronology, now placed first on the page with chronological, lane-grouped, and priority sort modes, shareable filtered view links, and a copy-ready filtered chronology handoff.
+- Searchable/exportable declassified-document chronology, now placed first on the page with chronological, lane-grouped, and priority sort modes, shareable filtered view links, and copy/download filtered chronology handoffs.
 - Chapter packet cards that crosswalk each Volume VIII lane to its top chronology candidates, Presidential Daily Diary cues, pull targets, remaining gap, and copy-ready chapter dossier.
 - Chapter drafting outlines tying Volume VII handoff questions to Volume VIII chronology, Diary cues, source pulls, people, and drafting risks.
 - Chapter closeout board scoring each substantive chapter against sequence, review-copy, citation, Daily Diary, Volume VII handoff, people, source-route, call-slip, public-backtrace, and high-gap checks.

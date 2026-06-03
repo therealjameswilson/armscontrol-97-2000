@@ -121,6 +121,7 @@ const nodes = {
   clearDocumentFilters: document.querySelector("#clear-document-filters"),
   exportDocuments: document.querySelector("#export-documents"),
   copyDocuments: document.querySelector("#copy-documents"),
+  downloadDocuments: document.querySelector("#download-documents"),
   copyDocumentView: document.querySelector("#copy-document-view"),
   copyOutlines: document.querySelector("#copy-outlines"),
   copyCloseout: document.querySelector("#copy-closeout"),
@@ -489,6 +490,30 @@ function chronologyHandoffRecord(number, item) {
     item.summary ? `   Use: ${item.summary}` : "",
     urls ? `   Links: ${urls}` : ""
   ].filter(Boolean).join("\n");
+}
+
+function chronologyHandoffFilename() {
+  const filters = [
+    state.documents.query,
+    state.documents.lane,
+    state.documents.type,
+    state.documents.priority,
+    state.documents.readiness,
+    state.documents.sort
+  ]
+    .filter(Boolean)
+    .map(slugPart)
+    .join("-");
+  return `volume-viii-chronology-handoff${filters ? `-${filters}` : ""}.txt`;
+}
+
+function slugPart(value) {
+  return value
+    .toString()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-|-$/g, "")
+    .slice(0, 64);
 }
 
 function leadNote(lead) {
@@ -5145,6 +5170,7 @@ function bindEvents() {
   });
   nodes.exportDocuments?.addEventListener("click", () => exportCsv("volume-viii-documents.csv", filteredDocuments(), documentColumns()));
   nodes.copyDocuments?.addEventListener("click", () => copyText(chronologyHandoffNote(filteredDocuments()), "Chronology handoff copied"));
+  nodes.downloadDocuments?.addEventListener("click", () => downloadText(chronologyHandoffFilename(), chronologyHandoffNote(filteredDocuments())));
   nodes.copyDocumentView?.addEventListener("click", () => copyText(documentViewUrl(), "Chronology view link copied"));
   nodes.copyOutlines?.addEventListener("click", () => copyText(chapterOutlinesNote(chapterOutlineItems()), "Outlines copied"));
   nodes.copyCloseout?.addEventListener("click", () => copyText(closeoutBoardNote(closeoutItems()), "Closeout copied"));
@@ -5390,6 +5416,21 @@ function exportCsv(filename, rows, columns) {
   document.documentElement.dataset.lastExportRowCount = rows.length.toString();
   document.documentElement.dataset.lastExportColumns = header.join("|");
   const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = filename;
+  document.body.append(anchor);
+  anchor.click();
+  anchor.remove();
+  URL.revokeObjectURL(url);
+}
+
+function downloadText(filename, text) {
+  window.__lastTextDownload = { filename, text };
+  document.documentElement.dataset.lastDownloadFilename = filename;
+  document.documentElement.dataset.lastDownloadText = text;
+  const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
   anchor.href = url;
